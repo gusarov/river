@@ -67,6 +67,7 @@ namespace River
 			{
 				int count;
 				_bufferReceivedCount += count = _stream.EndRead(ar);
+				Trace.WriteLine("Received " + count + " bytes");
 				switch (_sessionState)
 				{
 					case SocksSessionState.JustConnected:
@@ -188,9 +189,9 @@ namespace River
 				if (count != 0)
 				{
 					_stream.Write(_bufferForwardRead, 0, count);
-					// continue async
-					_clientForward.GetStream().BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceivedFromForwarder, null);
 				}
+				// continue async
+				_clientForward.GetStream().BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceivedFromForwarder, null);
 			}
 
 			/// <summary>
