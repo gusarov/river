@@ -175,6 +175,7 @@ namespace River
 			readed += _stream.Read(response, readed, 2); // port
 			// we don't need those values because it is stream, not bind
 			// from now, any subsequent byte is a part of the stream, including remaining part of the network buffer
+			_client.NoDelay = true;
 		}
 
 		string GetResponseErrorMessage(byte responseCode)
@@ -207,9 +208,9 @@ namespace River
 
 	public abstract class SocksClient : Stream, IDisposable
 	{
-		protected static Encoding _utf8 = new UTF8Encoding(false, false);
+		protected static readonly Encoding _utf8 = new UTF8Encoding(false, false);
 
-		private TcpClient _client;
+		protected TcpClient _client;
 		protected NetworkStream _stream;
 
 		protected void ConnectBase(string proxyHost, int proxyPort)

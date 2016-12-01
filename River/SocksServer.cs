@@ -108,7 +108,7 @@ namespace River
 								{
 									throw new NotSupportedException("command type not supported");
 								}
-								int port = _buffer[2]*256 + _buffer[3];
+								int port = _buffer[2] * 256 + _buffer[3];
 								var bufAddress4 = new byte[4];
 								Array.Copy(_buffer, 4, bufAddress4, 0, 4);
 								var address4 = new IPAddress(bufAddress4);
@@ -128,47 +128,50 @@ namespace River
 								{
 									throw new Exception("End of user id string not found within 256 chars");
 								}
-								if (bufAddress4[0] == 0) // ver 4a mode - read dns name
-								{
-									// read dns name
-									string dnsName = null;
-									nullOk = false;
-									for (int i = 1; i < 256; i++)
-									{
-										EnsureReaded(_bufferProcessedCount + i);
-										if (_buffer[_bufferProcessedCount + i - 1] == 0)
-										{
-											nullOk = true;
-											dnsName = _utf.GetString(_buffer, _bufferProcessedCount, i - 1);
-											_bufferProcessedCount += i;
-											break;
-										}
-									}
-									if (!string.IsNullOrWhiteSpace(dnsName))
-									{
-										address4 = Dns.GetHostAddresses(dnsName).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
-									}
-									else
-									{
-										throw new Exception("Host name not provided");
-									}
-								}
-								if (address4 == null)
-								{
-									throw new Exception();
-								}
 								Exception ex = null;
+
 								try
 								{
+									if (bufAddress4[0] == 0) // ver 4a mode - read dns name
+									{
+										// read dns name
+										string dnsName = null;
+										nullOk = false;
+										for (int i = 1; i < 256; i++)
+										{
+											EnsureReaded(_bufferProcessedCount + i);
+											if (_buffer[_bufferProcessedCount + i - 1] == 0)
+											{
+												nullOk = true;
+												dnsName = _utf.GetString(_buffer, _bufferProcessedCount, i - 1);
+												_bufferProcessedCount += i;
+												break;
+											}
+										}
+										if (!string.IsNullOrWhiteSpace(dnsName))
+										{
+											address4 = Dns.GetHostAddresses(dnsName).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
+										}
+										else
+										{
+											throw new Exception("Host name not provided");
+										}
+									}
+									if (address4 == null)
+									{
+										throw new Exception();
+									}
 									_clientForward = new TcpClient();
 									_clientForward.Connect(address4, port);
 									_streamForward = _clientForward.GetStream();
+									_clientForward.Client.NoDelay = true;
 									if (_bufferProcessedCount < _bufferReceivedCount)
 									{
 										// forward the rest of the buffer
 										_streamForward.Write(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 									}
 									_streamForward.BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceivedFromForwarder, null);
+									_client.Client.NoDelay = true;
 									_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
 								}
 								catch (Exception exx)
