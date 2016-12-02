@@ -10,7 +10,7 @@ namespace River
 {
 	public class Socks4Client : SocksClient
 	{
-		public void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		public override void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			ConnectBase(proxyHost, proxyPort);
 
@@ -33,7 +33,7 @@ namespace River
 				}
 				else
 				{
-					throw new Exception($"IPv4 for ${targetHost} is not resolved");
+					throw new Exception($"IPv4 for {targetHost} is not resolved");
 				}
 			}
 			else
@@ -74,7 +74,7 @@ namespace River
 
 	public class Socks5Client : SocksClient
 	{
-		public void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = true)
+		public override void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			ConnectBase(proxyHost, proxyPort);
 
@@ -150,7 +150,7 @@ namespace River
 			}
 			if (response[1] != 0x00)
 			{
-				throw new Exception($"Server response: ${response[1]:X}: ${GetResponseErrorMessage(response[1])}");
+				throw new Exception($"Server response: {response[1]:X}: {GetResponseErrorMessage(response[1])}");
 			}
 			// ignore reserved response[2] byte
 			// read only required number of bytes depending on address type
@@ -206,12 +206,13 @@ namespace River
 		}
 	}
 
-	public abstract class SocksClient : Stream, IDisposable
+	public abstract class SocksClient : SimpleNetworkStream, IDisposable
 	{
-		protected static readonly Encoding _utf8 = new UTF8Encoding(false, false);
 
 		protected TcpClient _client;
 		protected NetworkStream _stream;
+
+		public abstract void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null);
 
 		protected void ConnectBase(string proxyHost, int proxyPort)
 		{
@@ -239,21 +240,6 @@ namespace River
 			return portBuf;
 		}
 
-
-		public override void Flush()
-		{
-		}
-
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void SetLength(long value)
-		{
-			throw new NotSupportedException();
-		}
-
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			return _stream.Read(buffer, offset, count);
@@ -264,18 +250,5 @@ namespace River
 			_stream.Write(buffer, offset, count);
 		}
 
-		public override bool CanRead { get; } = true;
-		public override bool CanSeek { get; } = false;
-		public override bool CanWrite { get; } = true;
-		public override long Length
-		{
-			get { throw new NotSupportedException(); }
-		}
-
-		public override long Position
-		{
-			get { throw new NotSupportedException(); }
-			set { throw new NotSupportedException(); }
-		}
 	}
 }
