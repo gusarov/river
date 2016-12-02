@@ -11,14 +11,17 @@ namespace River.ConsoleServer
 	{
 		static void Main(string[] args)
 		{
+			// FireFox => SocksServer => RiverClient => Fiddler => RiverServer => Internet
+
 /*
 			int w, c;
 			ThreadPool.GetMaxThreads(out w, out c);
 			ThreadPool.SetMaxThreads(1024, 1024);
 */
 			Trace.Listeners.Add(new ConsoleTraceListener());
-			var server = new SocksServer();
-			server.Listen(1081);
+
+			var server = new SocksServer<SocksServerProxyClientWorker>(1081);
+
 			int prevThreads = 0;
 			while (true)
 			{

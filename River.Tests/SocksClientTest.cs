@@ -105,9 +105,8 @@ namespace River.Tests
 		[TestMethod]
 		public void Should_take_data_from_test_server_via_proxy4_on_river_socks_server()
 		{
-			using (var server = new SocksServer())
+			using (var server = new SocksProxyServer(4545))
 			{
-				server.Listen(4545);
 				using (var socks = new Socks4Client())
 				{
 					socks.Connect("localhost", 4545, "httpbin.org", 80, false);
@@ -119,12 +118,11 @@ namespace River.Tests
 		[TestMethod]
 		public void Should_take_data_from_test_server_via_proxy4a_on_river_socks_server()
 		{
-			using (var server = new SocksServer())
+			using (var server = new SocksProxyServer(4546))
 			{
-				server.Listen(4545);
 				using (var socks = new Socks4Client())
 				{
-					socks.Connect("localhost", 4545, "httpbin.org", 80, true);
+					socks.Connect("localhost", 4546, "httpbin.org", 80, true);
 					TestConnction(socks);
 				}
 			}
@@ -141,12 +139,11 @@ namespace River.Tests
 				direct = Regex.Replace(direct, "(?im)^Date: .*$", "");
 				File.WriteAllText(Path.GetTempFileName(), direct);
 			}
-			using (var server = new SocksServer())
+			using (var server = new SocksProxyServer(4547))
 			{
-				server.Listen(4545);
 				using (var socks = new Socks4Client())
 				{
-					socks.Connect("localhost", 4545, "httpbin.org", 80, true);
+					socks.Connect("localhost", 4547, "httpbin.org", 80, true);
 					var proxifyed = TestConnction(socks);
 					proxifyed = Regex.Replace(proxifyed, "(?im)^Date: .*$", "");
 					File.WriteAllText(Path.GetTempFileName(), proxifyed);
