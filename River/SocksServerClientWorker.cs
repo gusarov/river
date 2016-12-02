@@ -9,9 +9,9 @@ namespace River
 {
 	public abstract class SocksServerClientWorker : IDisposable
 	{
-		private static readonly Encoding _utf = new UTF8Encoding(false, false);
-
-		private TcpClient _client;
+		protected static readonly Encoding _utf = new UTF8Encoding(false, false); 
+		// test
+		protected TcpClient _client;
 		protected NetworkStream _stream;
 		private byte[] _buffer = new byte[1024 * 32];
 		private int _bufferReceivedCount;

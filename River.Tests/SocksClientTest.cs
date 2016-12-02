@@ -166,5 +166,28 @@ namespace River.Tests
 			}
 		}
 
+
+		[TestMethod]
+		public void Should_pass_through_river()
+		{
+			using (var riverServer = new RiverServer(4550))
+			using (var server = new SocksServerToRiverClient(4549, "localhost", 4550))
+			using (var socks = new Socks4Client("localhost", 4549, "httpbin.org", 80))
+			{
+				TestConnction(socks);
+			}
+		}
+
+		[TestMethod]
+		public void Should_pass_through_river_over_fiddler()
+		{
+			using (var riverServer = new RiverServer(4550))
+			using (var server = new SocksServerToRiverClient(4549, "localhost", 8888))
+			using (var socks = new Socks4Client("localhost", 4549, "httpbin.org", 80))
+			{
+				TestConnction(socks);
+			}
+		}
+
 	}
 }

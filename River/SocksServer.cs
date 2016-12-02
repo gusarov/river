@@ -16,7 +16,13 @@ namespace River
 		public SocksServer(int port)
 		{
 			Trace.WriteLine("SocksServer created at " + Thread.CurrentThread.ManagedThreadId);
-			_listener = new TcpListener(IPAddress.Any, port);
+			// listen both ipv6 and ipv4
+#if Net45
+			_listener = TcpListener.Create(port);
+#else
+			_listener = new TcpListener(IPAddress.IPv6Any, port);
+			_listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+#endif
 			_listener.Start();
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}
@@ -25,7 +31,7 @@ namespace River
 		{
 			Trace.WriteLine("NewTcpClient called back at " + Thread.CurrentThread.ManagedThreadId);
 			var client = _listener.EndAcceptTcpClient(ar);
-			Activator.CreateInstance(typeof (T), client);
+			Activator.CreateInstance(typeof (T), this, client);
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}
 

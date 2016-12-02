@@ -31,7 +31,7 @@ namespace River
 			base.Dispose();
 		}
 
-		public SocksServerProxyClientWorker(TcpClient client) : base(client)
+		public SocksServerProxyClientWorker(SocksServer<SocksServerProxyClientWorker> server, TcpClient client) : base(client)
 		{
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -17,17 +18,18 @@ namespace River
 			}
 			_client = new TcpClient(riverHost, riverPort);
 			_stream = _client.GetStream();
+			_client.Client.NoDelay = true;
 			// negotiate
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			throw new NotImplementedException();
+			return _stream.Read(buffer, offset, count);
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			throw new NotImplementedException();
+			_stream.Write(buffer, offset, count);
 		}
 	}
 }

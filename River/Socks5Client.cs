@@ -7,6 +7,16 @@ namespace River
 {
 	public class Socks5Client : SocksClient
 	{
+		public Socks5Client()
+		{
+
+		}
+
+		public Socks5Client(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			Connect(proxyHost, proxyPort, targetHost, targetPort, proxyDns);
+		}
+
 		public override void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			ConnectBase(proxyHost, proxyPort);

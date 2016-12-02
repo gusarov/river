@@ -20,7 +20,10 @@ namespace River.ConsoleServer
 */
 			Trace.Listeners.Add(new ConsoleTraceListener());
 
-			var server = new SocksServer<SocksServerProxyClientWorker>(1081);
+			var riverServer = new RiverServer(810);
+			var server = new SocksServerToRiverClient(1081, "127.0.0.1", 810);
+
+			//var server = new SocksProxyServer(1081);
 
 			int prevThreads = 0;
 			while (true)
