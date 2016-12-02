@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace River.Tests
@@ -123,6 +124,19 @@ namespace River.Tests
 				using (var socks = new Socks4Client())
 				{
 					socks.Connect("localhost", 4546, "httpbin.org", 80, true);
+					TestConnction(socks);
+				}
+			}
+		}
+
+		[TestMethod]
+		public void Should_take_data_from_test_server_via_proxy5_on_river_socks_server()
+		{
+			using (var server = new SocksProxyServer(4548))
+			{
+				using (var socks = new Socks5Client())
+				{
+					socks.Connect("localhost", 4548, "httpbin.org", 80, true);
 					TestConnction(socks);
 				}
 			}
