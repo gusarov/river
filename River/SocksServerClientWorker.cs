@@ -11,9 +11,10 @@ namespace River
 	{
 		protected static readonly Encoding _utf = new UTF8Encoding(false, false); 
 		// test
+		protected bool _disposed;
 		protected TcpClient _client;
 		protected NetworkStream _stream;
-		private byte[] _buffer = new byte[1024 * 32];
+		private byte[] _buffer = new byte[1024 * 16];
 		private int _bufferReceivedCount;
 		private int _bufferProcessedCount;
 		protected IPAddress[] _addressesRequested;
@@ -23,6 +24,7 @@ namespace River
 		private bool _authenticationNegotiated;
 		public virtual void Dispose()
 		{
+			_disposed = true;
 			var client = _client;
 			var stream = _stream;
 			try
@@ -42,6 +44,7 @@ namespace River
 		public SocksServerClientWorker(TcpClient client)
 		{
 			_client = client;
+			_client.Client.NoDelay = true; // carefully do write operations to prevent extra TCP transfers
 			_stream = _client.GetStream();
 			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length, ReceivedHandshake, null);
 		}
@@ -124,7 +127,6 @@ namespace River
 										// forward the rest of the buffer
 										SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 									}
-									_client.Client.NoDelay = true;
 									_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
 								}
 								catch (Exception exx)
@@ -237,7 +239,6 @@ namespace River
 														// forward the rest of the buffer
 														SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 													}
-													_client.Client.NoDelay = true;
 													_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
 												}
 												catch (Exception exx)
@@ -279,7 +280,7 @@ namespace River
 
 		private void ReceivedStreaming(IAsyncResult ar)
 		{
-			if (_stream == null)
+			if (_disposed)
 			{
 				return;
 			}

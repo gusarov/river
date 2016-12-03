@@ -33,6 +33,7 @@ namespace River
 			_listener = new TcpListener(IPAddress.IPv6Any, port);
 			_listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
 #endif
+			_listener.ExclusiveAddressUse = true;
 			_listener.Start();
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}
@@ -46,17 +47,19 @@ namespace River
 
 		public class RiverServerConnection
 		{
+			private bool _disposed;
 			private TcpClient _client;
 			private NetworkStream _clientStream;
-			private readonly byte[] _readBuffer = new byte[1024*32];
+			private readonly byte[] _readBuffer = new byte[1024 * 128];
 			private int _readBufferPos;
 
 			private TcpClient _clientForward;
 			private NetworkStream _clientStreamForward;
-			private readonly byte[] _readBufferForward = new byte[1024*32];
+			private readonly byte[] _readBufferForward = new byte[1024 * 16];
 
 			public void Dispose()
 			{
+				_disposed = true;
 				try
 				{
 					_client?.Close();
@@ -93,6 +96,7 @@ namespace River
 
 			public RiverServerConnection(TcpClient client)
 			{
+				Trace.WriteLine("River connection from: " + client.Client.RemoteEndPoint);
 				_client = client;
 				_clientStream = _client.GetStream();
 				_clientStream.BeginRead(_readBuffer, 0, _readBuffer.Length, ReceivedInitiationFromClient, null);
@@ -102,7 +106,7 @@ namespace River
 
 			private void ReceivedInitiationFromClient(IAsyncResult ar)
 			{
-				if (_clientStream == null)
+				if (_disposed)
 				{
 					return;
 				}
@@ -121,6 +125,19 @@ namespace River
 							var var = key[++a];
 							args[var] = match.Groups[2].Value;
 						}
+						if (!args.Any())
+						{
+							// send response
+							var errResponse = "HTTP/1.0 404 Not Found\r\n"
+								+ "Content-Type: text/html\r\n"
+								+ "\r\n:)";
+							var errResponseBuf = _utf.GetBytes(errResponse);
+							_clientStream.Write(errResponseBuf, 0, errResponseBuf.Length);
+							Dispose();
+							Trace.WriteLine("Bad initial request");
+							return;
+						}
+						Trace.WriteLine($"connecting to {args['h']}:{args['p']}...");
 						_clientForward = new TcpClient(args['h'], int.Parse(args['p']));
 						_clientForward.NoDelay = true;
 						_client.NoDelay = true;
@@ -151,7 +168,7 @@ namespace River
 
 			private void ReceivedStreamFromForward(IAsyncResult ar)
 			{
-				if (_clientStreamForward == null)
+				if (_disposed)
 				{
 					return;
 				}
@@ -182,6 +199,7 @@ namespace River
 						}
 						Array.Copy(_readBufferForward, 0, responseBuf, fakeHttpResponse.Length, count); // append body
 
+						Trace.WriteLine($"<< back to {_client.Client.RemoteEndPoint} << from {_clientForward.Client.RemoteEndPoint} {count} bytes");
 						_clientStream.Write(responseBuf, 0, responseBuf.Length); // write all back to river client
 
 						// continue reading from forward stream
@@ -201,7 +219,7 @@ namespace River
 
 			private void ReceivedStreamFromClient(IAsyncResult ar)
 			{
-				if (_clientStream == null)
+				if (_disposed)
 				{
 					return;
 				}
@@ -253,6 +271,7 @@ namespace River
 								{
 									data[i] = (byte)(data[i] ^ 0xAA);
 								}
+								Trace.WriteLine($">> from {_client.Client.RemoteEndPoint} >> to {_clientForward.Client.RemoteEndPoint} {len} bytes");
 								// forward
 								_clientStreamForward.Write(data);
 
@@ -264,6 +283,7 @@ namespace River
 						else
 						{
 							// continue waiting for full chunk
+							Trace.WriteLine($">> not complete, reading some more...");
 							_readBufferPos += count;
 							_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
 						}

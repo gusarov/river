@@ -29,8 +29,8 @@ namespace River
 
 		private void NewTcpClient(IAsyncResult ar)
 		{
-			Trace.WriteLine("NewTcpClient called back at " + Thread.CurrentThread.ManagedThreadId);
 			var client = _listener.EndAcceptTcpClient(ar);
+			Trace.WriteLine($"NewTcpClient (thread {Thread.CurrentThread.ManagedThreadId}) from {client.Client.RemoteEndPoint}");
 			Activator.CreateInstance(typeof (T), this, client);
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}

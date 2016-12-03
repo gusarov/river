@@ -15,11 +15,12 @@ namespace River
 		protected TcpClient _clientForward;
 		protected NetworkStream _streamFroward;
 
-		private byte[] _bufferForwardRead = new byte[1024 * 32];
+		private byte[] _bufferForwardRead = new byte[1024 * 128];
 		private int _bufferForwardReadPos;
 
 		public override void Dispose()
 		{
+			base.Dispose();
 			try
 			{
 				_clientForward?.Close();
@@ -32,8 +33,6 @@ namespace River
 				_streamFroward = null;
 			}
 			catch { }
-
-			base.Dispose();
 		}
 
 		public SocksServerTunnelClientWorker(SocksServer<SocksServerTunnelClientWorker> server, TcpClient client) : base(client)
@@ -43,8 +42,18 @@ namespace River
 
 		protected override void EstablishForwardConnection()
 		{
-			_clientForward = new TcpClient();
-			//_clientForward.Connect("127.0.0.1", 8888); // fiddler
+			if (_disposed)
+			{
+				return;
+			}
+			if (_server.OutgoingInterface != null)
+			{
+				_clientForward = new TcpClient(_server.OutgoingInterface);
+			}
+			else
+			{
+				_clientForward = new TcpClient();
+			}
 			_clientForward.Connect(_server.RiverHost, _server.RiverPort);
 			_streamFroward = _clientForward.GetStream();
 
@@ -75,10 +84,11 @@ namespace River
 
 		void ReceiveFromForward(IAsyncResult ar)
 		{
-			if (_streamFroward == null)
+			if (_disposed)
 			{
 				return;
 			}
+
 			try
 			{
 				// _bufferForwardRead
@@ -128,7 +138,9 @@ namespace River
 							data[i] = (byte)(data[i] ^ 0xAA);
 						}
 						// send back to SOCKS client
+#if DEBUG
 						var debug = Encoding.ASCII.GetString(data, 0, data.Length);
+#endif
 						_stream.Write(data);
 
 						// get ready for next message
@@ -150,7 +162,7 @@ namespace River
 
 		protected override void SendForward(byte[] buffer, int pos, int count)
 		{
-			if (_streamFroward == null)
+			if (_disposed)
 			{
 				return;
 			}
@@ -173,7 +185,7 @@ namespace River
 				buffer[i]= (byte)(buffer[i] ^ 0xAA);
 			}
 			Array.Copy(buffer, pos, requestBuf, request.Length, count);
-
+			Trace.WriteLine($"Send to the river {count} bytes");
 			_streamFroward.Write(requestBuf, 0, requestBuf.Length);
 		}
 
