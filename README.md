@@ -9,6 +9,6 @@ So, this is my move - simple trick by incapsulating trafic inside usual HTTP res
 
 # Tasks
 
-[ ] Intensive testing - there are some bugs with lost packages
-[ ] Incapsulate socket id in HTTP session. There is a network that is processed on a higher level and HTTP connections are reshaped to a single connection. To overcome this, socket information must be encapsulated inside HTTP and connection itself shuld not identify real outgoing destination.
-[ ] Support proper HTTP session. Current implementation don't guarantee the sequence like response-request. There might be several requests or several responses depending on received data. Filters that do analyze HTTP session deeply can be overcomed by a long pool + incapsulation target socket in request.
+- [ ] Intensive testing - there are some bugs with lost packages
+- [ ] Incapsulate socket id in HTTP session. There is a network that is processed on a higher level and HTTP connections are reshaped to a single connection. To overcome this, socket information must be encapsulated inside HTTP and connection itself shuld not identify real outgoing destination.
+- [ ] Support proper HTTP session. Current implementation don't guarantee the sequence like response-request. There might be several requests or several responses depending on received data. Filters that do analyze HTTP session deeply can be overcomed by a long pool + incapsulation target socket in request.
