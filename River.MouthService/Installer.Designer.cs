@@ -31,15 +31,24 @@
 			this.serviceInstaller1 = new System.ServiceProcess.ServiceInstaller();
 			this.serviceProcessInstaller1 = new System.ServiceProcess.ServiceProcessInstaller();
 			// 
+			// serviceInstaller1
+			// 
+			this.serviceInstaller1.Description = "River Mouth Service";
+			this.serviceInstaller1.DisplayName = "River Mouth Service";
+			this.serviceInstaller1.ServiceName = "River Mouth Service";
+			this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+			// 
 			// serviceProcessInstaller1
 			// 
+			this.serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.NetworkService;
 			this.serviceProcessInstaller1.Password = null;
 			this.serviceProcessInstaller1.Username = null;
 			// 
-			// Installer1
+			// Installer
 			// 
 			this.Installers.AddRange(new System.Configuration.Install.Installer[] {
-            this.serviceInstaller1});
+            this.serviceInstaller1,
+            this.serviceProcessInstaller1});
 
 		}
 
