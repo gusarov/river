@@ -21,12 +21,13 @@ namespace River.ConsoleServer
 */
 			Trace.Listeners.Add(new ConsoleTraceListener());
 
-
-
-			// var riverServer = new RiverServer(810);
-			var server = new SocksServerToRiverClient(1081, "gusarov.noip.me", 80
-				, new IPEndPoint(IPAddress.Parse("10.161.88.23"), 0)
-				//, new IPEndPoint(IPAddress.Parse("10.27.10.116"), 0)
+			var riverServer = new RiverServer(810);
+			var server = new SocksServerToRiverClient(1081, "127.0.0.1", 810
+			//var server = new SocksServerToRiverClient(1081, "dimadiv.westeurope.cloudapp.azure.com", 80
+			//var server = new SocksServerToRiverClient(1081, "gusarov.noip.me", 80
+			//, new IPEndPoint(IPAddress.Parse("10.161.88.23"), 0)
+			//, new IPEndPoint(IPAddress.Parse("10.27.10.116"), 0)
+				//,new IPEndPoint(IPAddress.Parse("192.168.137.57"), 0)
 				);
 
 			//var server = new SocksProxyServer(1081);

@@ -138,7 +138,11 @@ namespace River
 							return;
 						}
 						Trace.WriteLine($"connecting to {args['h']}:{args['p']}...");
-						_clientForward = new TcpClient(args['h'], int.Parse(args['p']));
+						//var localEndpoint = new IPEndPoint(IPAddress.Parse("192.168.137.57"), 0);
+						_clientForward = new TcpClient(/*localEndpoint*/);
+						_clientForward.Connect(args['h'], int.Parse(args['p']));
+
+
 						_clientForward.NoDelay = true;
 						_client.NoDelay = true;
 						_clientStreamForward = _clientForward.GetStream();
@@ -217,6 +221,7 @@ namespace River
 				}
 			}
 
+
 			private void ReceivedStreamFromClient(IAsyncResult ar)
 			{
 				if (_disposed)
@@ -230,35 +235,23 @@ namespace River
 					if (count > 0)
 					{
 						// do the job - decode the stream and forward it
-						// header parsing limited to 1024 with char-to-byte encoding
-						var responseHeaderString = Encoding.ASCII.GetString(_readBuffer, 0, count > 1024 ? 1024 : count);
-						// parse content length and end of header
-						var eoh = responseHeaderString.IndexOf("\r\n\r\n") + 4;
-						if (eoh > 0)
+						int eoh;
+						var headers = Utils.TryParseHttpHeader(_readBuffer, 0, count + _readBufferPos, out eoh);
+						if (headers != null)
 						{
-							var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-							for (int i = 0; i < eoh - 4;)
-							{
-								var start = i;
-								i = responseHeaderString.IndexOf("\r\n", i+1)+2;
-								var sp = responseHeaderString.IndexOf(':', start);
-								if (sp > i)
-								{
-									continue; // this is first line
-								}
-								var headerKey = responseHeaderString.Substring(start, sp - start).Trim();
-								var headerValue = responseHeaderString.Substring(sp + 1, i - sp - 1);
-								headers[headerKey] = headerValue.Trim();
-							}
 							string lenStr;
 							if (!headers.TryGetValue("Content-Length", out lenStr))
 							{
 								throw new Exception("Content-Length is mandatory");
 							}
 							int len = int.Parse(lenStr);
+							if (len + Utils.MaxHeaderSize >= _readBuffer.Length)
+							{
+								throw new Exception($"ReceivedStreamFromClient: This package {len} with headers {Utils.MaxHeaderSize} is larger than receiving buffer {_readBuffer.Length}");
+							}
 							if (len < count + _readBufferPos - eoh)
 							{
-								// not complete body received!
+								// not complete body received! Wait for more data.
 								_readBufferPos += count;
 								_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
 							}

@@ -96,30 +96,15 @@ namespace River
 				if (count > 0)
 				{
 					// do the job - unpack the bytes from river and send it to the client
-					// header parsing limited to 1024 with char-to-byte encoding
-					var responseHeaderString = Encoding.ASCII.GetString(_bufferForwardRead, 0, count > 1024 ? 1024 : count);
-					// parse content length and end of header
-					var eoh = responseHeaderString.IndexOf("\r\n\r\n") + 4;
-					var headers = new Dictionary<string, string>();
-					for (int i = 0; i < eoh - 4; )
-					{
-						var start = i;
-						i = responseHeaderString.IndexOf("\r\n", i) + 2;
-						var sp = responseHeaderString.IndexOf(':', start);
-						if (sp > i)
-						{
-							continue; // this is first line
-						}
-						var headerKey = responseHeaderString.Substring(start, sp - start).Trim();
-						var headerValue = responseHeaderString.Substring(sp + 1, i - sp - 1).Trim();
-						headers[headerKey] = headerValue;
-					}
+					int eoh;
+					string responseHeaderString;
+					var headers = Utils.TryParseHttpHeader(_bufferForwardRead, 0, _bufferForwardReadPos + count, out eoh, out responseHeaderString);
 					// make sure headers and full body are in place
 					// extract body
 					string lenStr;
 					if (!headers.TryGetValue("Content-Length", out lenStr))
 					{
-						throw new Exception("Content-Length is mandatory");
+						throw new Exception("Content-Length is mandatory\r\n"+ responseHeaderString);
 					}
 					int len = int.Parse(lenStr);
 					if (len < count + _bufferForwardReadPos - eoh)

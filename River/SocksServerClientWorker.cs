@@ -58,13 +58,18 @@ namespace River
 			{
 				int count;
 				_bufferReceivedCount += count = _stream.EndRead(ar);
+				if (count == 0)
+				{
+					Dispose();
+					return;
+				}
 				Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client " + count + " bytes on thread #" + Thread.CurrentThread.ManagedThreadId + " port " + _client.Client.RemoteEndPoint);
 				// get request from client
 				if (EnsureReaded(1))
 				{
 					switch (_buffer[0])
 					{
-						case 4:
+						case 4: // SOCKS4
 							if (EnsureReaded(8))
 							{
 								if (_buffer[1] != 1)
@@ -262,6 +267,71 @@ namespace River
 								}
 							}
 							break;
+						case (byte)'P': // HTTP PROXY PUT POST PATCH
+						case (byte)'G': // HTTP PROXY GET
+						case (byte)'D': // HTTP PROXY DELETE
+						case (byte)'C': // HTTP PROXY CONNECT
+						case (byte)'H': // HTTP PROXY HEAD
+						case (byte)'T': // HTTP PROXY TRACE
+						case (byte)'O': // HTTP PROXY OPTIONS
+							// we must wait till entire heder comes
+							int eoh;
+							var headers = Utils.TryParseHttpHeader(_buffer, 0, _bufferReceivedCount, out eoh);
+							if (headers != null)
+							{
+								string hostHeader;
+								headers.TryGetValue("HOST", out hostHeader);
+								string host;
+								headers.TryGetValue("_url_host", out host);
+								string port;
+								headers.TryGetValue("_url_port", out port);
+
+								int hostHeaderSplitter = hostHeader.IndexOf(':');
+								string hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
+								string hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter+1) : "80";
+
+								if (string.IsNullOrEmpty(hostHeader))
+								{
+									_portRequested = string.IsNullOrEmpty(port) ? 80 : int.Parse(port);
+									_dnsNameRequested = host;
+								}
+								else
+								{
+									_portRequested = int.Parse(hostHeaderPort);
+									_dnsNameRequested = hostHeaderHost;
+								}
+
+								try
+								{
+									EstablishForwardConnection();
+									if (headers["_verb"] == "CONNECT")
+									{
+										_stream.Write(_utf.GetBytes("200 OK\r\n\r\n")); // ok to CONNECT
+										// for connect - forward the rest of the buffer
+										if (_bufferReceivedCount - eoh > 0)
+										{
+											SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
+										}
+									}
+									else
+									{
+										// otherwise forward entire buffer without change
+										SendForward(_buffer, 0, _bufferReceivedCount);
+									}
+									_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
+								}
+								catch (Exception ex)
+								{
+									// write response
+									Dispose();
+								}
+							}
+							else
+							{
+								_bufferReceivedCount += count;
+								ReadMore();
+							}
+							break;
 						default:
 							throw new NotSupportedException("Socks Version not supported");
 					}
@@ -313,10 +383,15 @@ namespace River
 		{
 			if (_bufferReceivedCount < readed)
 			{
-				_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
+				ReadMore();
 				return false;
 			}
 			return true;
+		}
+
+		private void ReadMore()
+		{
+			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
 		}
 	}
 }
