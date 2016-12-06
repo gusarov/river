@@ -37,7 +37,15 @@ namespace River
 
 		public SocksServerTunnelClientWorker(SocksServer<SocksServerTunnelClientWorker> server, TcpClient client) : base(client)
 		{
+			if (server == null)
+			{
+				throw new ArgumentNullException(nameof(server));
+			}
 			_server = (SocksServerToRiverClient)server;
+			if (_server == null)
+			{
+				throw new ArgumentNullException(nameof(server));
+			}
 		}
 
 		protected override void EstablishForwardConnection()
@@ -95,43 +103,7 @@ namespace River
 				var count = _streamFroward.EndRead(ar);
 				if (count > 0)
 				{
-					// do the job - unpack the bytes from river and send it to the client
-					int eoh;
-					string responseHeaderString;
-					var headers = Utils.TryParseHttpHeader(_bufferForwardRead, 0, _bufferForwardReadPos + count, out eoh, out responseHeaderString);
-					// make sure headers and full body are in place
-					// extract body
-					string lenStr;
-					if (!headers.TryGetValue("Content-Length", out lenStr))
-					{
-						throw new Exception("Content-Length is mandatory\r\n"+ responseHeaderString);
-					}
-					int len = int.Parse(lenStr);
-					if (len < count + _bufferForwardReadPos - eoh)
-					{
-						// not complete - read some more
-						_bufferForwardReadPos += count;
-						_streamFroward.BeginRead(_bufferForwardRead, _bufferForwardReadPos, _bufferForwardRead.Length - _bufferForwardReadPos, ReceiveFromForward, null);
-					}
-					else
-					{
-						// process - decode the body
-						var data = new byte[len];
-						Array.Copy(_bufferForwardRead, eoh, data, 0, len);
-						for (int i = 0; i < len; i++)
-						{
-							data[i] = (byte)(data[i] ^ 0xAA);
-						}
-						// send back to SOCKS client
-#if DEBUG
-						var debug = Encoding.ASCII.GetString(data, 0, data.Length);
-#endif
-						_stream.Write(data);
-
-						// get ready for next message
-						_bufferForwardReadPos = 0;
-						_streamFroward.BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceiveFromForward, null);
-					}
+					ReceiveFromForward(count);
 				}
 				else
 				{
@@ -140,8 +112,73 @@ namespace River
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("ReceiveFromForward Exception: " + ex);
+				Trace.TraceError($"ReceiveFromForward Exception: " + ex);
 				Dispose();
+			}
+		}
+
+		void ReceiveFromForward(int count)
+		{
+			// do the job - unpack the bytes from river and send it to the client
+			int eoh;
+			string responseHeaderString;
+			var headers = Utils.TryParseHttpHeader(_bufferForwardRead, 0, _bufferForwardReadPos + count, out eoh, out responseHeaderString);
+			if (headers == null)
+			{
+				// not complete - read some more
+				Trace.WriteLine("ReceiveFromForward - not complete - read some more");
+				_bufferForwardReadPos += count;
+				_streamFroward.BeginRead(_bufferForwardRead, _bufferForwardReadPos, _bufferForwardRead.Length - _bufferForwardReadPos, ReceiveFromForward, null);
+				return;
+			}
+			// make sure headers and full body are in place
+			// extract body
+			string lenStr;
+			if (!headers.TryGetValue("Content-Length", out lenStr))
+			{
+				throw new Exception("Content-Length is mandatory\r\n" + responseHeaderString);
+			}
+			int len = int.Parse(lenStr);
+
+			if (len > count + _bufferForwardReadPos - eoh)
+			{
+				// not complete - read some more
+				Trace.WriteLine("ReceiveFromForward - not complete - read some more");
+				_bufferForwardReadPos += count;
+				_streamFroward.BeginRead(_bufferForwardRead, _bufferForwardReadPos, _bufferForwardRead.Length - _bufferForwardReadPos, ReceiveFromForward, null);
+			}
+			else
+			{
+				// process - decode the body
+				var data = new byte[len];
+				Array.Copy(_bufferForwardRead, eoh, data, 0, len);
+				for (int i = 0; i < len; i++)
+				{
+					data[i] = (byte)(data[i] ^ 0xAA);
+				}
+				// send back to SOCKS client
+#if DEBUG
+				var debug = Encoding.ASCII.GetString(data, 0, data.Length);
+#endif
+				Trace.WriteLine($"Receive from forward {_clientForward.Client.LocalEndPoint} river {data.Length} bytes");
+
+				_stream.Write(data);
+
+				// process remaining part of message
+				if (len + eoh < _bufferForwardReadPos + count)
+				{
+					Array.Copy(_bufferForwardRead, len + eoh, _bufferForwardRead, 0, _bufferForwardReadPos + count - len - eoh);
+					var len2 = _bufferForwardReadPos + count - len - eoh;
+					_bufferForwardReadPos = 0;
+					Trace.WriteLine($"ReceiveFromForward - have extra {len2} bytes, call ReceiveFromForward");
+					ReceiveFromForward(len2);
+				}
+				else
+				{
+					// get ready for next message
+					_bufferForwardReadPos = 0;
+					_streamFroward.BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceiveFromForward, null);
+				}
 			}
 		}
 
@@ -170,7 +207,7 @@ namespace River
 				buffer[i]= (byte)(buffer[i] ^ 0xAA);
 			}
 			Array.Copy(buffer, pos, requestBuf, request.Length, count);
-			Trace.WriteLine($"Send to the river {count} bytes");
+			Trace.WriteLine($"Send to the {_clientForward.Client.LocalEndPoint} river {count} bytes");
 			_streamFroward.Write(requestBuf, 0, requestBuf.Length);
 		}
 

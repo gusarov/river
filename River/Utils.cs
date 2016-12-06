@@ -37,12 +37,13 @@ HTTP/(?'hv'\d\.\d)# http ver
 
 ", RegexOptions.Compiled |RegexOptions.ExplicitCapture);
 
-		public static IDictionary<string, string> TryParseHttpHeader(byte[] buffer, int pos, int length, out int eoh, out string headerString)
+		public static IDictionary<string, string> TryParseHttpHeader(byte[] buffer, int pos, int length, out int bufEoh, out string headerString)
 		{
 			headerString = Encoding.ASCII.GetString(buffer, pos, length > MaxHeaderSize ? MaxHeaderSize : length);
-			eoh = headerString.IndexOf("\r\n\r\n") + 4;
+			var eoh = headerString.IndexOf("\r\n\r\n");
 			if (eoh > 0)
 			{
+				eoh += 4;
 				var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 				for (int i = 0; i < eoh - 4;)
 				{
@@ -66,8 +67,10 @@ HTTP/(?'hv'\d\.\d)# http ver
 						headers[headerKey] = headerValue.Trim();
 					}
 				}
+				bufEoh = eoh + pos;
 				return headers;
 			}
+			bufEoh = eoh;
 			return null;
 		}
 	}
