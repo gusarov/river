@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace River
+namespace River 
 {
 	public class RiverServer : IDisposable
 	{
@@ -21,7 +21,9 @@ namespace River
 			{
 				_listener?.Stop();
 			}
-			catch { }
+			catch
+			{
+			}
 		}
 
 		public RiverServer(int port)
@@ -129,8 +131,8 @@ namespace River
 						{
 							// send response
 							var errResponse = "HTTP/1.0 404 Not Found\r\n"
-								+ "Content-Type: text/html\r\n"
-								+ "\r\n:)";
+							                  + "Content-Type: text/html\r\n"
+							                  + "\r\n:)";
 							var errResponseBuf = _utf.GetBytes(errResponse);
 							_clientStream.Write(errResponseBuf, 0, errResponseBuf.Length);
 							Dispose();
@@ -139,7 +141,7 @@ namespace River
 						}
 						Trace.WriteLine($"connecting to {args['h']}:{args['p']}...");
 						//var localEndpoint = new IPEndPoint(IPAddress.Parse("192.168.137.57"), 0);
-						_clientForward = new TcpClient(/*localEndpoint*/);
+						_clientForward = new TcpClient( /*localEndpoint*/);
 						_clientForward.Connect(args['h'], int.Parse(args['p']));
 
 
@@ -150,11 +152,11 @@ namespace River
 
 						// send response
 						var response = "HTTP/1.0 200 OK\r\n"
-							+ "Connection: keep-alive\r\n"
-							+ "Content-Type: text/html\r\n"
-							+ "ETag: \"514a3625a6ffd21:0\"\r\n" // special keyword to indicate success
-							+ "Content-Length: 0\r\n"
-							+ "\r\n";
+						               + "Connection: keep-alive\r\n"
+						               + "Content-Type: text/html\r\n"
+						               + "ETag: \"514a3625a6ffd21:0\"\r\n" // special keyword to indicate success
+						               + "Content-Length: 0\r\n"
+						               + "\r\n";
 						var responseBuf = _utf.GetBytes(response);
 						_clientStream.Write(responseBuf, 0, responseBuf.Length);
 
@@ -168,7 +170,6 @@ namespace River
 					Dispose();
 				}
 			}
-
 
 			private void ReceivedStreamFromForward(IAsyncResult ar)
 			{
@@ -185,15 +186,15 @@ namespace River
 						// do the job - pack the bytes back to river client
 
 						var fakeHttpResponseString = $"HTTP/1.0 202 OK\r\n"
-	+ $"Connection: keep-alive\r\n"
-	//+ "User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
-	+ $"Accept: text/html\r\n"
-	+ $"Content-Type: text/html\r\n"
-	+ $"Cache-Control: no-cache"
-	+ $"Pragma: no-cache"
-	+ $"Accept-Encoding: gzip, deflate\r\n"
-	+ $"Content-Length: {count}\r\n"
-	+ "\r\n";
+						                             + $"Connection: keep-alive\r\n"
+							//+ "User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
+						                             + $"Accept: text/html\r\n"
+						                             + $"Content-Type: text/html\r\n"
+						                             + $"Cache-Control: no-cache"
+						                             + $"Pragma: no-cache"
+						                             + $"Accept-Encoding: gzip, deflate\r\n"
+						                             + $"Content-Length: {count}\r\n"
+						                             + "\r\n";
 						var fakeHttpResponse = _utf.GetBytes(fakeHttpResponseString);
 						var responseBuf = new byte[fakeHttpResponse.Length + count];
 						Array.Copy(fakeHttpResponse, responseBuf, fakeHttpResponse.Length); // headers
@@ -221,7 +222,6 @@ namespace River
 				}
 			}
 
-
 			private void ReceivedStreamFromClient(IAsyncResult ar)
 			{
 				if (_disposed)
@@ -234,54 +234,7 @@ namespace River
 					var count = _clientStream.EndRead(ar);
 					if (count > 0)
 					{
-						// do the job - decode the stream and forward it
-						int eoh;
-						var headers = Utils.TryParseHttpHeader(_readBuffer, 0, count + _readBufferPos, out eoh);
-						if (headers != null)
-						{
-							string lenStr;
-							if (!headers.TryGetValue("Content-Length", out lenStr))
-							{
-								throw new Exception("Content-Length is mandatory");
-							}
-							int len = int.Parse(lenStr);
-							if (len + Utils.MaxHeaderSize >= _readBuffer.Length)
-							{
-								throw new Exception($"ReceivedStreamFromClient: This package {len} with headers {Utils.MaxHeaderSize} is larger than receiving buffer {_readBuffer.Length}");
-							}
-							if (len < count + _readBufferPos - eoh)
-							{
-								// not complete body received! Wait for more data.
-								_readBufferPos += count;
-								_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
-							}
-							else
-							{
-								// decode the body
-								var data = new byte[len];
-								Array.Copy(_readBuffer, eoh, data, 0, len);
-								for (int i = 0; i < len; i++)
-								{
-									data[i] = (byte)(data[i] ^ 0xAA);
-								}
-								Trace.WriteLine($">> from {_client.Client.RemoteEndPoint} >> to {_clientForward.Client.RemoteEndPoint} {len} bytes");
-								// forward
-								_clientStreamForward.Write(data);
-
-								// continue
-								_readBufferPos = 0;
-								_clientStream.BeginRead(_readBuffer, 0, _readBuffer.Length, ReceivedStreamFromClient, null);
-							}
-						}
-						else
-						{
-							// continue waiting for full chunk
-							Trace.WriteLine($">> not complete, reading some more...");
-							_readBufferPos += count;
-							_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
-						}
-
-
+						ReceivedStreamFromClient(count);
 					}
 					else
 					{
@@ -293,6 +246,70 @@ namespace River
 					Trace.TraceError("ReceivedStreamFromClient Exception: " + ex);
 					Dispose();
 				}
+			}
+
+			private void ReceivedStreamFromClient(int count)
+			{
+				// do the job - decode the stream and forward it
+				int eoh;
+				var headers = Utils.TryParseHttpHeader(_readBuffer, 0, count + _readBufferPos, out eoh);
+				if (headers != null)
+				{
+					string lenStr;
+					if (!headers.TryGetValue("Content-Length", out lenStr))
+					{
+						throw new Exception("Content-Length is mandatory");
+					}
+					int len = int.Parse(lenStr);
+					if (len + Utils.MaxHeaderSize >= _readBuffer.Length)
+					{
+						throw new Exception($"ReceivedStreamFromClient: This package {len} with headers {Utils.MaxHeaderSize} is larger than receiving buffer {_readBuffer.Length}");
+					}
+					if (len < count + _readBufferPos - eoh)
+					{
+						// not complete body received! Wait for more data.
+						_readBufferPos += count;
+						_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
+					}
+					else
+					{
+						// decode the body
+						var data = new byte[len];
+						Array.Copy(_readBuffer, eoh, data, 0, len);
+						for (int i = 0; i < len; i++)
+						{
+							data[i] = (byte)(data[i] ^ 0xAA);
+						}
+						Trace.WriteLine($">> from {_client.Client.RemoteEndPoint} >> to {_clientForward.Client.RemoteEndPoint} {len} bytes");
+						// forward
+						_clientStreamForward.Write(data);
+
+						// detect more data available
+						// process remaining part of message
+						if (len + eoh < _readBufferPos + count)
+						{
+							Array.Copy(_readBuffer, len + eoh, _readBuffer, 0, _readBufferPos + count - len - eoh);
+							var len2 = _readBufferPos + count - len - eoh;
+							_readBufferPos = 0;
+							Trace.WriteLine($"ReceivedStreamFromClient - have extra {len2} bytes, call ReceivedStreamFromClient");
+							ReceivedStreamFromClient(len2);
+						}
+						else
+						{
+							// continue
+							_readBufferPos = 0;
+							_clientStream.BeginRead(_readBuffer, 0, _readBuffer.Length, ReceivedStreamFromClient, null);
+						}
+					}
+				}
+				else
+				{
+					// continue waiting for full chunk
+					Trace.WriteLine($">> not complete, reading some more...");
+					_readBufferPos += count;
+					_clientStream.BeginRead(_readBuffer, _readBufferPos, _readBuffer.Length - _readBufferPos, ReceivedStreamFromClient, null);
+				}
+
 			}
 		}
 	}
