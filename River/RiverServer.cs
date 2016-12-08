@@ -265,7 +265,7 @@ namespace River
 					{
 						throw new Exception($"ReceivedStreamFromClient: This package {len} with headers {Utils.MaxHeaderSize} is larger than receiving buffer {_readBuffer.Length}");
 					}
-					if (len < count + _readBufferPos - eoh)
+					if (len > count + _readBufferPos - eoh)
 					{
 						// not complete body received! Wait for more data.
 						_readBufferPos += count;
