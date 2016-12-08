@@ -328,7 +328,6 @@ namespace River
 							}
 							else
 							{
-								_bufferReceivedCount += count;
 								ReadMore();
 							}
 							break;

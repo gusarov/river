@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
@@ -11,14 +12,24 @@ namespace River.SourceService
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
-		static void Main()
+		static void Main(string[] args)
 		{
-			ServiceBase[] ServicesToRun;
-			ServicesToRun = new ServiceBase[]
+			if (args.Any(x => string.Equals(x, "console", StringComparison.InvariantCultureIgnoreCase)))
 			{
-				new Service1()
-			};
-			ServiceBase.Run(ServicesToRun);
+				Trace.Listeners.Add(new ConsoleTraceListener());
+				var svc = new Service();
+				svc.RunImpl();
+				Console.WriteLine("Press <enter> to stop the service . . .");
+				Console.ReadLine();
+				svc.StopImpl();
+			}
+			else
+			{
+				ServiceBase.Run(new ServiceBase[]
+				{
+					new Service()
+				});
+			}
 		}
 	}
 }
