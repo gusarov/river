@@ -81,6 +81,7 @@ namespace River
 
 			var count = _streamFroward.Read(_bufferForwardRead, 0, _bufferForwardRead.Length);
 			var response = _utf.GetString(_bufferForwardRead, 0, count);
+			// todo must parse response only till \r\n\r\n
 			if (!response.StartsWith("HTTP/1.0 200"))
 			{
 				throw new Exception();
@@ -101,7 +102,11 @@ namespace River
 			{
 				// _bufferForwardRead
 				var count = _streamFroward.EndRead(ar);
-				if (count > 0)
+				if (count > 0
+#if CC
+					|| _clientForward.Connected
+#endif
+					)
 				{
 					ReceiveFromForward(count);
 				}

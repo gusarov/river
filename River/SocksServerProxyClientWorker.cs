@@ -65,7 +65,11 @@ namespace River
 				Trace.WriteLine("Streaming - received from forward stream " + count + " bytes on thread #" + Thread.CurrentThread.ManagedThreadId);
 
 				// write back to socks client
-				if (count != 0)
+				if (count != 0
+#if CC
+					|| _clientForward.Connected
+#endif
+					)
 				{
 					_stream.Write(_bufferForwardRead, 0, count);
 					// continue async

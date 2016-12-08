@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.MouthInstaller", "Riv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.SourceInstaller", "River.SourceInstaller\River.SourceInstaller.csproj", "{3F1088B6-39FC-4C6A-B2C5-F7C0C323E930}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.AcceptanceTestingAgent", "River.AcceptanceTestingAgent\River.AcceptanceTestingAgent.csproj", "{918678CF-4E30-4420-A711-291E7A0022B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{3F1088B6-39FC-4C6A-B2C5-F7C0C323E930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F1088B6-39FC-4C6A-B2C5-F7C0C323E930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F1088B6-39FC-4C6A-B2C5-F7C0C323E930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{918678CF-4E30-4420-A711-291E7A0022B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{918678CF-4E30-4420-A711-291E7A0022B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{918678CF-4E30-4420-A711-291E7A0022B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{918678CF-4E30-4420-A711-291E7A0022B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -60,6 +60,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BinaryAcceptanceTests.cs" />
     <Compile Include="TestTunnel.cs" />
     <Compile Include="SocksClientTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

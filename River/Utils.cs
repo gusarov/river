@@ -57,7 +57,7 @@ HTTP/(?'hv'\d\.\d)# http ver
 						headers["_verb"] = match.Groups["v"].Value;
 						headers["_url"] = match.Groups["u"].Value;
 						headers["_url_host"] = match.Groups["h"].Value;
-						headers["_url_port"] = match.Groups["hp"].Value;
+						headers["_url_port"] = match.Groups["pr"].Value;
 						headers["_http_ver"] = match.Groups["hv"].Value;
 					}
 					if (sp <= i)

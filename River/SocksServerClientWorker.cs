@@ -58,7 +58,11 @@ namespace River
 			{
 				int count;
 				_bufferReceivedCount += count = _stream.EndRead(ar);
-				if (count == 0)
+				if (count == 0
+#if CC
+					&& !_client.Connected
+#endif
+					)
 				{
 					Dispose();
 					return;
@@ -357,7 +361,11 @@ namespace River
 			{
 				var count = _stream.EndRead(ar);
 				Trace.WriteLine("Streaming - received from client " + count + " bytes");
-				if (count > 0)
+				if (count > 0
+#if CC
+					|| _client.Connected
+#endif
+					)
 				{
 					SendForward(_buffer, 0, count);
 					_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);

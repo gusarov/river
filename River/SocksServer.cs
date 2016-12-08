@@ -29,10 +29,17 @@ namespace River
 
 		private void NewTcpClient(IAsyncResult ar)
 		{
-			var client = _listener.EndAcceptTcpClient(ar);
-			Trace.WriteLine($"NewTcpClient (thread {Thread.CurrentThread.ManagedThreadId}) from {client.Client.RemoteEndPoint}");
-			Activator.CreateInstance(typeof (T), this, client);
-			_listener.BeginAcceptTcpClient(NewTcpClient, null);
+			try
+			{
+				var client = _listener.EndAcceptTcpClient(ar);
+				Trace.WriteLine($"NewTcpClient (thread {Thread.CurrentThread.ManagedThreadId}) from {client.Client.RemoteEndPoint}");
+				Activator.CreateInstance(typeof(T), this, client);
+				_listener.BeginAcceptTcpClient(NewTcpClient, null);
+			}
+			catch (ObjectDisposedException)
+			{
+				
+			}
 		}
 
 		public void Dispose()

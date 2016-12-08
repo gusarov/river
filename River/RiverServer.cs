@@ -115,7 +115,11 @@ namespace River
 				try
 				{
 					var count = _clientStream.EndRead(ar);
-					if (count > 0)
+					if (count > 0
+#if CC
+|| _client.Connected
+#endif
+						)
 					{
 						// actual work - I assume that entire message already there
 						var request = _utf.GetString(_readBuffer, 0, count);
@@ -181,7 +185,11 @@ namespace River
 				try
 				{
 					var count = _clientStreamForward.EndRead(ar);
-					if (count > 0)
+					if (count > 0
+#if CC
+						|| _clientForward.Connected
+#endif
+						)
 					{
 						// do the job - pack the bytes back to river client
 
@@ -232,7 +240,11 @@ namespace River
 				try
 				{
 					var count = _clientStream.EndRead(ar);
-					if (count > 0)
+					if (count > 0
+#if CC
+						|| _client.Connected
+#endif
+						)
 					{
 						ReceivedStreamFromClient(count);
 					}
@@ -265,7 +277,7 @@ namespace River
 					{
 						throw new Exception($"ReceivedStreamFromClient: This package {len} with headers {Utils.MaxHeaderSize} is larger than receiving buffer {_readBuffer.Length}");
 					}
-					if (len < count + _readBufferPos - eoh)
+					if (len > count + _readBufferPos - eoh)
 					{
 						// not complete body received! Wait for more data.
 						_readBufferPos += count;

@@ -7,6 +7,7 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
+using River.MouthService.Properties;
 
 namespace River.MouthService
 {
@@ -36,7 +37,7 @@ namespace River.MouthService
 
 		public void RunImpl()
 		{
-			_riverServer = new RiverServer(80);
+			_riverServer = new RiverServer(Settings.Default.Port);
 		}
 	}
 }
