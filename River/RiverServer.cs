@@ -14,9 +14,11 @@ namespace River
 		protected static readonly Encoding _utf = new UTF8Encoding(false, false);
 
 		private readonly TcpListener _listener;
+		private bool _isDisposing;
 
 		public void Dispose()
 		{
+			_isDisposing = true;
 			try
 			{
 				_listener?.Stop();
@@ -42,9 +44,22 @@ namespace River
 
 		private void NewTcpClient(IAsyncResult ar)
 		{
-			var tcpClient = _listener.EndAcceptTcpClient(ar);
-			new RiverServerConnection(tcpClient);
-			_listener.BeginAcceptTcpClient(NewTcpClient, null);
+			try
+			{
+				var tcpClient = _listener.EndAcceptTcpClient(ar);
+				new RiverServerConnection(tcpClient);
+			}
+			catch (ObjectDisposedException)
+			{
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError("River Server NewTcpClient: " + ex);
+			}
+			if (!_isDisposing)
+			{
+				_listener.BeginAcceptTcpClient(NewTcpClient, null);
+			}
 		}
 
 		public class RiverServerConnection
