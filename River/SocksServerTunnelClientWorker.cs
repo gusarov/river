@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -62,30 +64,44 @@ namespace River
 			{
 				_clientForward = new TcpClient();
 			}
-			_clientForward.Connect(_server.RiverHost, _server.RiverPort);
-			_streamFroward = _clientForward.GetStream();
+			string response = "";
+			try
+			{
+				_clientForward.SendTimeout = Math.Min(_clientForward.SendTimeout, 6000);
+				_clientForward.Connect(_server.RiverHost, _server.RiverPort);
+				_streamFroward = _clientForward.GetStream();
 
-			var target = _dnsNameRequested ?? _addressesRequested[0].ToString();
-			var targetPort = _portRequested;
+				var target = _dnsNameRequested ?? _addressesRequested[0].ToString();
+				var targetPort = _portRequested;
 
-			var requestString = $"GET http://{_server.RiverHost}:{_server.RiverPort}/?{Obfuscate(0)}={Obfuscate()}&{Obfuscate(1, 'v')}=1&{Obfuscate(2, 'c')}=c&{Obfuscate(3, 'h')}={target}&{Obfuscate(4, 'p')}={targetPort}&{Obfuscate(5)}={Obfuscate()} HTTP/1.0\r\n"
-				+ "Connection: keep-alive\r\n"
-				//+ "User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
-				+ "Accept: text/html\r\n"
-				+ $"Host: {_server.RiverHost}:{_server.RiverPort}\r\n"
-				+ "Accept-Encoding: gzip, deflate\r\n"
-				+ "Cache-Control: no-cache\r\n"
-				+ "\r\n";
-			var request = _utf.GetBytes(requestString);
-			_streamFroward.Write(request, 0, request.Length);
+				var requestString = $"GET http://{_server.RiverHost}:{_server.RiverPort}/?{Obfuscate(0)}={Obfuscate()}&{Obfuscate(1, 'v')}=1&{Obfuscate(2, 'c')}=c&{Obfuscate(3, 'h')}={target}&{Obfuscate(4, 'p')}={targetPort}&{Obfuscate(5)}={Obfuscate()} HTTP/1.0\r\n"
+				                    + "Connection: keep-alive\r\n"
+					//+ "User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
+				                    + "Accept: text/html\r\n"
+				                    + $"Host: {_server.RiverHost}:{_server.RiverPort}\r\n"
+				                    + "Accept-Encoding: gzip, deflate\r\n"
+				                    + "Cache-Control: no-cache\r\n"
+				                    + "\r\n";
+				var request = _utf.GetBytes(requestString);
+				Trace.WriteLine("Requesting establish connection...");
+				_streamFroward.Write(request, 0, request.Length);
 
-			var count = _streamFroward.Read(_bufferForwardRead, 0, _bufferForwardRead.Length);
-			var response = _utf.GetString(_bufferForwardRead, 0, count);
+				var count = _streamFroward.Read(_bufferForwardRead, 0, _bufferForwardRead.Length);
+				response = _utf.GetString(_bufferForwardRead, 0, count);
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError("Rotate server becasue: " + ex.Message);
+				_server.RotateServer();
+				throw;
+			}
 			// todo must parse response only till \r\n\r\n
 			if (!response.StartsWith("HTTP/1.0 200"))
 			{
+				Trace.WriteLine("Bad response...");
 				throw new Exception();
 			}
+			Trace.WriteLine("Established...");
 			_client.NoDelay = true;
 			_clientForward.NoDelay = true;
 			_streamFroward.BeginRead(_bufferForwardRead, 0, _bufferForwardRead.Length, ReceiveFromForward, null);

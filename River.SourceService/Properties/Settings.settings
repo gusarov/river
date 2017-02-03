@@ -14,5 +14,8 @@
     <Setting Name="ListeningPort" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">1081</Value>
     </Setting>
+    <Setting Name="RiverServers" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">dimadiv.westeurope.cloudapp.azure.com:80;cmp.westeurope.cloudapp.azure.com:80;oz2.westeurope.cloudapp.azure.com:80</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

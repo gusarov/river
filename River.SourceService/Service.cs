@@ -37,7 +37,7 @@ namespace River.SourceService
 				? default(IPEndPoint)
 				: new IPEndPoint(IPAddress.Parse(Settings.Default.OutgoingInterfaceIP), 0);
 
-			_server = new SocksServerToRiverClient(Settings.Default.ListeningPort, Settings.Default.RiverServer, Settings.Default.RiverPort, outgoingInterface);
+			_server = new SocksServerToRiverClient(Settings.Default.ListeningPort, Settings.Default.RiverServers, outgoingInterface);
 		}
 
 		public void StopImpl()

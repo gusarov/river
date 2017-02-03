@@ -58,5 +58,15 @@ namespace River.SourceService.Properties {
                 return ((int)(this["ListeningPort"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("dimadiv.westeurope.cloudapp.azure.com:80;cmp.westeurope.cloudapp.azure.com:80;oz2" +
+            ".westeurope.cloudapp.azure.com:80")]
+        public string RiverServers {
+            get {
+                return ((string)(this["RiverServers"]));
+            }
+        }
     }
 }

@@ -154,6 +154,11 @@ namespace River
 									0x00, // address
 								};
 								_stream.Write(response, 0, response.Length);
+								if (ex != null)
+								{
+									_stream.Flush();
+									Dispose();
+								}
 							}
 							break;
 						case 5: // SOCKS 5
