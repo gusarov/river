@@ -37,7 +37,14 @@ namespace River.SourceService
 				? default(IPEndPoint)
 				: new IPEndPoint(IPAddress.Parse(Settings.Default.OutgoingInterfaceIP), 0);
 
+			var bw = Settings.Default.Bandwidth;
+			if (bw <= 0)
+			{
+				bw = 1024 * 1024;
+			}
+
 			_server = new SocksServerToRiverClient(Settings.Default.ListeningPort, Settings.Default.RiverServers, outgoingInterface);
+			_server.Bandwidth = bw;
 		}
 
 		public void StopImpl()

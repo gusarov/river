@@ -20,7 +20,7 @@ namespace River.Tests
 		public static void ClassInitialize(TestContext tc)
 		{
 			_riverMouth = new RiverServer(300);
-			_riverSource = new SocksServerToRiverClient(301, "127.0.0.1", 300);
+			_riverSource = new SocksServerToRiverClient(301, "127.0.0.1:300");
 		}
 
 		[ClassCleanup]

@@ -27,13 +27,20 @@ namespace River
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}
 
+		public long Bandwidth { get; set; } = 1024 * 1024;
+
 		private void NewTcpClient(IAsyncResult ar)
 		{
 			try
 			{
 				var client = _listener.EndAcceptTcpClient(ar);
 				Trace.WriteLine($"NewTcpClient (thread {Thread.CurrentThread.ManagedThreadId}) from {client.Client.RemoteEndPoint}");
-				Activator.CreateInstance(typeof(T), this, client);
+				var inst = Activator.CreateInstance(typeof(T), this, client);
+				var th = inst as IThrottable;
+				if (th != null)
+				{
+					th.MaximumBytesPerSecond = Bandwidth;
+				}
 				_listener.BeginAcceptTcpClient(NewTcpClient, null);
 			}
 			catch (ObjectDisposedException)

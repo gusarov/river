@@ -68,5 +68,14 @@ namespace River.SourceService.Properties {
                 return ((string)(this["RiverServers"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public long Bandwidth {
+            get {
+                return ((long)(this["Bandwidth"]));
+            }
+        }
     }
 }

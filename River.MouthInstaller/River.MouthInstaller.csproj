@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\TinyInstaller.1.0.27\build\TinyInstaller.props" Condition="Exists('..\packages\TinyInstaller.1.0.27\build\TinyInstaller.props')" />
+  <Import Project="..\packages\TinyInstaller.1.0.29\build\TinyInstaller.props" Condition="Exists('..\packages\TinyInstaller.1.0.29\build\TinyInstaller.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -56,7 +56,7 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="TinyInstaller, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TinyInstaller.1.0.27\lib\net40\TinyInstaller.exe</HintPath>
+      <HintPath>..\packages\TinyInstaller.1.0.29\lib\net40\TinyInstaller.exe</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
@@ -102,10 +102,10 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\TinyInstaller.1.0.27\build\TinyInstaller.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TinyInstaller.1.0.27\build\TinyInstaller.props'))" />
-    <Error Condition="!Exists('..\packages\TinyInstaller.1.0.27\build\TinyInstaller.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TinyInstaller.1.0.27\build\TinyInstaller.targets'))" />
+    <Error Condition="!Exists('..\packages\TinyInstaller.1.0.29\build\TinyInstaller.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TinyInstaller.1.0.29\build\TinyInstaller.props'))" />
+    <Error Condition="!Exists('..\packages\TinyInstaller.1.0.29\build\TinyInstaller.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TinyInstaller.1.0.29\build\TinyInstaller.targets'))" />
   </Target>
-  <Import Project="..\packages\TinyInstaller.1.0.27\build\TinyInstaller.targets" Condition="Exists('..\packages\TinyInstaller.1.0.27\build\TinyInstaller.targets')" />
+  <Import Project="..\packages\TinyInstaller.1.0.29\build\TinyInstaller.targets" Condition="Exists('..\packages\TinyInstaller.1.0.29\build\TinyInstaller.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

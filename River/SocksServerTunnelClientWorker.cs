@@ -6,10 +6,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace River
 {
-	public class SocksServerTunnelClientWorker : SocksServerClientWorker
+	public class SocksServerTunnelClientWorker : SocksServerClientWorker, IThrottable
 	{
 		private readonly SocksServerToRiverClient _server;
 
@@ -140,6 +141,7 @@ namespace River
 
 		void ReceiveFromForward(int count)
 		{
+			Throttle(count);
 			// do the job - unpack the bytes from river and send it to the client
 			int eoh;
 			string responseHeaderString;
@@ -210,6 +212,8 @@ namespace River
 				return;
 			}
 
+			Throttle(count);
+
 			var requestString = $"POST http://{_server.RiverHost}:{_server.RiverPort}/ HTTP/1.0\r\n"
 				+ $"Connection: keep-alive\r\n"
 				//+ "User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
@@ -250,5 +254,77 @@ namespace River
 			}
 			return sb.ToString();
 		}
+
+		#region https://www.codeproject.com/kb/ip/bandwidth_throttling.aspx
+
+		/// <summary>
+		/// The maximum bytes per second that can be transferred through the base stream.
+		/// </summary>
+		public long MaximumBytesPerSecond { get; set; } = 1048576;
+
+		/// <summary>
+		/// The number of bytes that has been transferred since the last throttle.
+		/// </summary>
+		private long _byteCount;
+
+		/// <summary>
+		/// The start time in milliseconds of the last throttle.
+		/// </summary>
+		private long _start;
+
+		/// <summary>
+		/// Throttles for the specified buffer size in bytes.
+		/// </summary>
+		/// <param name="bufferSizeInBytes">The buffer size in bytes.</param>
+		protected void Throttle(int bytesCount)
+		{
+			_byteCount += bytesCount;
+			long elapsedMilliseconds = Environment.TickCount - _start;
+
+			if (elapsedMilliseconds > 0)
+			{
+				// Calculate the current bps.
+				long bps = _byteCount * 1000L / elapsedMilliseconds;
+
+				// If the bps are more then the maximum bps, try to throttle.
+				if (bps > MaximumBytesPerSecond)
+				{
+					// Calculate the time to sleep.
+					long wakeElapsed = _byteCount * 1000L / MaximumBytesPerSecond;
+					int toSleep = (int)(wakeElapsed - elapsedMilliseconds);
+
+					if (toSleep > 1)
+					{
+						try
+						{
+							// The time to sleep is more then a millisecond, so sleep.
+							Thread.Sleep(toSleep);
+						}
+						catch (ThreadAbortException)
+						{
+							// Eatup ThreadAbortException.
+						}
+
+						// A sleep has been done, reset.
+						long difference = Environment.TickCount - _start;
+
+						// Only reset counters when a known history is available of more then 1 second.
+						if (difference > 1000)
+						{
+							_byteCount = 0;
+							_start = Environment.TickCount;
+						}
+					}
+				}
+			}
+		}
+
+		#endregion
+
+	}
+
+	public interface IThrottable
+	{
+		long MaximumBytesPerSecond { get; set; }
 	}
 }
