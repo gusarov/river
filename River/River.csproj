@@ -57,6 +57,7 @@
     <Compile Include="SocksServerToRiverClient.cs" />
     <Compile Include="SocksServerTunnelClientWorker.cs" />
     <Compile Include="StreamExtensions.cs" />
+    <Compile Include="Throttling.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
