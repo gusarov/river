@@ -21,7 +21,10 @@ namespace River.ConsoleServer
 */
 			Trace.Listeners.Add(new ConsoleTraceListener());
 
-			//var riverServer = new RiverServer(810);
+			var riverServer = new RiverServer(80, "R:https://+");
+
+			Thread.Sleep(1010101010);
+
 			var server = new SocksServerToRiverClient(1081, "dimadiv.westeurope.cloudapp.azure.com:80"
 			//var server = new SocksServerToRiverClient(1071, "oz2.westeurope.cloudapp.azure.com:80"
 				//var server = new SocksServerToRiverClient(1081, "dimadiv.westeurope.cloudapp.azure.com", 80

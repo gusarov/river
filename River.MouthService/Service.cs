@@ -37,7 +37,7 @@ namespace River.MouthService
 
 		public void RunImpl()
 		{
-			_riverServer = new RiverServer(Settings.Default.Port);
+			_riverServer = new RiverServer(Settings.Default.Port, Settings.Default.Bypass);
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -22,7 +21,7 @@ namespace River.Tests
 		[ClassInitialize]
 		public static void ClassInitialize(TestContext tc)
 		{
-			_tunnel = new SocksServerToRiverClient(4235, _mouth+":80", new IPEndPoint(IPAddress.Parse("10.161.88.23"), 0));
+			_tunnel = new SocksServerToRiverClient(4235, _mouth + ":80", new IPEndPoint(IPAddress.Parse("10.161.88.23"), 0));
 		}
 
 		[ClassCleanup]
@@ -36,7 +35,7 @@ namespace River.Tests
 		{
 			using (var cli = new HttpClient())
 			{
-				
+
 				var data = cli.GetStringAsync("http://httpbin.org/get").Result;
 
 				Assert.Inconclusive();
