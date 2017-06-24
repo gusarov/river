@@ -62,7 +62,7 @@ namespace River
 					return;
 				}
 				var count = _streamForward.EndRead(ar);
-				Trace.WriteLine("Streaming - received from forward stream " + count + " bytes on thread #" + Thread.CurrentThread.ManagedThreadId);
+				Trace.WriteLine("Streaming - received from forward stream << " + count + " bytes on thread #" + Thread.CurrentThread.ManagedThreadId);
 
 				// write back to socks client
 				if (count != 0

@@ -40,5 +40,14 @@ namespace River.MouthService.Properties {
                 return ((string)(this["Bypass"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1081")]
+        public int SocksPort {
+            get {
+                return ((int)(this["SocksPort"]));
+            }
+        }
     }
 }

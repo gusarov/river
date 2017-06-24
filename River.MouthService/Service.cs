@@ -29,15 +29,21 @@ namespace River.MouthService
 		}
 
 		private RiverServer _riverServer;
+		private SocksProxyServer _proxyServer;
 
 		public void StopImpl()
 		{
 			_riverServer?.Dispose();
+			_proxyServer?.Dispose();
 		}
 
 		public void RunImpl()
 		{
 			_riverServer = new RiverServer(Settings.Default.Port, Settings.Default.Bypass);
+			if (Settings.Default.SocksPort > 0)
+			{
+				_proxyServer = new SocksProxyServer(Settings.Default.SocksPort);
+			}
 		}
 	}
 }

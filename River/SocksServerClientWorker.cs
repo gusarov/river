@@ -134,6 +134,7 @@ namespace River
 									if (_bufferProcessedCount < _bufferReceivedCount)
 									{
 										// forward the rest of the buffer
+										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 										SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 									}
 									_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -165,6 +166,7 @@ namespace River
 							if (EnsureReaded(2))
 							{
 								var authMethodsCount = _buffer[1];
+								int requestStartedAt = 2 + authMethodsCount;
 								if (EnsureReaded(2 + authMethodsCount))
 								{
 									if (!_authenticationNegotiated)
@@ -251,6 +253,7 @@ namespace River
 													if (_bufferProcessedCount < _bufferReceivedCount)
 													{
 														// forward the rest of the buffer
+														Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 														SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 													}
 													_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -259,13 +262,27 @@ namespace River
 												{
 													ex = exx;
 												}
+												// var response = new byte[_bufferProcessedCount - requestStartedAt];
+												// Array.Copy(_buffer, requestStartedAt, response, 0, response.Length);
+												// response[1] = (ex == null ? (byte)0x00 : (byte)0x01); // state = granted / rejected
+												// do not expose multihoming or whatever
+												// for (int i = 4; i < response.Length; i++)
+												// {
+												// 	response[i] = 0;
+												// }
+
+												// it appears, not all clients can handle domain name response... Hello to Telegram.
+												// Let's go with IPv4
 												var response = new byte[]
 												{
 													0x05, // ver
 													(ex == null ? (byte) 0x00 : (byte) 0x01), // state = granted / rejected
 													0x00, // null
-													0x03, // adr_type
-													0x00, // len
+													0x01, // adr_type ipv4
+													0x00, // ipv4
+													0x00, // ipv4
+													0x00, // ipv4
+													0x00, // ipv4
 													0x00, // port
 													0x00, // port
 												};
@@ -319,6 +336,7 @@ namespace River
 										// for connect - forward the rest of the buffer
 										if (_bufferReceivedCount - eoh > 0)
 										{
+											Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
 											SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
 										}
 									}
@@ -365,7 +383,7 @@ namespace River
 			try
 			{
 				var count = _stream.EndRead(ar);
-				Trace.WriteLine("Streaming - received from client " + count + " bytes");
+				Trace.WriteLine("Streaming - received from client >> " + count + " bytes");
 				if (count > 0
 #if CC
 					|| _client.Connected
