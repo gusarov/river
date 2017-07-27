@@ -18,7 +18,14 @@ namespace River
 			Trace.WriteLine("SocksServer created at " + Thread.CurrentThread.ManagedThreadId);
 			// listen both ipv6 and ipv4
 #if Net45
-			_listener = TcpListener.Create(port);
+			try
+			{
+				_listener = TcpListener.Create(port);
+			}
+			catch (SocketException)
+			{
+				_listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, port));
+			}
 #else
 			_listener = new TcpListener(IPAddress.IPv6Any, port);
 			_listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
