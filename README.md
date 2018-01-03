@@ -1,3 +1,13 @@
+Appveyer build:
+[![Build status](https://ci.appveyor.com/api/projects/status/6wag92vlg4btmr54?svg=true)](https://ci.appveyor.com/project/gusarov/river)
+
+For restricted area:
+[Download Source](https://ci.appveyor.com/api/projects/gusarov/river/artifacts/River.SourceInstaller/bin/Source.zip)
+
+For cloud server:
+[Download Mouth](https://ci.appveyor.com/api/projects/gusarov/river/artifacts/River.MouthInstaller/bin/Mouth.zip)
+
+
 # River - HTTP based network tunneling
 This services allows to setup an outgoing tunnel from restricted area to the uncensored interned and override trafic filtration pretending to be usual HTTP trafic.
 
