@@ -41,7 +41,8 @@ namespace River
 			_listener = new TcpListener(IPAddress.IPv6Any, port);
 			_listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
 #endif
-			_listener.ExclusiveAddressUse = true;
+			// allow specific ip binding to override traffic
+			// _listener.ExclusiveAddressUse = true;
 			_listener.Start();
 			_listener.BeginAcceptTcpClient(NewTcpClient, null);
 		}
