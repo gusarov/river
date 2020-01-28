@@ -68,12 +68,6 @@
     <Compile Include="SocksClientTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\River\River.csproj">
-      <Project>{087A8FDB-6E12-4966-9ED8-2DD3E342DBE9}</Project>
-      <Name>River</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
