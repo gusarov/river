@@ -13,8 +13,8 @@ namespace River.Tests
 		[TestMethod]
 		public void Should_build_a_chain_from_3_protos()
 		{
-			var first = new SocksServer(2001);
-			var second = new SocksServer(2002);
+			// var first = new SocksServer(2001);
+			// var second = new SocksServer(2002);
 			Assert.Inconclusive();
 		}
 	}
