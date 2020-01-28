@@ -1,6 +1,9 @@
 Appveyer build:
 [![Build status](https://ci.appveyor.com/api/projects/status/6wag92vlg4btmr54?svg=true)](https://ci.appveyor.com/project/gusarov/river)
 
+Azure DevOps build:
+[![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
+
 For restricted area:
 [Download Source](https://ci.appveyor.com/api/projects/gusarov/river/artifacts/River.SourceInstaller/bin/Source.zip)
 
