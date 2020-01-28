@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.ConsoleServer", "Rive
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mouth", "Mouth", "{004DA493-FDC9-4AB7-BD58-400F97F5A709}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.AcceptanceTestingAgent", "River.AcceptanceTestingAgent\River.AcceptanceTestingAgent.csproj", "{918678CF-4E30-4420-A711-291E7A0022B8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Core", "River.Core\River.Core.csproj", "{13257360-183C-4B42-A00E-293FF7358A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Socks", "River.Socks\River.Socks.csproj", "{8ADF475C-8E47-4B22-85F2-69614AF9144B}"
@@ -37,10 +35,6 @@ Global
 		{6B7A2315-41B4-44D7-B682-DBCB50378014}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B7A2315-41B4-44D7-B682-DBCB50378014}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B7A2315-41B4-44D7-B682-DBCB50378014}.Release|Any CPU.Build.0 = Release|Any CPU
-		{918678CF-4E30-4420-A711-291E7A0022B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{918678CF-4E30-4420-A711-291E7A0022B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{918678CF-4E30-4420-A711-291E7A0022B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{918678CF-4E30-4420-A711-291E7A0022B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13257360-183C-4B42-A00E-293FF7358A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13257360-183C-4B42-A00E-293FF7358A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13257360-183C-4B42-A00E-293FF7358A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
