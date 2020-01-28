@@ -9,7 +9,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>River</RootNamespace>
     <AssemblyName>River</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -42,22 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RiverClient.cs" />
-    <Compile Include="RiverServer.cs" />
-    <Compile Include="SimpleNetworkStream.cs" />
-    <Compile Include="Socks4Client.cs" />
-    <Compile Include="Socks5Client.cs" />
-    <Compile Include="SocksClient.cs" />
+    <Compile Include="Clients\RiverClient.cs" />
+    <Compile Include="Servers\RiverServer.cs" />
+    <Compile Include="Servers\XorServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SocksProxyServer.cs" />
-    <Compile Include="SocksServer.cs" />
-    <Compile Include="SocksServerClientWorker.cs" />
-    <Compile Include="SocksServerProxyClientWorker.cs" />
-    <Compile Include="SocksServerToRiverClient.cs" />
-    <Compile Include="SocksServerTunnelClientWorker.cs" />
-    <Compile Include="StreamExtensions.cs" />
+    <Compile Include="Servers\SocksProxyServer.cs" />
+    <Compile Include="Servers\SocksServerClientWorker.cs" />
+    <Compile Include="Servers\SocksServerProxyClientWorker.cs" />
+    <Compile Include="Servers\SocksServerToRiverClient.cs" />
+    <Compile Include="Servers\SocksServerTunnelClientWorker.cs" />
     <Compile Include="Throttling.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="v2\Listener_.cs" />
+    <Compile Include="v2\SocksHttpListener.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Forwarders\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

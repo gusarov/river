@@ -5,49 +5,44 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using River.Http;
+using River.Socks;
 
 namespace River.ConsoleServer
 {
 	class Program
 	{
+
 		static void Main(string[] args)
 		{
 			// FireFox => SocksServer => RiverClient => Fiddler => RiverServer => Internet
 
-/*
-			int w, c;
-			ThreadPool.GetMaxThreads(out w, out c);
-			ThreadPool.SetMaxThreads(1024, 1024);
-*/
-			Trace.Listeners.Add(new ConsoleTraceListener());
+			// Trace.Listeners.Add(new ConsoleTraceListener());
 
-			var riverServer = new RiverServer(80, "R:https://+");
-
-			Thread.Sleep(1010101010);
-
-			var server = new SocksServerToRiverClient(1081, "dimadiv.westeurope.cloudapp.azure.com:80"
-			//var server = new SocksServerToRiverClient(1071, "oz2.westeurope.cloudapp.azure.com:80"
-				//var server = new SocksServerToRiverClient(1081, "dimadiv.westeurope.cloudapp.azure.com", 80
-				//var server = new SocksServerToRiverClient(1081, "gusarov.noip.me", 80
-				, new IPEndPoint(IPAddress.Parse("10.161.88.23"), 0)
-				//, new IPEndPoint(IPAddress.Parse("10.27.10.116"), 0)
-				//,new IPEndPoint(IPAddress.Parse("192.168.137.57"), 0)
-				);
-			server.Bandwidth = 1024 * 100;
-
-			//var server = new SocksProxyServer(1081);
-
-			int prevThreads = 0;
-			while (true)
+			var server = new SocksServer(new ListenerConfig
 			{
-				var threads = Process.GetCurrentProcess().Threads.Count;
-				if (threads != prevThreads)
+				EndPoints =
 				{
-					Console.WriteLine("Threads count: " + threads);
-					prevThreads = threads;
+					new IPEndPoint(IPAddress.IPv6Loopback, 1080),
+					new IPEndPoint(IPAddress.Loopback, 1080),
+				},
+			})
+			{
+				Forwarder = new SocksForwarder("127.0.0.1", 1081)
+				{
+
 				}
-				Thread.Sleep(200);
-			}
+				/*
+				Forwarder = new SocksForwarder("RHOP2", 1080)
+				{
+					NextForwarder = new HttpForwarder("10.7.0.1", 1080)
+					{
+
+					}
+				}
+				*/
+			};
+			Console.ReadLine();
 		}
 	}
 }
