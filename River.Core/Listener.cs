@@ -69,9 +69,14 @@ namespace River
 			{
 				foreach (var listener in _tcpListeners)
 				{
-					listener.Server.Shutdown(SocketShutdown.Both);
-					listener.Stop();
+					try
+					{
+						listener.Server.Shutdown(SocketShutdown.Both);
+						listener.Stop();
+					}
+					catch { }
 				}
+				_tcpListeners.Clear();
 			}
 		}
 
