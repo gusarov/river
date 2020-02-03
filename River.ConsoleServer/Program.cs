@@ -15,12 +15,14 @@ namespace River.ConsoleServer
 	{
 		static void Main(string[] args)
 		{
-			var cli = new ShadowSocksClient("pwd");
-			cli.Plug("127.0.0.1", 8338);
-			cli.Route("httpbin.org", 80);
-			// var cli2 = new Socks4Client(cli, "10.7.0.1", 80);
+			var cli = new ShadowSocksClient("abc");
+			cli.Plug("RHOP2", 8338);
+			cli.Route("10.7.1.1", 8338);
+			var cli2 = new ShadowSocksClient("def");
+			cli2.Plug(cli);
+			cli2.Route("10.7.0.1", 80);
 
-			cli.Write(Encoding.ASCII.GetBytes("GET /\r\n\r\n"));
+			cli2.Write(Encoding.ASCII.GetBytes("GET /\r\n\r\n"));
 			var buf = new byte[1024 * 1024];
 			var c = cli.Read(buf, 0, buf.Length);
 			var str = Encoding.UTF8.GetString(buf, 0, c);

@@ -14,11 +14,13 @@ namespace River.ShadowSocks
 {
 	public class ShadowSocksClient : SimpleNetworkStream
 	{
-		readonly ChaCha20B _chacha;
+		readonly ChaCha20B _chachaEncrypt;
+		ChaCha20B _chachaDecrypt;
 
-		Stream _underlying; // direct network stream
+		// Stream _underlying; // direct network stream
 		Stream _stream; // crypto stream
 		TcpClient _client;
+		const int _nonceLen = 8;
 
 		static Encoding _encoding = new UTF8Encoding(false, false);
 		static MD5 _md5 = MD5.Create();
@@ -41,13 +43,15 @@ namespace River.ShadowSocks
 		}
 
 		byte[] _nonce;
+		byte[] _key;
+		byte[] _serverNonce;
 
 		public ShadowSocksClient(string chachaPassword)
 		{
 			_chachaPassword = chachaPassword;
-			var key = Kdf(chachaPassword);
-			_nonce = Guid.NewGuid().ToByteArray().Take(8).ToArray();
-			_chacha = new ChaCha20B(key, _nonce, 0);
+			_key = Kdf(chachaPassword);
+			_nonce = Guid.NewGuid().ToByteArray().Take(_nonceLen).ToArray();
+			_chachaEncrypt = new ChaCha20B(_key, _nonce, 0);
 		}
 
 		/*
@@ -60,32 +64,36 @@ namespace River.ShadowSocks
 		public void Plug(string proxyHost, int proxyPort)
 		{
 			_client = new TcpClient(proxyHost, proxyPort);
-			_underlying = _client.GetStream();
-			_stream = new CustomCryptoStream(_underlying, Encrypt, Decrypt);
-			// _underlying.Write(_nonce);
+			if (_client != null)
+			{
+				_client.NoDelay = true;
+				_client.Client.NoDelay = true;
+			}
+			var stream = _client.GetStream();
+			Plug(stream);
 		}
 
-		/*
-		public override void Plug(Stream stream)
+	
+		public void Plug(Stream stream)
 		{
-			base.Plug(stream);
-			_stream = new CustomCryptoStream(_stream, Encrypt, Decrypt);
+			_stream = new MustFlushStream(new CustomCryptoStream(stream, Encrypt, Decrypt));
 		}
-		*/
+		
 
 		// byte[] _encryptBuffer = new byte[16 * 1024];
 		bool _icSent;
+		bool _icReceived;
 		void Encrypt(Stream underlying, byte[] buffer, int offset, int count)
 		{
 			if (offset != 0)
 			{
 				throw new NotSupportedException();
 			}
-			var encryptBuffer = _chacha.EncryptBytes(buffer, count);
-			if (_icSent)
+			var encryptBuffer = _chachaEncrypt.EncryptBytes(buffer, count);
+			if (!_icSent)
 			{
 				_icSent = true;
-				var buf = new byte[encryptBuffer.Length + _nonce.Length];
+				var buf = new byte[_nonce.Length + encryptBuffer.Length];
 				_nonce.CopyTo(buf, 0);
 				encryptBuffer.CopyTo(buf, _nonce.Length);
 				encryptBuffer = buf;
@@ -97,8 +105,17 @@ namespace River.ShadowSocks
 		int Decrypt(Stream underlying, byte[] buffer, int offset, int count)
 		{
 			var c = underlying.Read(_decryptBuffer, 0, _decryptBuffer.Length);
+			if (!_icReceived)
+			{
+				_serverNonce = _decryptBuffer.Take(_nonceLen).ToArray();
+				_icReceived = true;
+				_decryptBuffer = _decryptBuffer.Skip(_nonceLen).ToArray();
+				_chachaDecrypt = new ChaCha20B(_key, _serverNonce, 0);
+				c -= _nonceLen;
+			}
+
 			// decrypt
-			var dec = _chacha.DecryptBytes(_decryptBuffer, c);
+			var dec = _chachaDecrypt.DecryptBytes(_decryptBuffer, c);
 			if (count < dec.Length)
 			{
 				throw new NotSupportedException("Read buffer is to small, I don't have intermediate cache for this");
@@ -110,6 +127,7 @@ namespace River.ShadowSocks
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			_stream.Write(buffer, offset, count);
+			_stream.Flush();
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
@@ -119,7 +137,7 @@ namespace River.ShadowSocks
 
 		public void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			// _stream.Write(new byte[] { 1 });
+			// _stream.Write(new byte[] { });
 			// _underlying.Write(new byte[] { 1, 2 });
 			// _stream.Write(new byte[] { });
 			// _stream.Write(new byte[] { 1, 2});
@@ -151,12 +169,13 @@ namespace River.ShadowSocks
 				throw new Exception("Server requires authentication");
 			}
 			// here authentication handshake can be added, but I don't see any reason to add clear text passwords
-			*/
+
 
 			// send the actual request
 			_stream.WriteByte(0x05); // ver = 5
 			_stream.WriteByte(0x01); // command = stream
 			_stream.WriteByte(0x00); // reserved
+			*/
 
 			var resolved = false;
 			if (!IPAddress.TryParse(targetHost, out var ip)) // if targetHost is IP - just use IP
@@ -170,12 +189,8 @@ namespace River.ShadowSocks
 					: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 
 				ip = ipv6 ?? ipv4; // as usual - give a priority, BUT target proxy might be not IPv6 ready
-				resolved = true;
-			}
 
-			if (ip == null)
-			{
-				throw new Exception("Host is not resolved: " + targetHost);
+				resolved = ip != null;
 			}
 
 			if (!resolved && proxyDns != false) // forward the targetHost name
@@ -185,13 +200,13 @@ namespace River.ShadowSocks
 				_stream.WriteByte(checked((byte)targetHostName.Length)); // len
 				_stream.Write(targetHostName, 0, targetHostName.Length); // target host
 			}
-			else if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetworkV6)
 			{
 				_stream.WriteByte(0x04); // adress type = IPv6
 				var buf = ip.GetAddressBytes();
 				_stream.Write(buf, 0, 16);
 			}
-			else if (ip.AddressFamily == AddressFamily.InterNetwork)
+			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetwork)
 			{
 				_stream.WriteByte(0x01); // adress type = IPv4
 				var buf = ip.GetAddressBytes();
@@ -199,9 +214,12 @@ namespace River.ShadowSocks
 			}
 			else
 			{
-				throw new Exception();
+				throw new Exception("Host is not resolved: " + targetHost);
 			}
 			_stream.Write(GetPortBytes(targetPort), 0, 2); // target port
+
+			/*
+			_stream.Flush();
 
 			// response
 			var response = new byte[1024];
@@ -238,15 +256,11 @@ namespace River.ShadowSocks
 				default:
 					throw new Exception("Response address type not supported!");
 			}
+
 			readed += _stream.Read(response, readed, 2); // port
 														 // we don't need those values because it is stream, not bind
+			*/
 
-			// from now, any subsequent byte is a part of the stream, including remaining part of the network buffer
-			if (_client != null)
-			{
-				_client.NoDelay = true;
-				_client.Client.NoDelay = true;
-			}
 		}
 
 		protected static byte[] GetPortBytes(int targetPort)

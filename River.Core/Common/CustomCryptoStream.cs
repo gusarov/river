@@ -30,4 +30,5 @@ namespace River.Common
 			return _decrypt(_underlying, buffer, offset, count);
 		}
 	}
+
 }

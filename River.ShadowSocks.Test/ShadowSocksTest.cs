@@ -40,9 +40,24 @@ func kdf(password string, keyLen int) []byte {
 		private const int validNonceLength = 12;
 
 
-
 		[TestMethod]
 		public void Should_encrypt_same_way()
+		{
+			var nonce = new byte[] { 158, 117, 91, 144, 144, 242, 8, 211 };
+			var orig = "03 0e 6170692e6769746875622e636f6d 01bb 16030300a5010000a103035e37b36fb24109df1e6e42c9dafc356e2d9b612b25cd5b6210876a946140b76000002ac02cc02bc030c02f009f009ec024c023c028c027c00ac009c014c013009d009c003d003c0035002f000a0100004e00000013001100000e6170692e6769746875622e636f6d000a00080006001d00170018000b00020100000d001400120401050102010403050302030202060106030023000000170000ff01000100".Replace(" ", "");
+			var origBytes = Hex(orig);
+
+			var server = Encoding.ASCII.GetString(origBytes, 2, 14);
+			var port = (origBytes[16] << 8) + origBytes[17];
+			var body = Encoding.ASCII.GetString(origBytes, 17, origBytes.Length - 17);
+
+			var enc = "c04da2490ee5658a19d282ca4fdb359e9e2028e7e871af3a642b67123fc296916976b535facd57f4f847ae9fe6412f8de3ad652290a5184043f88050aac7e0cc729a396a967dd8d2a4baa62a880af73006322aa0f219d932d91fbcf6a9b00ce864f7c28a7e57a912fd98454c14e040d91e4a2e848c1b87bb0b7735cf2a87c55cba78cb07e389f30a05efdff937ed35fc14116ab14aed2650fd5cdc981b0020bc58d798b011bc92c47bdc7579ccf100ac87c8d7a31239a81151403325";
+
+			Assert.AreEqual(enc, Hex(new ChaCha20B(ShadowSocksClient.Kdf("pwd"), nonce, 0).EncryptBytes(origBytes)));
+		}
+
+		[TestMethod]
+		public void Should_encrypt_same_way2()
 		{
 			// Actual
 
@@ -157,6 +172,15 @@ func kdf(password string, keyLen int) []byte {
 			if (cnt == 0) cnt = data.Length;
 			return string.Join("", data.Take(cnt).Select(x => x.ToString("x2")));
 		}
+
+		public static byte[] Hex(string hex)
+		{
+			return Enumerable.Range(0, hex.Length)
+							 .Where(x => x % 2 == 0)
+							 .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+							 .ToArray();
+		}
+
 
 	}
 

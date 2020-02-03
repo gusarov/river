@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Common\CustomCryptoStream.cs" />
     <Compile Include="Common\DebuggerTracker.cs" />
+    <Compile Include="Common\MustFlushStream.cs" />
     <Compile Include="DestinationIdentifier.cs" />
     <Compile Include="Forwarder.cs" />
     <Compile Include="ForwardHandler.cs" />

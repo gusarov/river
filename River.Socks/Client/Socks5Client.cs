@@ -61,12 +61,7 @@ namespace River
 					: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 
 				ip = ipv6 ?? ipv4; // as usual - give a priority, BUT target proxy might be not IPv6 ready
-				resolved = true;
-			}
-
-			if (ip == null)
-			{
-				throw new Exception("Host is not resolved: " + targetHost);
+				resolved = ip != null;
 			}
 
 			if (!resolved && proxyDns != false) // forward the targetHost name
@@ -76,13 +71,13 @@ namespace River
 				_stream.WriteByte(checked((byte)targetHostName.Length)); // len
 				_stream.Write(targetHostName, 0, targetHostName.Length); // target host
 			}
-			else if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetworkV6)
 			{
 				_stream.WriteByte(0x04); // adress type = IPv6
 				var buf = ip.GetAddressBytes();
 				_stream.Write(buf, 0, 16);
 			}
-			else if (ip.AddressFamily == AddressFamily.InterNetwork)
+			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetwork)
 			{
 				_stream.WriteByte(0x01); // adress type = IPv4
 				var buf = ip.GetAddressBytes();
@@ -90,7 +85,7 @@ namespace River
 			}
 			else
 			{
-				throw new Exception();
+				throw new Exception("Host is not resolved: " + targetHost);
 			}
 			_stream.Write(GetPortBytes(targetPort), 0, 2); // target port
 
