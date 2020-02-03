@@ -12,7 +12,7 @@ namespace River.Socks
 	{
 		private readonly TcpListener _listener;
 
-		public SocksServer(ListenerConfig config)
+		public SocksServer(ServerConfig config)
 			: base(config)
 		{
 			Trace.WriteLine("SocksServer created at " + Thread.CurrentThread.ManagedThreadId);

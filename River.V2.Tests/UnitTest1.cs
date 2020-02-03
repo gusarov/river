@@ -57,7 +57,7 @@ namespace River.V2.Tests
 		[TestMethod]
 		public void Should_chain_3_socks()
 		{
-			var proxy1 = new SocksServer(new ListenerConfig
+			var proxy1 = new SocksServer(new ServerConfig
 			{
 				EndPoints =
 				{
@@ -66,7 +66,7 @@ namespace River.V2.Tests
 				},
 			});
 
-			var proxy2 = new SocksServer(new ListenerConfig
+			var proxy2 = new SocksServer(new ServerConfig
 			{
 				EndPoints =
 				{
@@ -75,7 +75,7 @@ namespace River.V2.Tests
 				},
 			});
 
-			var proxy3 = new SocksServer(new ListenerConfig
+			var proxy3 = new SocksServer(new ServerConfig
 			{
 				EndPoints =
 				{
@@ -84,7 +84,7 @@ namespace River.V2.Tests
 				},
 			});
 
-			var proxy = new SocksServer(new ListenerConfig
+			var proxy = new SocksServer(new ServerConfig
 			{
 				EndPoints =
 				{

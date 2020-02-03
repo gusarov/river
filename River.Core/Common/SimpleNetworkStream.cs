@@ -13,7 +13,7 @@ namespace River
 		// optional, so, let's provide empty body
 		public override void Flush()
 		{
-			
+
 		}
 
 		public sealed override long Seek(long offset, SeekOrigin origin)

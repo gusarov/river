@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -14,19 +15,31 @@ namespace River
 
 		public Socks4Client(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			Connect(proxyHost, proxyPort, targetHost, targetPort, proxyDns);
+			Plug(proxyHost, proxyPort);
+			Route(targetHost, targetPort, proxyDns);
 		}
 
-		public override void Connect(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		public Socks4Client(Stream stream, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			ConnectBase(proxyHost, proxyPort);
+			Plug(stream);
+			Route(targetHost, targetPort, proxyDns);
+		}
 
+		bool _routed;
+
+		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			if (_routed)
+			{
+				throw new Exception("Already been routed");
+			}
+			_routed = true;
 			_stream.Write(
 				0x04, // ver
 				0x01 // command = stream
 				); 
 
-			_stream.Write(GetProtBytes(targetPort), 0, 2); // target port
+			_stream.Write(GetPortBytes(targetPort), 0, 2); // target port
 
 			var ipv4 = proxyDns == true
 				? null
@@ -69,6 +82,7 @@ namespace River
 				_stream.Write(targetHostName, 0, targetHostName.Length); // target host
 				_stream.WriteByte(0); // null terminated
 			}
+			_stream.Flush();
 			var response = new byte[8];
 			var c = _stream.Read(response, 0, 8);
 			if (c != 8)
@@ -85,7 +99,11 @@ namespace River
 			}
 
 			// now connected
-			_client.Client.NoDelay = true;
+			// TODO: actually this should be enabled only after last chain node rounted
+			if (_client != null)
+			{
+				_client.Client.NoDelay = true;
+			}
 		}
 
 	}

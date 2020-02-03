@@ -41,7 +41,7 @@ namespace River.Socks
 								throw new NotSupportedException("command type not supported");
 							}
 							_portRequested = _buffer[2] * 256 + _buffer[3];
-							if (_buffer[4] != 0) // 0 means 4a mode (0.0.0.X)
+							if (_buffer[4] != 0) // 0 means v4a mode (0.0.0.X)
 							{
 								var bufAddress4 = new byte[4];
 								Array.Copy(_buffer, 4, bufAddress4, 0, 4);
@@ -90,7 +90,7 @@ namespace River.Socks
 							Exception ex = null;
 							try
 							{
-								EstablishForwardConnection(new DestinationIdentifier
+								EstablishUpstream(new DestinationIdentifier
 								{
 									Host = _dnsNameRequested,
 									IPAddress = _addressRequested,
@@ -99,6 +99,7 @@ namespace River.Socks
 								if (_bufferProcessedCount < _bufferReceivedCount)
 								{
 									// forward the rest of the buffer
+									// TODO do not do this when proxy chain expected
 									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 									SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 								}
@@ -106,6 +107,7 @@ namespace River.Socks
 							}
 							catch (Exception exx)
 							{
+								Trace.TraceError(exx.ToString());
 								ex = exx;
 							}
 							var response = new byte[]
@@ -120,11 +122,12 @@ namespace River.Socks
 									0x00, // address
 							};
 							_stream.Write(response, 0, response.Length);
+							_stream.Flush();
 							if (ex != null)
 							{
-								_stream.Flush();
 								Dispose();
 							}
+							// NOW Stream is established for forwarding
 						}
 						break;
 					case 5: // SOCKS 5
@@ -214,7 +217,7 @@ namespace River.Socks
 											Exception ex = null;
 											try
 											{
-												EstablishForwardConnection(new DestinationIdentifier
+												EstablishUpstream(new DestinationIdentifier
 												{
 													Host = _dnsNameRequested,
 													IPAddress = _addressRequested,

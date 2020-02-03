@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Sockets;
 
 namespace River
@@ -9,12 +10,13 @@ namespace River
 		{
 		}
 
-		protected override Stream EstablishConnectionCore(DestinationIdentifier destination)
+		protected override Stream EstablishConnectionCore(DestinationIdentifier id)
 		{
+			/*
 			TcpClient client;
 			if (destination.IPEndPoint != null)
 			{
-				client = new TcpClient(destination.IPEndPoint);
+				client = new TcpClient(destination.IPEndPoint.Address.ToString(), destination.IPEndPoint.Port);
 			}
 			else
 			{
@@ -25,6 +27,9 @@ namespace River
 			var stream = client.GetStream();
 
 			return stream;
+			*/
+			throw new NotImplementedException();
+
 		}
 	}
 }

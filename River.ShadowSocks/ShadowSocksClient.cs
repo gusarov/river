@@ -1,26 +1,135 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using CSChaCha20;
+using River.Common;
 
-namespace River
+namespace River.ShadowSocks
 {
-	public class Socks5Client : SocksClient
+	public class ShadowSocksClient : SimpleNetworkStream
 	{
-		public Socks5Client()
-		{
+		readonly ChaCha20B _chacha;
 
+		Stream _underlying; // direct network stream
+		Stream _stream; // crypto stream
+		TcpClient _client;
+
+		static Encoding _encoding = new UTF8Encoding(false, false);
+		static MD5 _md5 = MD5.Create();
+		private readonly string _chachaPassword;
+
+		internal static byte[] Kdf(string password)
+		{
+			var pwd = _encoding.GetBytes(password);
+			var hash1 = _md5.ComputeHash(pwd);
+			var buf = new byte[hash1.Length + pwd.Length];
+			hash1.CopyTo(buf, 0);
+			pwd.CopyTo(buf, hash1.Length);
+			var hash2 = _md5.ComputeHash(buf);
+
+			buf = new byte[hash1.Length + hash2.Length];
+			hash1.CopyTo(buf, 0);
+			hash2.CopyTo(buf, 16);
+
+			return buf;
 		}
 
-		public Socks5Client(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		byte[] _nonce;
+
+		public ShadowSocksClient(string chachaPassword)
 		{
-			Plug(proxyHost, proxyPort);
-			Route(targetHost, targetPort, proxyDns);
+			_chachaPassword = chachaPassword;
+			var key = Kdf(chachaPassword);
+			_nonce = Guid.NewGuid().ToByteArray().Take(8).ToArray();
+			_chacha = new ChaCha20B(key, _nonce, 0);
 		}
 
-		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		/*
+		public ShadowSocksClient(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+			: base(proxyHost, proxyPort, targetHost, targetPort, proxyDns)
 		{
+		}
+		*/
+
+		public void Plug(string proxyHost, int proxyPort)
+		{
+			_client = new TcpClient(proxyHost, proxyPort);
+			_underlying = _client.GetStream();
+			_stream = new CustomCryptoStream(_underlying, Encrypt, Decrypt);
+			// _underlying.Write(_nonce);
+		}
+
+		/*
+		public override void Plug(Stream stream)
+		{
+			base.Plug(stream);
+			_stream = new CustomCryptoStream(_stream, Encrypt, Decrypt);
+		}
+		*/
+
+		// byte[] _encryptBuffer = new byte[16 * 1024];
+		bool _icSent;
+		void Encrypt(Stream underlying, byte[] buffer, int offset, int count)
+		{
+			if (offset != 0)
+			{
+				throw new NotSupportedException();
+			}
+			var encryptBuffer = _chacha.EncryptBytes(buffer, count);
+			if (_icSent)
+			{
+				_icSent = true;
+				var buf = new byte[encryptBuffer.Length + _nonce.Length];
+				_nonce.CopyTo(buf, 0);
+				encryptBuffer.CopyTo(buf, _nonce.Length);
+				encryptBuffer = buf;
+			}
+			underlying.Write(encryptBuffer, 0 , encryptBuffer.Length);
+		}
+
+		byte[] _decryptBuffer = new byte[16 * 1024];
+		int Decrypt(Stream underlying, byte[] buffer, int offset, int count)
+		{
+			var c = underlying.Read(_decryptBuffer, 0, _decryptBuffer.Length);
+			// decrypt
+			var dec = _chacha.DecryptBytes(_decryptBuffer, c);
+			if (count < dec.Length)
+			{
+				throw new NotSupportedException("Read buffer is to small, I don't have intermediate cache for this");
+			}
+			dec.CopyTo(buffer, offset);
+			return dec.Length;
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			_stream.Write(buffer, offset, count);
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			return _stream.Read(buffer, offset, count);
+		}
+
+		public void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			// _stream.Write(new byte[] { 1 });
+			// _underlying.Write(new byte[] { 1, 2 });
+			// _stream.Write(new byte[] { });
+			// _stream.Write(new byte[] { 1, 2});
+			// _underlying.Write(new byte[] { 1, 2, 3, 4 });
+			// _underlying.Write(new byte[] { 1, 2, 3, 4, 5 });
+			// _stream.Write(new byte[] { 1, 2, 3, 4, 5 });
+
 			// send authentication header
+
+			/*
 			_stream.Write(new byte[] {
 				0x05, // ver = 5
 				0x01, // count of auth methods supported
@@ -41,8 +150,8 @@ namespace River
 			{
 				throw new Exception("Server requires authentication");
 			}
-
 			// here authentication handshake can be added, but I don't see any reason to add clear text passwords
+			*/
 
 			// send the actual request
 			_stream.WriteByte(0x05); // ver = 5
@@ -124,20 +233,36 @@ namespace River
 					break;
 				case 4:
 					// IPv6
-					readed  += _stream.Read(response, readed, 16);
+					readed += _stream.Read(response, readed, 16);
 					break;
 				default:
 					throw new Exception("Response address type not supported!");
 			}
 			readed += _stream.Read(response, readed, 2); // port
-			// we don't need those values because it is stream, not bind
-			
+														 // we don't need those values because it is stream, not bind
+
 			// from now, any subsequent byte is a part of the stream, including remaining part of the network buffer
 			if (_client != null)
 			{
 				_client.NoDelay = true;
 				_client.Client.NoDelay = true;
 			}
+		}
+
+		protected static byte[] GetPortBytes(int targetPort)
+		{
+			var portBuf = BitConverter.GetBytes(checked((ushort)targetPort));
+			if (BitConverter.IsLittleEndian)
+			{
+				portBuf = new[] { portBuf[1], portBuf[0], };
+			}
+#if DEBUG
+			if (portBuf.Length != 2)
+			{
+				throw new Exception("Fatal: portBuf must be 2 bytes");
+			}
+#endif
+			return portBuf;
 		}
 
 		string GetResponseErrorMessage(byte responseCode)
@@ -166,6 +291,5 @@ namespace River
 					return "Unknown";
 			}
 		}
-
 	}
 }

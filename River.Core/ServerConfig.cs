@@ -3,7 +3,7 @@ using System.Net;
 
 namespace River
 {
-	public class ListenerConfig
+	public class ServerConfig
 	{
 		public IList<IPEndPoint> EndPoints { get; set; } = new List<IPEndPoint>();
 	}

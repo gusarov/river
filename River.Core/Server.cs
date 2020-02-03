@@ -4,17 +4,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using River.Common;
 
 namespace River
 {
 
 	public abstract class Server : IDisposable
 	{
-		public Forwarder Forwarder { get; set; } = new NullForwarder();
+		public Forwarder Forwarder { get; set; } // = new NullForwarder();
 
 		List<TcpListener> _tcpListeners = new List<TcpListener>();
 
-		public Server(ListenerConfig data)
+		public Server(ServerConfig data)
 		{
 			lock (_tcpListeners)
 			{
@@ -46,9 +47,21 @@ namespace River
 				}
 			});
 			*/
-			await AcceptAsync(listener);
-			AcceptCycleAsync(listener);
+			try
+			{
+				await AcceptAsync(listener);
+				await _debuggerTracker.NormalAsync(); // wait till exit from pause
+				AcceptCycleAsync(listener);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Stopping due to: " + ex);
+				Dispose();
+				throw;
+			}
 		}
+
+		DebuggerTracker _debuggerTracker = new DebuggerTracker();
 
 		protected abstract Handler CreateHandler(TcpClient client);
 

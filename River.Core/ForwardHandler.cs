@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace River
@@ -8,7 +10,9 @@ namespace River
 	public abstract class ForwardHandler : IDisposable
 	{
 		private readonly Forwarder _forwarder;
-		protected Stream _stream;
+		private ForwardHandler _nextForwarderHandler;
+		protected Stream _upstream;
+		// protected Stream _downstream;
 
 		public ForwardHandler(Forwarder forwarder)
 		{
@@ -17,21 +21,46 @@ namespace River
 
 		byte[] _readBuffer = new byte[1024 * 16];
 
-		protected abstract Stream EstablishConnectionCore(DestinationIdentifier destination);
+		protected abstract Stream EstablishConnectionCore(DestinationIdentifier id);
 
-		public void EstablishConnection(DestinationIdentifier destination)
+		public void EstablishConnection(DestinationIdentifier id)
 		{
-			_stream = EstablishConnectionCore(destination);
-			_stream.BeginRead(_readBuffer, 0, _readBuffer.Length, Received, null);
+			if (_forwarder.NextForwarder != null)
+			{
+				_nextForwarderHandler = _forwarder.NextForwarder.CreateForwardHandler();
+				_nextForwarderHandler.EstablishConnection(id);
+			}
+			else
+			{
+				_upstream = EstablishConnectionCore(id);
+				_upstream.BeginRead(_readBuffer, 0, _readBuffer.Length, Received, null);
+			}
+		}
+
+		public void Route(DestinationIdentifier destination)
+		{
+			// _original = original;
+			// _stream = original ?? EstablishConnectionCore(destination);
+			// _stream.BeginRead(_readBuffer, 0, _readBuffer.Length, Received, null);
 		}
 
 		void Received(IAsyncResult ar)
 		{
-			var bytes = _stream.EndRead(ar);
+			var bytes = _upstream.EndRead(ar);
+
+			Trace.WriteLine("<<<< \r\n" + Encoding.ASCII.GetString(_readBuffer, 0, bytes));
+
+			if (bytes == 0)
+			{
+				Dispose();
+				return;
+			}
+
 			// _forwarder.ReceivedFromUpstream(_readBuffer, 0, bytes);
+
 			if (!_isDisposing)
 			{
-				_stream.BeginRead(_readBuffer, 0, _readBuffer.Length, Received, null);
+				_upstream.BeginRead(_readBuffer, 0, _readBuffer.Length, Received, null);
 			}
 		}
 
@@ -39,10 +68,10 @@ namespace River
 		{
 			// envelope data by chain
 			(buf, pos, cnt) = _forwarder.Pack(buf, pos, cnt);
-			Trace.WriteLine("Forward Packet: \r\n" + Encoding.ASCII.GetString(buf, pos, cnt));
+			Trace.WriteLine(">>>> \r\n" + Encoding.ASCII.GetString(buf, pos, cnt));
 
 			// send to upstream
-			_stream.Write(buf, pos, cnt);
+			_upstream.Write(buf, pos, cnt);
 		}
 
 		bool _isDisposing;

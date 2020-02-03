@@ -17,11 +17,18 @@ namespace River.Socks
 		public SocksForwardHandler(SocksForwarder forwarder) : base(forwarder)
 		{
 			_forwarder = forwarder;
+			_client = new Socks4Client();
 		}
 
-		protected override Stream EstablishConnectionCore(DestinationIdentifier destination)
+		protected override Stream EstablishConnectionCore(DestinationIdentifier id)
 		{
-			_client = new Socks4Client(_forwarder.Host, _forwarder.Port, destination.Host ?? destination.IPAddress.ToString(), destination.Port, true);
+			_client.Plug(_forwarder.Host, _forwarder.Port);
+			/*
+				_forwarder.Host, _forwarder.Port
+				, destination.Host ?? destination.IPAddress.ToString()
+				, destination.Port, true
+				);
+			*/
 
 			return _client;
 		}

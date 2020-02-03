@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Text;
 
 namespace River
 {
@@ -108,7 +109,7 @@ namespace River
 
 		ForwardHandler _forwardHandler;
 
-		protected void EstablishForwardConnection(DestinationIdentifier id)
+		protected void EstablishUpstream(DestinationIdentifier id)
 		{
 			_forwardHandler = _server.Forwarder.CreateForwardHandler();
 			_forwardHandler.EstablishConnection(id);
@@ -116,6 +117,7 @@ namespace River
 
 		protected void SendForward(byte[] buf, int pos, int cnt)
 		{
+			// Trace.WriteLine(Encoding.UTF8.GetString(buf, pos, cnt));
 			_forwardHandler.Send(buf, pos, cnt);
 		}
 
