@@ -23,7 +23,48 @@ namespace River.ConsoleServer
 			cli2.Plug(cli);
 			cli2.Route("10.7.0.1", 80);
 
+			void read()
+			{
+				var buf = new byte[1024 * 1024];
+				var c = cli2.Read(buf, 0, buf.Length);
+				if (c > 0)
+				{
+					var str = Encoding.UTF8.GetString(buf, 0, c);
+					Console.WriteLine(str);
+					Console.WriteLine("\r\n==========<< " + c);
+					Task.Run(delegate
+					{
+						read();
+					});
+				}
+			}
+			Task.Run(delegate
+			{
+				read();
+			});
+
+			cli2.Write(Encoding.ASCII.GetBytes(@"GET / HTTP/1.1
+Host: httpbin.org
+Keep-Alive: true
+
+"));
+
+
+			/*
+			Thread.Sleep(1000);
+			Console.WriteLine("============");
+			*/
+			Console.ReadLine();
+
+			cli2.Write(Encoding.ASCII.GetBytes(@"GET / HTTP/1.1
+Host: httpbin.org
+
+"));
+
+			Console.ReadLine();
+
 			cli2.Write(Encoding.ASCII.GetBytes("GET /\r\n\r\n"));
+			/*
 			var buf = new byte[1024 * 1024];
 			var c = cli2.Read(buf, 0, buf.Length);
 			var str = Encoding.UTF8.GetString(buf, 0, c);
@@ -33,6 +74,7 @@ namespace River.ConsoleServer
 				Console.WriteLine("THIS WORKS!!!");
 			}
 			Console.ReadLine();
+			*/
 		}
 
 		static void Main22(string[] args)
