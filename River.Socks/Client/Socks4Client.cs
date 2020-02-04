@@ -97,13 +97,6 @@ namespace River
 			{
 				throw new Exception($"First byte of responce expected to be 0x5A actual {response[1]:X}");
 			}
-
-			// now connected
-			// TODO: actually this should be enabled only after last chain node rounted
-			if (_client != null)
-			{
-				_client.Client.NoDelay = true;
-			}
 		}
 
 	}

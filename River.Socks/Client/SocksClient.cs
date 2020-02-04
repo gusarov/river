@@ -1,4 +1,5 @@
-﻿using System;
+﻿using River.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
@@ -25,7 +26,8 @@ namespace River
 				throw new Exception("Already been plugged");
 			}
 			_client = new TcpClient(proxyHost, proxyPort);
-			_stream = _client.GetStream();
+			_client.Client.NoDelay = true;
+			_stream = new MustFlushStream(_client.GetStream());
 		}
 
 		/// <summary>
@@ -58,13 +60,13 @@ namespace River
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			_stream.Flush();
 			return _stream.Read(buffer, offset, count);
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			_stream.Write(buffer, offset, count);
+			_stream.Flush();
 		}
 
 		public override void Flush()

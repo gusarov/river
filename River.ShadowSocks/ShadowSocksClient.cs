@@ -24,7 +24,6 @@ namespace River.ShadowSocks
 
 		static Encoding _encoding = new UTF8Encoding(false, false);
 		static MD5 _md5 = MD5.Create();
-		private readonly string _chachaPassword;
 
 		internal static byte[] Kdf(string password)
 		{
@@ -48,7 +47,6 @@ namespace River.ShadowSocks
 
 		public ShadowSocksClient(string chachaPassword)
 		{
-			_chachaPassword = chachaPassword;
 			_key = Kdf(chachaPassword);
 			_nonce = Guid.NewGuid().ToByteArray().Take(_nonceLen).ToArray();
 			_chachaEncrypt = new ChaCha20B(_key, _nonce, 0);
@@ -80,48 +78,60 @@ namespace River.ShadowSocks
 		}
 		
 
-		// byte[] _encryptBuffer = new byte[16 * 1024];
+		byte[] _encryptBuffer = new byte[16 * 1024];
 		bool _icSent;
 		bool _icReceived;
 		void Encrypt(Stream underlying, byte[] buffer, int offset, int count)
 		{
-			if (offset != 0)
+#if DEBUG
+			if (count > _encryptBuffer.Length - (_icSent ? 0 : _nonceLen))
 			{
-				throw new NotSupportedException();
+				throw new Exception("Not enough buffer to serve this request");
 			}
-			var encryptBuffer = _chachaEncrypt.EncryptBytes(buffer, count);
+#endif
+			// var extra = _icSent ? 0 : _nonceLen;
+			// var cnt = Math.Min(_encryptBuffer.Length - extra, count);
+			_chachaEncrypt.Crypt(buffer, offset, _encryptBuffer, _icSent ? 0 : _nonceLen, count);
 			if (!_icSent)
 			{
+				_nonce.CopyTo(_encryptBuffer, 0); // crypt been done with a shift to left this space for nonce
+				count += _nonceLen;
 				_icSent = true;
-				var buf = new byte[_nonce.Length + encryptBuffer.Length];
-				_nonce.CopyTo(buf, 0);
-				encryptBuffer.CopyTo(buf, _nonce.Length);
-				encryptBuffer = buf;
 			}
-			underlying.Write(encryptBuffer, 0 , encryptBuffer.Length);
+			underlying.Write(_encryptBuffer, 0 , count);
 		}
 
-		byte[] _decryptBuffer = new byte[16 * 1024];
+		byte[] _readBuffer = new byte[16 * 1024];
 		int Decrypt(Stream underlying, byte[] buffer, int offset, int count)
 		{
-			var c = underlying.Read(_decryptBuffer, 0, _decryptBuffer.Length);
+			var extra = _icReceived ? 0 : _nonceLen;
+			var cnt = Math.Min(_readBuffer.Length, count + extra);
+
+			var r = underlying.Read(_readBuffer, 0, cnt);
+			if (r == 0) return 0;
+			var ro = 0;
+
 			if (!_icReceived)
 			{
-				_serverNonce = _decryptBuffer.Take(_nonceLen).ToArray();
+				_serverNonce = new byte[_nonceLen];
+				Array.Copy(_readBuffer, 0, _serverNonce, 0, _nonceLen);
 				_icReceived = true;
-				_decryptBuffer = _decryptBuffer.Skip(_nonceLen).ToArray();
-				_chachaDecrypt = new ChaCha20B(_key, _serverNonce, 0);
-				c -= _nonceLen;
+				r -= _nonceLen;
+				ro += _nonceLen;
+				_chachaDecrypt = new ChaCha20B(_key, _serverNonce);
 			}
 
-			// decrypt
-			var dec = _chachaDecrypt.DecryptBytes(_decryptBuffer, c);
-			if (count < dec.Length)
+#if DEBUG
+			if (count < r)
 			{
-				throw new NotSupportedException("Read buffer is to small, I don't have intermediate cache for this");
+				// this can only happen when
+				throw new Exception("Underlying stream returned more than requested");
 			}
-			dec.CopyTo(buffer, offset);
-			return dec.Length;
+#endif
+
+			// decrypt by blocks
+			_chachaDecrypt.Crypt(_readBuffer, ro, buffer, offset, r);
+			return r;
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)

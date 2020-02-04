@@ -24,12 +24,12 @@ namespace CSChaCha20
 	/// <summary>
 	/// Class that can be used for ChaCha20 encryption / decryption
 	/// </summary>
-	public sealed class ChaCha20B : IDisposable
+	public sealed class ChaCha20B
 	{
 		/// <summary>
 		/// Only allowed key lenght in bytes
 		/// </summary>
-		public const int allowedKeyLength = 32;
+		public const int _allowedKeyLength = 32;
 
 		/// <summary>
 		/// Only allowed nonce lenght in bytes
@@ -39,19 +39,14 @@ namespace CSChaCha20
 		/// <summary>
 		/// How many bytes are processed per loop
 		/// </summary>
-		public const int processBytesAtTime = 64;
+		public const int _blockSize = 64;
 
-		private const int stateLength = 16;
+		private const int _stateLength = 16;
 
 		/// <summary>
 		/// The ChaCha20 state (aka "context")
 		/// </summary>
-		private uint[] state;
-
-		/// <summary>
-		/// Determines if the objects in this class have been disposed of. Set to true by the Dispose() method.
-		/// </summary>
-		private bool isDisposed;
+		private uint[] _state;
 
 		/// <summary>
 		/// Set up a new ChaCha20 state. The lengths of the given parameters are checked before encryption happens.
@@ -68,15 +63,15 @@ namespace CSChaCha20
 		/// <param name="counter">
 		/// A 4-byte (32-bit) block counter, treated as a 32-bit little-endian integer
 		/// </param>
-		public ChaCha20B(byte[] key, byte[] nonce, uint counter)
+		public ChaCha20B(byte[] key, byte[] nonce, uint counter = 0)
 		{
-			this.state = new uint[stateLength];
-			this.isDisposed = false;
+			_state = new uint[_stateLength];
 
-			this.KeySetup(key);
-			this.IvSetup(nonce, counter);
+			KeySetup(key);
+			IvSetup(nonce, counter);
 		}
 
+		/*
 		/// <summary>
 		/// The ChaCha20 state (aka "context"). Read-Only.
 		/// </summary>
@@ -87,12 +82,13 @@ namespace CSChaCha20
 				return this.state;
 			}
 		}
+		*/
 
 
 		// These are the same constants defined in the reference implementation.
 		// http://cr.yp.to/streamciphers/timings/estreambench/submissions/salsa20/chacha8/ref/chacha.c
-		private static readonly byte[] sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
-		private static readonly byte[] tau = Encoding.ASCII.GetBytes("expand 16-byte k");
+		private static readonly byte[] _sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
+		private static readonly byte[] _tau = Encoding.ASCII.GetBytes("expand 16-byte k");
 
 		/// <summary>
 		/// Set up the ChaCha state with the given key. A 32-byte key is required and enforced.
@@ -107,28 +103,28 @@ namespace CSChaCha20
 				throw new ArgumentNullException("Key is null");
 			}
 
-			if (key.Length != allowedKeyLength)
+			if (key.Length != _allowedKeyLength)
 			{
-				throw new ArgumentException($"Key length must be {allowedKeyLength}. Actual: {key.Length}");
+				throw new ArgumentException($"Key length must be {_allowedKeyLength}. Actual: {key.Length}");
 			}
 
-			state[4] = Util.U8To32Little(key, 0);
-			state[5] = Util.U8To32Little(key, 4);
-			state[6] = Util.U8To32Little(key, 8);
-			state[7] = Util.U8To32Little(key, 12);
+			_state[4] = Util.U8To32Little(key, 0);
+			_state[5] = Util.U8To32Little(key, 4);
+			_state[6] = Util.U8To32Little(key, 8);
+			_state[7] = Util.U8To32Little(key, 12);
 
-			byte[] constants = (key.Length == allowedKeyLength) ? sigma : tau;
-			int keyIndex = key.Length - 16;
+			var constants = (key.Length == _allowedKeyLength) ? _sigma : _tau;
+			var keyIndex = key.Length - 16;
 
-			state[8] = Util.U8To32Little(key, keyIndex + 0);
-			state[9] = Util.U8To32Little(key, keyIndex + 4);
-			state[10] = Util.U8To32Little(key, keyIndex + 8);
-			state[11] = Util.U8To32Little(key, keyIndex + 12);
+			_state[8] = Util.U8To32Little(key, keyIndex + 0);
+			_state[9] = Util.U8To32Little(key, keyIndex + 4);
+			_state[10] = Util.U8To32Little(key, keyIndex + 8);
+			_state[11] = Util.U8To32Little(key, keyIndex + 12);
 
-			state[0] = Util.U8To32Little(constants, 0);
-			state[1] = Util.U8To32Little(constants, 4);
-			state[2] = Util.U8To32Little(constants, 8);
-			state[3] = Util.U8To32Little(constants, 12);
+			_state[0] = Util.U8To32Little(constants, 0);
+			_state[1] = Util.U8To32Little(constants, 4);
+			_state[2] = Util.U8To32Little(constants, 8);
+			_state[3] = Util.U8To32Little(constants, 12);
 		}
 
 		/// <summary>
@@ -140,201 +136,81 @@ namespace CSChaCha20
 		/// <param name="counter">
 		/// A 4-byte (32-bit) block counter, treated as a 32-bit little-endian integer
 		/// </param>
-		private void IvSetup(byte[] nonce, uint counter)
+		public void IvSetup(byte[] nonce, uint counter = 0)
 		{
 			if (nonce == null)
 			{
 				// There has already been some state set up. Clear it before exiting.
-				Dispose();
 				throw new ArgumentNullException("Nonce is null");
 			}
 
-			
 			if (nonce.Length != 8 && nonce.Length != 12)
 			{
 				// There has already been some state set up. Clear it before exiting.
-				Dispose();
 				throw new ArgumentException($"Nonce length must be 8 or 12. Actual: {nonce.Length}");
 			}
-			
 
-			state[12] = counter;
+			_state[12] = counter;
 			if (nonce.Length == 8)
 			{
-				state[13] = 0;
-				state[14] = Util.U8To32Little(nonce, 0);
-				state[15] = Util.U8To32Little(nonce, 4);
+				_state[13] = 0;
+				_state[14] = Util.U8To32Little(nonce, 0);
+				_state[15] = Util.U8To32Little(nonce, 4);
 			}
 			else if (nonce.Length == 12)
 			{
-				state[13] = Util.U8To32Little(nonce, 0);
-				state[14] = Util.U8To32Little(nonce, 4);
-				state[15] = Util.U8To32Little(nonce, 8);
+				_state[13] = Util.U8To32Little(nonce, 0);
+				_state[14] = Util.U8To32Little(nonce, 4);
+				_state[15] = Util.U8To32Little(nonce, 8);
 			}
 		}
 
-
-		#region Encryption methods
-
-		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		public void EncryptBytes(byte[] output, byte[] input, int numBytes)
+		public byte[] EncryptBytes(byte[] data)
 		{
-			WorkBytes(output, input, numBytes);
+			var buf = new byte[data.Length];
+			Crypt(data, 0, buf, 0, data.Length);
+			return buf;
+		}
+
+		public void EncryptBytes(byte[] output, byte[] data, int count = -1)
+		{
+			if (count == -1) count = data.Length;
+			Crypt(data, 0, output, 0, data.Length);
+		}
+
+		public byte[] DecryptBytes(byte[] data)
+		{
+			var buf = new byte[data.Length];
+			Crypt(data, 0, buf, 0, data.Length);
+			return buf;
+		}
+
+		public void DecryptBytes(byte[] output, byte[] data, int count = -1)
+		{
+			if (count == -1) count = data.Length;
+			Crypt(data, 0, output, 0, data.Length);
 		}
 
 		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
+		/// Keep track of how many bytes already fulfilled in current block
 		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		public void EncryptBytes(byte[] output, byte[] input)
-		{
-			WorkBytes(output, input, input.Length);
-		}
+		int _currentBlockBytes;
 
 		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
+		/// Encrypt or decrypt the buffers (this is bidirectional for chacha due to xor)
 		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public byte[] EncryptBytes(byte[] input, int numBytes)
+		public void Crypt(byte[] sourceArray, int sourceIndex, byte[] destinationArray, int destinationIndex, int length)
 		{
-			byte[] returnArray = new byte[numBytes];
-			WorkBytes(returnArray, input, numBytes);
-			return returnArray;
-		}
-
-		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public byte[] EncryptBytes(byte[] input)
-		{
-			byte[] returnArray = new byte[input.Length];
-			WorkBytes(returnArray, input, input.Length);
-			return returnArray;
-		}
-
-		/// <summary>
-		/// Encrypt string as UTF8 byte array, returns byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Here you can NOT swap encrypt and decrypt methods, because of bytes-string transform</remarks>
-		/// <param name="input">Input string</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public byte[] EncryptString(string input)
-		{
-			byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(input);
-			byte[] returnArray = new byte[utf8Bytes.Length];
-
-			WorkBytes(returnArray, utf8Bytes, utf8Bytes.Length);
-			return returnArray;
-		}
-
-		#endregion // Encryption methods
-
-
-		#region // Decryption methods
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array to the output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array</param>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to decrypt</param>
-		public void DecryptBytes(byte[] output, byte[] input, int numBytes)
-		{
-			WorkBytes(output, input, numBytes);
-		}
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		public void DecryptBytes(byte[] output, byte[] input)
-		{
-			WorkBytes(output, input, input.Length);
-		}
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		/// <returns>Byte array that contains decrypted bytes</returns>
-		public byte[] DecryptBytes(byte[] input, int numBytes)
-		{
-			byte[] returnArray = new byte[numBytes];
-			WorkBytes(returnArray, input, numBytes);
-			return returnArray;
-		}
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <returns>Byte array that contains decrypted bytes</returns>
-		public byte[] DecryptBytes(byte[] input)
-		{
-			byte[] returnArray = new byte[input.Length];
-			WorkBytes(returnArray, input, input.Length);
-			return returnArray;
-		}
-
-		/// <summary>
-		/// Decrypt UTF8 byte array to string.
-		/// </summary>
-		/// <remarks>Here you can NOT swap encrypt and decrypt methods, because of bytes-string transform</remarks>
-		/// <param name="input">Byte array</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public string DecryptUTF8ByteArray(byte[] input)
-		{
-			byte[] tempArray = new byte[input.Length];
-
-			WorkBytes(tempArray, input, input.Length);
-			return System.Text.Encoding.UTF8.GetString(tempArray);
-		}
-
-		#endregion // Decryption methods
-
-		/// <summary>
-		/// Encrypt or decrypt an arbitrary-length byte array (input), writing the resulting byte array to the output buffer. The number of bytes to read from the input buffer is determined by numBytes.
-		/// </summary>
-		/// <param name="output"></param>
-		/// <param name="input"></param>
-		/// <param name="numBytes"></param>
-		private void WorkBytes(byte[] output, byte[] input, int numBytes)
-		{
-			if (isDisposed)
+			if (sourceArray == null)
 			{
-				throw new ObjectDisposedException("state", "The ChaCha state has been disposed");
+				throw new ArgumentNullException(nameof(sourceArray), $"{nameof(sourceArray)} cannot be null");
 			}
-
-			if (input == null)
+			if (destinationArray == null)
 			{
-				throw new ArgumentNullException("input", "Input cannot be null");
+				throw new ArgumentNullException(nameof(destinationArray), $"{nameof(destinationArray)} cannot be null");
 			}
 
-			if (output == null)
-			{
-				throw new ArgumentNullException("output", "Output cannot be null");
-			}
-
+			/*
 			if (numBytes < 0 || numBytes > input.Length)
 			{
 				throw new ArgumentOutOfRangeException("numBytes", "The number of bytes to read must be between [0..input.Length]");
@@ -344,18 +220,17 @@ namespace CSChaCha20
 			{
 				throw new ArgumentOutOfRangeException("output", $"Output byte array should be able to take at least {numBytes}");
 			}
+			*/
 
-			uint[] x = new uint[stateLength];    // Working buffer
-			byte[] tmp = new byte[processBytesAtTime];  // Temporary buffer
-			int outputOffset = 0;
-			int inputOffset = 0;
+			var x = new uint[_stateLength];    // Working buffer
+			var tmp = new byte[_blockSize];  // Temporary buffer
 
-			while (numBytes > 0)
+			while (length > 0)
 			{
 				// Copy state to working buffer
-				Buffer.BlockCopy(this.state, 0, x, 0, stateLength * sizeof(uint));
+				Buffer.BlockCopy(_state, 0, x, 0, _stateLength * sizeof(uint));
 
-				for (int i = 0; i < 10; i++)
+				for (var i = 0; i < 10; i++)
 				{
 					QuarterRound(x, 0, 4, 8, 12);
 					QuarterRound(x, 1, 5, 9, 13);
@@ -368,37 +243,34 @@ namespace CSChaCha20
 					QuarterRound(x, 3, 4, 9, 14);
 				}
 
-				for (int i = 0; i < stateLength; i++)
+				for (var i = 0; i < _stateLength; i++)
 				{
-					Util.ToBytes(tmp, Util.Add(x[i], this.state[i]), 4 * i);
+					Util.ToBytes(tmp, Util.Add(x[i], _state[i]), 4 * i);
 				}
 
-				this.state[12] = Util.AddOne(state[12]);
-				if (this.state[12] <= 0)
+				var remainedInCurrent = _blockSize - _currentBlockBytes;
+				var m = length >= remainedInCurrent ? remainedInCurrent : length;
+				for (var i = 0; i < m; i++)
 				{
-					/* Stopping at 2^70 bytes per nonce is the user's responsibility */
-					this.state[13] = Util.AddOne(state[13]);
+					destinationArray[i + destinationIndex] = (byte)(sourceArray[i + sourceIndex] ^ tmp[i + _currentBlockBytes]);
 				}
 
-				// In case these are last bytes
-				if (numBytes <= processBytesAtTime)
+				length -= m;
+				destinationIndex += m;
+				sourceIndex += m;
+				_currentBlockBytes += m;
+				if (_currentBlockBytes == _blockSize)
 				{
-					for (int i = 0; i < numBytes; i++)
+					_currentBlockBytes = 0;
+					_state[12] = Util.AddOne(_state[12]);
+
+					// TODO Need prove of this from spec:
+					if (_state[12] <= 0) // less is extra prove here. Actually counter is uint [0...]
 					{
-						output[i + outputOffset] = (byte)(input[i + inputOffset] ^ tmp[i]);
+						// Stopping at 2^70 bytes per nonce is the user's responsibility
+						_state[13] = Util.AddOne(_state[13]);
 					}
-
-					return;
 				}
-
-				for (int i = 0; i < processBytesAtTime; i++)
-				{
-					output[i + outputOffset] = (byte)(input[i + inputOffset] ^ tmp[i]);
-				}
-
-				numBytes -= processBytesAtTime;
-				outputOffset += processBytesAtTime;
-				inputOffset += processBytesAtTime;
 			}
 		}
 
@@ -428,58 +300,6 @@ namespace CSChaCha20
 			x[c] = Util.Add(x[c], x[d]);
 			x[b] = Util.Rotate(Util.XOr(x[b], x[c]), 7);
 		}
-
-		#region Destructor and Disposer
-
-		/// <summary>
-		/// Clear and dispose of the internal state. The finalizer is only called if Dispose() was never called on this cipher.
-		/// </summary>
-		~ChaCha20B()
-		{
-			Dispose(false);
-		}
-
-		/// <summary>
-		/// Clear and dispose of the internal state. Also request the GC not to call the finalizer, because all cleanup has been taken care of.
-		/// </summary>
-		public void Dispose()
-		{
-			Dispose(true);
-			/*
-			 * The Garbage Collector does not need to invoke the finalizer because Dispose(bool) has already done all the cleanup needed.
-			 */
-			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// This method should only be invoked from Dispose() or the finalizer. This handles the actual cleanup of the resources.
-		/// </summary>
-		/// <param name="disposing">
-		/// Should be true if called by Dispose(); false if called by the finalizer
-		/// </param>
-		private void Dispose(bool disposing)
-		{
-			if (!isDisposed)
-			{
-				if (disposing)
-				{
-					/* Cleanup managed objects by calling their Dispose() methods */
-				}
-
-				/* Cleanup any unmanaged objects here */
-				if (state != null)
-				{
-					Array.Clear(state, 0, state.Length);
-				}
-
-				state = null;
-			}
-
-			isDisposed = true;
-		}
-
-		#endregion // Destructor and Disposer
-
 
 		/// <summary>
 		/// Utilities that are used during compression
