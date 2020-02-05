@@ -42,21 +42,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientStream.cs" />
     <Compile Include="Common\CustomCryptoStream.cs" />
     <Compile Include="Common\DebuggerTracker.cs" />
     <Compile Include="Common\MustFlushStream.cs" />
     <Compile Include="DestinationIdentifier.cs" />
-    <Compile Include="Forwarder.cs" />
-    <Compile Include="ForwardHandler.cs" />
+    <Compile Include="Generic\TcpServer.cs" />
     <Compile Include="Handler.cs" />
+    <Compile Include="Resolver.cs" />
     <Compile Include="ServerConfig.cs" />
-    <Compile Include="Server.cs" />
-    <Compile Include="Null\NullForwarder.cs" />
-    <Compile Include="Null\NullForwardHandler.cs" />
+    <Compile Include="RiverServer.cs" />
+    <Compile Include="Null\NullClientStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\SimpleNetworkStream.cs" />
     <Compile Include="Common\StreamExtensions.cs" />
     <Compile Include="Common\Trace.cs" />
+    <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>2.9.8</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

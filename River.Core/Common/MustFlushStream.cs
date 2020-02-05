@@ -3,11 +3,14 @@ using System.IO;
 
 namespace River.Common
 {
+	/// <summary>
+	/// A stream that you must flush to promote write. Basically a write buffer.
+	/// </summary>
 	public class MustFlushStream : SimpleNetworkStream
 	{
 		private readonly Stream _underlying;
 
-		public MustFlushStream(Stream underlying, int bufferLen = 16*1024)
+		public MustFlushStream(Stream underlying, int bufferLen = 16 * 1024)
 		{
 			_underlying = underlying;
 			_buffer = new byte[bufferLen];
@@ -24,22 +27,23 @@ namespace River.Common
 		{
 			if (count < (_buffer.Length - _bufferPos))
 			{
+				// it perfectly fits to the remained buffer
 				Array.Copy(buffer, offset, _buffer, _bufferPos, count);
 				_bufferPos += count;
 			}
 			else
 			{
-				// flush existing
+				// flush existing first
 				Flush();
 
 				if (count >= buffer.Length)
 				{
-					// do not cache large requests
+					// too large - do not cache
 					_underlying.Write(buffer, offset, count);
 				}
 				else
 				{
-					// just call one more time. This time buffer is empty;
+					// just call one more time. This time buffer is empty after flush
 					Write(buffer, offset, count);
 				}
 			}

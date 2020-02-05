@@ -1,6 +1,7 @@
 ﻿/*
  * Copyright (c) 2015, 2018 Scott Bennett
  *           (c) 2018 Kaarlo Räihä
+ *           (c) 2020 Dmitry Gusarov
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,19 +28,14 @@ namespace CSChaCha20
 	public sealed class ChaCha20B
 	{
 		/// <summary>
-		/// Only allowed key lenght in bytes
+		/// Key lenght in bytes
 		/// </summary>
-		public const int _allowedKeyLength = 32;
-
-		/// <summary>
-		/// Only allowed nonce lenght in bytes
-		/// </summary>
-		// public const HashSint allowedNonceLength = 12;
+		public const int KeyLength = 32;
 
 		/// <summary>
 		/// How many bytes are processed per loop
 		/// </summary>
-		public const int _blockSize = 64;
+		public const int BlockSize = 64;
 
 		private const int _stateLength = 16;
 
@@ -71,19 +67,6 @@ namespace CSChaCha20
 			IvSetup(nonce, counter);
 		}
 
-		/*
-		/// <summary>
-		/// The ChaCha20 state (aka "context"). Read-Only.
-		/// </summary>
-		public uint[] State
-		{
-			get
-			{
-				return this.state;
-			}
-		}
-		*/
-
 
 		// These are the same constants defined in the reference implementation.
 		// http://cr.yp.to/streamciphers/timings/estreambench/submissions/salsa20/chacha8/ref/chacha.c
@@ -103,9 +86,9 @@ namespace CSChaCha20
 				throw new ArgumentNullException("Key is null");
 			}
 
-			if (key.Length != _allowedKeyLength)
+			if (key.Length != KeyLength)
 			{
-				throw new ArgumentException($"Key length must be {_allowedKeyLength}. Actual: {key.Length}");
+				throw new ArgumentException($"Key length must be {KeyLength}. Actual: {key.Length}");
 			}
 
 			_state[4] = Util.U8To32Little(key, 0);
@@ -113,7 +96,7 @@ namespace CSChaCha20
 			_state[6] = Util.U8To32Little(key, 8);
 			_state[7] = Util.U8To32Little(key, 12);
 
-			var constants = (key.Length == _allowedKeyLength) ? _sigma : _tau;
+			var constants = (key.Length == KeyLength) ? _sigma : _tau;
 			var keyIndex = key.Length - 16;
 
 			_state[8] = Util.U8To32Little(key, keyIndex + 0);
@@ -222,8 +205,8 @@ namespace CSChaCha20
 			}
 			*/
 
-			var x = new uint[_stateLength];    // Working buffer
-			var tmp = new byte[_blockSize];  // Temporary buffer
+			var x = new uint[_stateLength]; // Working buffer
+			var tmp = new byte[BlockSize];  // Temporary buffer
 
 			while (length > 0)
 			{
@@ -248,7 +231,7 @@ namespace CSChaCha20
 					Util.ToBytes(tmp, Util.Add(x[i], _state[i]), 4 * i);
 				}
 
-				var remainedInCurrent = _blockSize - _currentBlockBytes;
+				var remainedInCurrent = BlockSize - _currentBlockBytes;
 				var m = length >= remainedInCurrent ? remainedInCurrent : length;
 				for (var i = 0; i < m; i++)
 				{
@@ -259,7 +242,7 @@ namespace CSChaCha20
 				destinationIndex += m;
 				sourceIndex += m;
 				_currentBlockBytes += m;
-				if (_currentBlockBytes == _blockSize)
+				if (_currentBlockBytes == BlockSize)
 				{
 					_currentBlockBytes = 0;
 					_state[12] = Util.AddOne(_state[12]);

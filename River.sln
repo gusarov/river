@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.ConsoleServer", "River.ConsoleServer\River.ConsoleServer.csproj", "{6B7A2315-41B4-44D7-B682-DBCB50378014}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mouth", "Mouth", "{004DA493-FDC9-4AB7-BD58-400F97F5A709}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Core", "River.Core\River.Core.csproj", "{13257360-183C-4B42-A00E-293FF7358A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Socks", "River.Socks\River.Socks.csproj", "{8ADF475C-8E47-4B22-85F2-69614AF9144B}"
@@ -24,6 +22,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1BCEF205-580C-483D-B452-F82F2831B1CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.ShadowSocks.Test", "River.ShadowSocks.Test\River.ShadowSocks.Test.csproj", "{8D361075-47C4-4AFD-8220-31D79194D810}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9E7C94A6-0A84-4144-80A4-B784CB013F5C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

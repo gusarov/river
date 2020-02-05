@@ -9,14 +9,22 @@ namespace River.Socks
 {
 	public class SocksHandler : Handler
 	{
-		protected static readonly Encoding _utf = new UTF8Encoding(false, false);
-		private readonly SocksServer _server;
+		static readonly Encoding _utf = new UTF8Encoding(false, false);
+
+		/*
+		private new SocksServer _server => (SocksServer)base._server;
+
+		public SocksHandler()
+		{
+
+		}
 
 		public SocksHandler(SocksServer server, TcpClient client)
 			: base(server, client)
 		{
 			_server = server;
 		}
+		*/
 
 		IPAddress _addressRequested;
 		string _dnsNameRequested;
@@ -29,7 +37,7 @@ namespace River.Socks
 			// get request from client
 			if (EnsureReaded(1))
 			{
-				Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {_client.Client.RemoteEndPoint}");
+				Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
 
 				switch (_buffer[0])
 				{
@@ -103,7 +111,7 @@ namespace River.Socks
 									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 									SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 								}
-								_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
+								// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
 							}
 							catch (Exception exx)
 							{
@@ -126,6 +134,10 @@ namespace River.Socks
 							if (ex != null)
 							{
 								Dispose();
+							}
+							else
+							{
+								BeginStreaming();
 							}
 							// NOW Stream is established for forwarding
 						}
@@ -229,7 +241,9 @@ namespace River.Socks
 													Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 													SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 												}
-												_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
+												// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
+												BeginReadSource();
+												BeginReadTarget();
 											}
 											catch (Exception exx)
 											{
@@ -339,9 +353,10 @@ namespace River.Socks
 			}
 		}
 
+		/*
 		private void ReceivedStreaming(IAsyncResult ar)
 		{
-			if (_disposing)
+			if (Disposing)
 			{
 				return;
 			}
@@ -349,7 +364,7 @@ namespace River.Socks
 			{
 				var count = _stream.EndRead(ar);
 				Trace.WriteLine("Streaming - received from client >> " + count + " bytes");
-				if (count > 0 && _client.Connected)
+				if (count > 0 && Client.Connected)
 				{
 					SendForward(_buffer, 0, count);
 					_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -365,6 +380,6 @@ namespace River.Socks
 				Dispose();
 			}
 		}
-
+		*/
 	}
 }

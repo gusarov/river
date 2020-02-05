@@ -43,11 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Client\Socks4Client.cs" />
-    <Compile Include="Client\Socks5Client.cs" />
-    <Compile Include="Client\SocksClient.cs" />
-    <Compile Include="SocksForwarder.cs" />
-    <Compile Include="SocksForwardHandler.cs" />
+    <Compile Include="Socks4ClientStream.cs" />
+    <Compile Include="Socks5Client.cs" />
+    <Compile Include="SocksClientStream.cs" />
     <Compile Include="SocksHandler.cs" />
     <Compile Include="SocksServer.cs" />
   </ItemGroup>
@@ -57,6 +55,12 @@
       <Name>River.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>2.9.8</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

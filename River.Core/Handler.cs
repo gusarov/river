@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 
@@ -12,31 +13,58 @@ namespace River
 	/// </summary>
 	public abstract class Handler : IDisposable
 	{
-		protected TcpClient _client;
 		protected NetworkStream _stream;
+
 		protected byte[] _buffer = new byte[1024 * 16];
 		protected int _bufferReceivedCount;
-		private Server _server;
 
-		public Handler(Server server, TcpClient client)
+		protected byte[] _bufferTarget = new byte[1024 * 16];
+
+		protected RiverServer Server { get; private set; }
+		protected TcpClient Client { get; private set; }
+
+		public Handler()
 		{
-			_server = server;
-			_client = client;
+
+		}
+
+		public Handler(RiverServer server, TcpClient client)
+		{
+			Init(server, client);
+		}
+
+		public void Init(RiverServer server, TcpClient client)
+		{
+			Server = server ?? throw new ArgumentNullException(nameof(server));
+			Client = client ?? throw new ArgumentNullException(nameof(client));
 
 			// disable Nagle, carefully do write operations to prevent extra TCP transfers
 			// efficient write should contain complete packet for corresponding rotocol
-			_client.Client.NoDelay = true;
+			Client.Client.NoDelay = true;
 
-			_stream = _client.GetStream();
+			_stream = Client.GetStream();
 			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length, ReceivedHandshake, null);
 		}
 
-		protected bool _disposing;
+		#region Dispose
+
+		protected bool Disposing { get; private set; }
 
 		public void Dispose()
 		{
-			_disposing = true;
-			var client = _client;
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		~Handler()
+		{
+			Dispose(false);
+		}
+
+		protected virtual void Dispose(bool managed)
+		{
+			Disposing = true;
+			var client = Client;
 			var stream = _stream;
 			try
 			{
@@ -47,7 +75,7 @@ namespace River
 			try
 			{
 				client?.Close();
-				_client = null;
+				Client = null;
 			}
 			catch { }
 			try
@@ -58,6 +86,8 @@ namespace River
 			catch { }
 		}
 
+		#endregion
+
 		void ReceivedHandshake(IAsyncResult ar)
 		{
 			try
@@ -65,7 +95,7 @@ namespace River
 				int count;
 				_bufferReceivedCount += count = _stream.EndRead(ar);
 
-				if (count == 0 || !_client.Connected)
+				if (count == 0 || !Client.Connected)
 				{
 					Dispose();
 					return;
@@ -107,18 +137,82 @@ namespace River
 			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
 		}
 
-		ForwardHandler _forwardHandler;
-
-		protected void EstablishUpstream(DestinationIdentifier id)
+		protected void BeginStreaming()
 		{
-			_forwardHandler = _server.Forwarder.CreateForwardHandler();
-			_forwardHandler.EstablishConnection(id);
+			BeginReadSource();
+			BeginReadTarget();
+		}
+
+		protected void BeginReadSource()
+		{
+			_stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+		}
+
+		void Received(IAsyncResult ar)
+		{
+			var c = _stream.EndRead(ar);
+			_upstreamClient.Write(_buffer, 0, c);
+			_stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
 		}
 
 		protected void SendForward(byte[] buf, int pos, int cnt)
 		{
-			// Trace.WriteLine(Encoding.UTF8.GetString(buf, pos, cnt));
-			_forwardHandler.Send(buf, pos, cnt);
+			_upstreamClient.Write(buf, pos, cnt);
+		}
+
+		protected void BeginReadTarget()
+		{
+			_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+		}
+
+		private void TargetReceived(IAsyncResult ar)
+		{
+			var c = _upstreamClient.EndRead(ar);
+			_stream.Write(_bufferTarget, 0, c);
+			_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+		}
+
+		ClientStream _upstreamClient;
+
+		protected void EstablishUpstream(DestinationIdentifier target)
+		{
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			foreach (var proxy in Server.Chain)
+			{
+				var clientType = Resolver.GetClientStreamType(proxy.Uri);
+				var clientStream = (ClientStream)Activator.CreateInstance(clientType);
+				if (_upstreamClient == null)
+				{
+					// create a first client connection
+					clientStream.Plug(proxy.Uri.Host, proxy.Uri.Port);
+				}
+				else
+				{
+					// route in old client
+					_upstreamClient.Route(proxy.Uri.Host, proxy.Uri.Port);
+
+					// and now wrap to new one
+					clientStream.Plug(_upstreamClient);
+				}
+				_upstreamClient = clientStream;
+			}
+			if (_upstreamClient != null)
+			{
+				_upstreamClient.Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+			}
+			else
+			{
+				// dirrect connection
+				_upstreamClient = new NullClientStream();
+				_upstreamClient.Plug(target.Host ?? target.IPAddress.ToString(), target.Port);
+			}
+
+			// BeginReadSource();
+			// BeginReadTarget();
 		}
 
 	}

@@ -14,56 +14,77 @@ namespace River.Common
 	public class DebuggerTracker
 	{
 		const int _max = 5;
-		double maxSum(int count)
+		const double _maxSum = 15.5;
+
+		/*
+		static double MaxSum(int count)
 		{
 			if (count == 0)
 			{
 				return 0.5; // extra for stability
 			}
-			return 1 + maxSum(count - 1);
+			return 1 + MaxSum(count - 1);
 		}
+		*/
 
 		Timer _timer;
 
 		public DebuggerTracker()
 		{
 			_timer = new Timer(Callback, null, 0, 1000);
+
+			// initialize a _lastCallbacks window
+			var now = DateTime.UtcNow;
+			for (var i = 0; i < _max; i++)
+			{
+				_lastCallbacks[i++] = now.AddSeconds(i - _max);
+			}
 		}
 
-		LinkedList<DateTime> _lastCallbacks = new LinkedList<DateTime>();
+		~DebuggerTracker()
+		{
+			try
+			{
+				_timer?.Change(Timeout.Infinite, Timeout.Infinite);
+			}
+			catch { }
+		}
+
+		DateTime[] _lastCallbacks = new DateTime[_max];
+		int _lastCallbacksIndex;
 
 		private void Callback(object state)
 		{
 			lock (_lastCallbacks)
 			{
-				_lastCallbacks.AddLast(DateTime.UtcNow);
-				if (_lastCallbacks.Count > _max)
+				_lastCallbacks[_lastCallbacksIndex++] = DateTime.UtcNow;
+				if (_lastCallbacksIndex >= _max)
 				{
-					_lastCallbacks.RemoveFirst();
+					_lastCallbacksIndex = 0;
 				}
 			}
 		}
 
 		[DebuggerStepThrough]
-		public async Task NormalAsync()
+		public async Task EnsureNoDebuggerAsync()
 		{
-			double sd, ms;
-			while (!IsNormal(out sd, out ms)) // white till exit from debugger
+			double sd;
+			while (!IsNoDebugger(out sd)) // white till exit from debugger
 			{
-				Console.WriteLine($"Waiting for finishing debugger... {sd:0.0} {ms:0.0}");
+				Console.WriteLine($"Waiting for finishing debugger... {sd:0.0}");
 				await Task.Delay(2000);
 			}
 		}
 
 		[DebuggerStepThrough]
-		public bool IsNormal()
+		public bool IsNoDebugger()
 		{
-			double sd, ms;
-			return IsNormal(out sd, out ms);
+			double sd;
+			return IsNoDebugger(out sd);
 		}
 
 		[DebuggerStepThrough]
-		public bool IsNormal(out double sd, out double ms)
+		public bool IsNoDebugger(out double sd)
 		{
 			// expect
 			// 4-5 sec ago
@@ -74,14 +95,12 @@ namespace River.Common
 
 			var now = DateTime.UtcNow;
 
-			int cnt;
-			lock (_lastCallbacks) {
-				cnt = _lastCallbacks.Count;
+			lock (_lastCallbacks)
+			{
 				sd = _lastCallbacks.Sum(x => (now - x).TotalSeconds);
 			}
 
-			ms = maxSum(cnt);
-			return sd < ms;
+			return sd < _maxSum;
 		}
 	}
 }

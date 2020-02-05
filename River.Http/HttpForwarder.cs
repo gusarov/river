@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace River.Http
 {
+	/*
 	public class HttpForwarder : Forwarder
 	{
 		public HttpForwarder(string host, int port)
@@ -24,4 +25,5 @@ namespace River.Http
 		}
 
 	}
+	*/
 }

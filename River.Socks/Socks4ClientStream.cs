@@ -4,22 +4,27 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace River
+namespace River.Socks
 {
-	public class Socks4Client : SocksClient
+	public class Socks4ClientStream : SocksClientStream
 	{
-		public Socks4Client()
+		static Socks4ClientStream()
 		{
-			
+			Resolver.RegisterSchema<Socks4ClientStream>("socks4");
 		}
 
-		public Socks4Client(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		public Socks4ClientStream()
+		{
+
+		}
+
+		public Socks4ClientStream(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			Plug(proxyHost, proxyPort);
 			Route(targetHost, targetPort, proxyDns);
 		}
 
-		public Socks4Client(Stream stream, string targetHost, int targetPort, bool? proxyDns = null)
+		public Socks4ClientStream(Stream stream, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			Plug(stream);
 			Route(targetHost, targetPort, proxyDns);
@@ -29,17 +34,23 @@ namespace River
 
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
+			if (targetHost is null)
+			{
+				throw new ArgumentNullException(nameof(targetHost));
+			}
+
+			var stream = Stream;
 			if (_routed)
 			{
 				throw new Exception("Already been routed");
 			}
 			_routed = true;
-			_stream.Write(
+			stream.Write(
 				0x04, // ver
 				0x01 // command = stream
-				); 
+				);
 
-			_stream.Write(GetPortBytes(targetPort), 0, 2); // target port
+			stream.Write(Utils.GetPortBytes(targetPort), 0, 2); // target port
 
 			var ipv4 = proxyDns == true
 				? null
@@ -72,19 +83,19 @@ namespace River
 			{
 				throw new Exception("Fatal: ipMessage must be 4 bytes");
 			}
-			_stream.Write(ipMessage, 0, 4); // target ip
-			// var userId = _utf8.GetBytes("River");
-			// _stream.Write(userId, 0, userId.Length); // userID
-			_stream.WriteByte(0); // null terminated of id
+			stream.Write(ipMessage, 0, 4); // target ip
+											// var userId = _utf8.GetBytes("River");
+											// _stream.Write(userId, 0, userId.Length); // userID
+			stream.WriteByte(0); // null terminated of id
 			if (ipMessage[0] == 0) // dns name mode
 			{
-				var targetHostName = _utf8.GetBytes(targetHost);
-				_stream.Write(targetHostName, 0, targetHostName.Length); // target host
-				_stream.WriteByte(0); // null terminated
+				var targetHostName = Utils.Utf8.GetBytes(targetHost);
+				stream.Write(targetHostName, 0, targetHostName.Length); // target host
+				stream.WriteByte(0); // null terminated
 			}
-			_stream.Flush();
+			stream.Flush();
 			var response = new byte[8];
-			var c = _stream.Read(response, 0, 8);
+			var c = stream.Read(response, 0, 8);
 			if (c != 8)
 			{
 				throw new Exception("Answer is too short");
