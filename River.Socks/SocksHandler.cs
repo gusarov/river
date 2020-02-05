@@ -48,7 +48,7 @@ namespace River.Socks
 							{
 								throw new NotSupportedException("command type not supported");
 							}
-							_portRequested = _buffer[2] * 256 + _buffer[3];
+							_portRequested = (_buffer[2] << 8) + _buffer[3];
 							if (_buffer[4] != 0) // 0 means v4a mode (0.0.0.X)
 							{
 								var bufAddress4 = new byte[4];

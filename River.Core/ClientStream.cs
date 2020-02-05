@@ -31,7 +31,8 @@ namespace River
 			}
 			Client = new TcpClient(proxyHost, proxyPort);
 			Client.Client.NoDelay = true;
-			Stream = new MustFlushStream(Client.GetStream());
+			Stream = Client.GetStream();
+			// Stream = new MustFlushStream(Client.GetStream());
 		}
 
 		/// <summary>
@@ -43,9 +44,12 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
-			if (!(stream is MustFlushStream)) {
+			/*
+			if (!(stream is MustFlushStream))
+			{
 				stream = new MustFlushStream(stream);
 			}
+			*/
 			Stream = stream;
 		}
 

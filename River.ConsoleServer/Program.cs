@@ -135,7 +135,9 @@ Host: httpbin.org
 			// FireFox => SocksServer => RiverClient => Fiddler => RiverServer => Internet
 
 			// Trace.Listeners.Add(new ConsoleTraceListener());
-
+			new Socks4ClientStream();
+			new Socks5ClientStream();
+			new ShadowSocksClientStream("");
 			
 			var server = new SocksServer(new ServerConfig
 			{
@@ -149,12 +151,13 @@ Host: httpbin.org
 				Chain =
 				{
 					"socks4://rhop2:1080",
-					"socks4://10.7.1.1:1080",
+					"socks5://10.7.1.1:1080",
 				},
 			};
 			
 
 			// connect to this server and ask super secret web site behind 2 private lan
+			/*
 			var cli = new Socks4ClientStream("127.0.0.1", 1080, "10.7.0.1", 80);
 
 			var buf = new byte[16 * 1024];
@@ -183,6 +186,7 @@ Keep-Alive: true
 
 ");
 			cli.Write(req);
+			*/
 			Console.ReadLine();
 		}
 	}

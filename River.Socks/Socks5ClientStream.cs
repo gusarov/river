@@ -6,14 +6,20 @@ using System.Net.Sockets;
 
 namespace River.Socks
 {
-	public class Socks5Client : SocksClientStream
+	public class Socks5ClientStream : SocksClientStream
 	{
-		public Socks5Client()
+		static Socks5ClientStream()
+		{
+			Resolver.RegisterSchema<Socks5ClientStream>("socks5");
+		}
+
+
+		public Socks5ClientStream()
 		{
 
 		}
 
-		public Socks5Client(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		public Socks5ClientStream(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			Plug(proxyHost, proxyPort);
 			Route(targetHost, targetPort, proxyDns);
@@ -106,7 +112,9 @@ namespace River.Socks
 			}
 			if (response[1] != 0x00)
 			{
-				throw new Exception($"Server response: {response[1]:X}: {GetResponseErrorMessage(response[1])}");
+				var msg = $"Server response: {response[1]:X}: {GetResponseErrorMessage(response[1])}";
+				Trace.WriteLine(msg);
+				throw new Exception(msg);
 			}
 			// ignore reserved response[2] byte
 			// read only required number of bytes depending on address type

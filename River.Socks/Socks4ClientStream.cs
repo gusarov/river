@@ -45,12 +45,13 @@ namespace River.Socks
 				throw new Exception("Already been routed");
 			}
 			_routed = true;
-			stream.Write(
-				0x04, // ver
-				0x01 // command = stream
-				);
 
-			stream.Write(Utils.GetPortBytes(targetPort), 0, 2); // target port
+			var buffer = new byte[1024];
+			var b = 0;
+			buffer[b++] = 0x04; // ver
+			buffer[b++] = 0x01; // command = stream
+			buffer[b++] = (byte)(targetPort >> 8); // port high
+			buffer[b++] = (byte)(targetPort); // port low
 
 			var ipv4 = proxyDns == true
 				? null
@@ -63,12 +64,17 @@ namespace River.Socks
 				}
 			}
 
-			byte[] ipMessage;
+			bool dnsMode = false;
 			if (ipv4 == null)
 			{
 				if (proxyDns != false)
 				{
-					ipMessage = new byte[] { 0, 0, 0, 1 };
+					// socks4a - DNS after fake ip
+					dnsMode = true;
+					buffer[b++] = 0x00;
+					buffer[b++] = 0x00;
+					buffer[b++] = 0x00;
+					buffer[b++] = 0x01;
 				}
 				else
 				{
@@ -77,36 +83,36 @@ namespace River.Socks
 			}
 			else
 			{
-				ipMessage = ipv4.GetAddressBytes();
+				ipv4.GetAddressBytes().CopyTo(buffer, b);
+				b += 4;
 			}
-			if (ipMessage.Length != 4)
-			{
-				throw new Exception("Fatal: ipMessage must be 4 bytes");
-			}
-			stream.Write(ipMessage, 0, 4); // target ip
-											// var userId = _utf8.GetBytes("River");
-											// _stream.Write(userId, 0, userId.Length); // userID
-			stream.WriteByte(0); // null terminated of id
-			if (ipMessage[0] == 0) // dns name mode
+
+			buffer[b++] = 0x00; // null terminated id string
+
+			if (dnsMode)
 			{
 				var targetHostName = Utils.Utf8.GetBytes(targetHost);
-				stream.Write(targetHostName, 0, targetHostName.Length); // target host
-				stream.WriteByte(0); // null terminated
+				targetHostName.CopyTo(buffer, b);
+				b += targetHostName.Length;
+				buffer[b++] = 0x00; // null terminated string
 			}
+
+			stream.Write(buffer, 0, b);
 			stream.Flush();
-			var response = new byte[8];
-			var c = stream.Read(response, 0, 8);
+			
+			// var response = new byte[8];
+			var c = stream.Read(buffer, 0, 8);
 			if (c != 8)
 			{
 				throw new Exception("Answer is too short");
 			}
-			if (response[0] != 0x00)
+			if (buffer[0] != 0x00)
 			{
-				throw new Exception($"First byte of responce expected to be 0x00 actual {response[0]:X}");
+				throw new Exception($"First byte of responce expected to be 0x00 actual {buffer[0]:X}");
 			}
-			if (response[1] != 0x5A)
+			if (buffer[1] != 0x5A)
 			{
-				throw new Exception($"First byte of responce expected to be 0x5A actual {response[1]:X}");
+				throw new Exception($"First byte of responce expected to be 0x5A actual {buffer[1]:X}");
 			}
 		}
 

@@ -71,7 +71,7 @@ namespace River.ShadowSocks
 
 		public override void Plug(Stream stream)
 		{
-			Stream = new MustFlushStream(new CustomCryptoStream(stream, Encrypt, Decrypt));
+			Stream = new MustFlushStream(new CustomStream(stream, Encrypt, Decrypt));
 		}
 
 		byte[] _encryptBuffer = new byte[16 * 1024];

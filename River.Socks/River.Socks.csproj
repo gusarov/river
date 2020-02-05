@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Socks4ClientStream.cs" />
-    <Compile Include="Socks5Client.cs" />
+    <Compile Include="Socks5ClientStream.cs" />
     <Compile Include="SocksClientStream.cs" />
     <Compile Include="SocksHandler.cs" />
     <Compile Include="SocksServer.cs" />
