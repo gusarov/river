@@ -1,5 +1,7 @@
+using River.Common;
 using River.Socks;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,12 +10,6 @@ namespace River.Socks
 {
 	public class Socks5ClientStream : SocksClientStream
 	{
-		static Socks5ClientStream()
-		{
-			Resolver.RegisterSchema<Socks5ClientStream>("socks5");
-		}
-
-
 		public Socks5ClientStream()
 		{
 
@@ -25,9 +21,16 @@ namespace River.Socks
 			Route(targetHost, targetPort, proxyDns);
 		}
 
+		public override void Plug(Stream stream)
+		{
+			// Socks5 implementation here is not very efficient here, so, let's just buffer writes
+			Stream = new MustFlushStream(stream);
+		}
+
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			var stream = Stream;
+
 			// send authentication header
 			stream.Write(new byte[] {
 				0x05, // ver = 5

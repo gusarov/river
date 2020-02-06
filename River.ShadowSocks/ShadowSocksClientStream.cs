@@ -14,36 +14,12 @@ namespace River.ShadowSocks
 {
 	public class ShadowSocksClientStream : ClientStream
 	{
-		static ShadowSocksClientStream()
-		{
-			Resolver.RegisterSchema<ShadowSocksClientStream>("ss");
-		}
-
 		readonly ChaCha20B _chachaEncrypt;
 		ChaCha20B _chachaDecrypt;
 
 		const int _nonceLen = 8;
 
 		static Encoding _encoding = new UTF8Encoding(false, false);
-#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-		static MD5 _md5 = MD5.Create();
-#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
-
-		internal static byte[] Kdf(string password)
-		{
-			var pwd = _encoding.GetBytes(password);
-			var hash1 = _md5.ComputeHash(pwd);
-			var buf = new byte[hash1.Length + pwd.Length];
-			hash1.CopyTo(buf, 0);
-			pwd.CopyTo(buf, hash1.Length);
-			var hash2 = _md5.ComputeHash(buf);
-
-			buf = new byte[hash1.Length + hash2.Length];
-			hash1.CopyTo(buf, 0);
-			hash2.CopyTo(buf, 16);
-
-			return buf;
-		}
 
 		byte[] _nonce;
 		byte[] _key;
@@ -51,7 +27,7 @@ namespace River.ShadowSocks
 
 		public ShadowSocksClientStream(string chachaPassword)
 		{
-			_key = Kdf(chachaPassword);
+			_key = ChaCha20B.Kdf(chachaPassword);
 			_nonce = Guid.NewGuid().ToByteArray().Take(_nonceLen).ToArray();
 			_chachaEncrypt = new ChaCha20B(_key, _nonce, 0);
 		}

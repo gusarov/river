@@ -10,15 +10,35 @@ namespace River.Common
 	public class CustomStream : SimpleNetworkStream
 	{
 		private readonly Stream _underlying;
-		private readonly Action<Stream, byte[], int, int> _send;
-		private readonly Func<Stream, byte[], int, int, int> _read;
+		private Action<Stream, byte[], int, int> _send;
+		private Func<Stream, byte[], int, int, int> _read;
+		// private Func<byte[], int, int, int> _read1;
 
-		public CustomStream(Stream underlying, Action<Stream, byte[], int, int> send, Func<Stream, byte[], int, int, int> read)
+		protected void Init(Action<Stream, byte[], int, int> send, Func<Stream, byte[], int, int, int> read)
 		{
-			_underlying = underlying;
 			_send = send;
 			_read = read;
 		}
+
+		protected CustomStream(Stream underlying)
+		{
+			_underlying = underlying;
+		}
+
+		public CustomStream(Stream underlying, Action<Stream, byte[], int, int> send, Func<Stream, byte[], int, int, int> read)
+			: this(underlying)
+		{
+			Init(send, read);
+		}
+
+		/*
+		public CustomStream(Stream underlying, Action<Stream, byte[], int, int> send, Func<byte[], int, int, int> read1)
+		{
+			_underlying = underlying;
+			_send = send;
+			_read1 = read1;
+		}
+		*/
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{

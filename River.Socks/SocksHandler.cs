@@ -129,8 +129,8 @@ namespace River.Socks
 									0x00, // address
 									0x00, // address
 							};
-							_stream.Write(response, 0, response.Length);
-							_stream.Flush();
+							Stream.Write(response, 0, response.Length);
+							Stream.Flush();
 							if (ex != null)
 							{
 								Dispose();
@@ -165,7 +165,7 @@ namespace River.Socks
 										throw new Exception("Client must support NoAuth mode");
 									}
 									// PROVIDE MY CONCLUSION
-									_stream.Write(0x05, 0x00); // v5, APPROVED - NO AUTH
+									Stream.Write(0x05, 0x00); // v5, APPROVED - NO AUTH
 									_authenticationNegotiated = true;
 								}
 								// continue - wait for reques
@@ -273,7 +273,7 @@ namespace River.Socks
 													0x00, // port
 													0x00, // port
 											};
-											_stream.Write(response, 0, response.Length);
+											Stream.Write(response, 0, response.Length);
 										}
 									}
 								}

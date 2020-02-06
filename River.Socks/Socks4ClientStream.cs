@@ -8,11 +8,6 @@ namespace River.Socks
 {
 	public class Socks4ClientStream : SocksClientStream
 	{
-		static Socks4ClientStream()
-		{
-			Resolver.RegisterSchema<Socks4ClientStream>("socks4");
-		}
-
 		public Socks4ClientStream()
 		{
 

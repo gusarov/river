@@ -139,22 +139,21 @@ Host: httpbin.org
 			new Socks5ClientStream();
 			new ShadowSocksClientStream("");
 			
-			var server = new SocksServer(new ServerConfig
+			var server = new ShadowSocksServer("123", new ServerConfig
 			{
 				EndPoints =
 				{
-					new IPEndPoint(IPAddress.IPv6Loopback, 1080),
-					new IPEndPoint(IPAddress.Loopback, 1080),
+					new IPEndPoint(IPAddress.IPv6Loopback, 333),
+					new IPEndPoint(IPAddress.Loopback, 333),
 				},
 			})
 			{
 				Chain =
 				{
-					"socks4://rhop2:1080",
-					"socks5://10.7.1.1:1080",
+					// "socks4://rhop2:1080",
+					// "socks5://10.7.1.1:1080",
 				},
 			};
-			
 
 			// connect to this server and ask super secret web site behind 2 private lan
 			/*

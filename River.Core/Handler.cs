@@ -13,12 +13,12 @@ namespace River
 	/// </summary>
 	public abstract class Handler : IDisposable
 	{
-		protected NetworkStream _stream;
+		protected Stream Stream { get; private set; }
 
-		protected byte[] _buffer = new byte[1024 * 16];
+		protected byte[] _buffer = new byte[16 * 1024];
 		protected int _bufferReceivedCount;
 
-		protected byte[] _bufferTarget = new byte[1024 * 16];
+		protected byte[] _bufferTarget = new byte[16 * 1024];
 
 		protected RiverServer Server { get; private set; }
 		protected TcpClient Client { get; private set; }
@@ -33,6 +33,11 @@ namespace River
 			Init(server, client);
 		}
 
+		protected virtual Stream WrapStream(Stream stream)
+		{
+			return stream;
+		}
+
 		public void Init(RiverServer server, TcpClient client)
 		{
 			Server = server ?? throw new ArgumentNullException(nameof(server));
@@ -42,8 +47,8 @@ namespace River
 			// efficient write should contain complete packet for corresponding rotocol
 			Client.Client.NoDelay = true;
 
-			_stream = Client.GetStream();
-			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length, ReceivedHandshake, null);
+			Stream = WrapStream(Client.GetStream());
+			Stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length, ReceivedHandshake, null);
 		}
 
 		#region Dispose
@@ -65,7 +70,7 @@ namespace River
 		{
 			Disposing = true;
 			var client = Client;
-			var stream = _stream;
+			var stream = Stream;
 			try
 			{
 				// graceful tcp shutdown
@@ -81,7 +86,7 @@ namespace River
 			try
 			{
 				stream?.Close();
-				_stream = null;
+				Stream = null;
 			}
 			catch { }
 		}
@@ -93,7 +98,7 @@ namespace River
 			try
 			{
 				int count;
-				_bufferReceivedCount += count = _stream.EndRead(ar);
+				_bufferReceivedCount += count = Stream.EndRead(ar);
 
 				if (count == 0 || !Client.Connected)
 				{
@@ -134,7 +139,7 @@ namespace River
 
 		protected void ReadMoreHandshake()
 		{
-			_stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
+			Stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
 		}
 
 		protected void BeginStreaming()
@@ -145,14 +150,33 @@ namespace River
 
 		protected void BeginReadSource()
 		{
-			_stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+			Stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
 		}
 
 		void Received(IAsyncResult ar)
 		{
-			var c = _stream.EndRead(ar);
-			_upstreamClient.Write(_buffer, 0, c);
-			_stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+			if (Disposing)
+			{
+				return;
+			}
+			try
+			{
+				var c = Stream.EndRead(ar);
+				_upstreamClient.Write(_buffer, 0, c);
+				if (c > 0)
+				{
+					Stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+				}
+				else
+				{
+					Dispose();
+				}
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError("Streaming - received from client: " + ex);
+				Dispose();
+			}
 		}
 
 		protected void SendForward(byte[] buf, int pos, int cnt)
@@ -167,9 +191,28 @@ namespace River
 
 		private void TargetReceived(IAsyncResult ar)
 		{
-			var c = _upstreamClient.EndRead(ar);
-			_stream.Write(_bufferTarget, 0, c);
-			_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+			if (Disposing)
+			{
+				return;
+			}
+			try
+			{
+				var c = _upstreamClient.EndRead(ar);
+				Stream.Write(_bufferTarget, 0, c);
+				if (c > 0)
+				{
+					_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+				}
+				else
+				{
+					Dispose();
+				}
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError("Streaming - received from client: " + ex);
+				Dispose();
+			}
 		}
 
 		ClientStream _upstreamClient;
@@ -183,7 +226,7 @@ namespace River
 
 			foreach (var proxy in Server.Chain)
 			{
-				var clientType = Resolver.GetClientStreamType(proxy.Uri);
+				var clientType = Resolver.GetClientType(proxy.Uri);
 				var clientStream = (ClientStream)Activator.CreateInstance(clientType);
 				if (_upstreamClient == null)
 				{

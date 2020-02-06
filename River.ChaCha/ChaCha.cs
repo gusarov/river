@@ -19,6 +19,7 @@
 using System;
 using System.Text;
 using System.Runtime.CompilerServices; // For MethodImplOptions.AggressiveInlining
+using System.Security.Cryptography;
 
 namespace CSChaCha20
 {
@@ -42,7 +43,7 @@ namespace CSChaCha20
 		/// <summary>
 		/// The ChaCha20 state (aka "context")
 		/// </summary>
-		private uint[] _state;
+		private uint[] _state = new uint[_stateLength];
 
 		/// <summary>
 		/// Set up a new ChaCha20 state. The lengths of the given parameters are checked before encryption happens.
@@ -61,12 +62,56 @@ namespace CSChaCha20
 		/// </param>
 		public ChaCha20B(byte[] key, byte[] nonce, uint counter = 0)
 		{
-			_state = new uint[_stateLength];
-
 			KeySetup(key);
 			IvSetup(nonce, counter);
 		}
 
+		public ChaCha20B(string password, byte[] nonce, uint counter = 0)
+		{
+			KeySetup(Kdf(password));
+			IvSetup(nonce, counter);
+		}
+
+		public ChaCha20B(string password, int nonceLen, uint counter = 0)
+			: this(Kdf(password), nonceLen, counter)
+		{
+		}
+
+		public ChaCha20B(byte[] key, int nonceLen, uint counter = 0)
+		{
+			KeySetup(key);
+
+			var rnd = Guid.NewGuid().ToByteArray();
+			var nonce = new byte[nonceLen];
+			Array.Copy(rnd, 0, nonce, 0, nonceLen);
+			IvSetup(nonce, counter);
+		}
+
+		static Encoding _utf8 = new UTF8Encoding(false, false);
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
+		static MD5 _md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
+
+		public static byte[] Kdf(string password)
+		{
+			if (password is null)
+			{
+				throw new ArgumentNullException(nameof(password));
+			}
+
+			var pwd = _utf8.GetBytes(password);
+			var hash1 = _md5.ComputeHash(pwd);
+			var buf = new byte[hash1.Length + pwd.Length];
+			hash1.CopyTo(buf, 0);
+			pwd.CopyTo(buf, hash1.Length);
+			var hash2 = _md5.ComputeHash(buf);
+
+			buf = new byte[hash1.Length + hash2.Length];
+			hash1.CopyTo(buf, 0);
+			hash2.CopyTo(buf, 16);
+
+			return buf;
+		}
 
 		// These are the same constants defined in the reference implementation.
 		// http://cr.yp.to/streamciphers/timings/estreambench/submissions/salsa20/chacha8/ref/chacha.c
@@ -83,7 +128,7 @@ namespace CSChaCha20
 		{
 			if (key == null)
 			{
-				throw new ArgumentNullException("Key is null");
+				throw new ArgumentNullException(nameof(key));
 			}
 
 			if (key.Length != KeyLength)
@@ -110,6 +155,9 @@ namespace CSChaCha20
 			_state[3] = Util.U8To32Little(constants, 12);
 		}
 
+		// extra copy of nonce
+		public byte[] Nonce { get; private set; }
+
 		/// <summary>
 		/// Set up the ChaCha state with the given nonce (aka Initialization Vector or IV) and block counter. A 12-byte nonce and a 4-byte counter are required.
 		/// </summary>
@@ -124,8 +172,9 @@ namespace CSChaCha20
 			if (nonce == null)
 			{
 				// There has already been some state set up. Clear it before exiting.
-				throw new ArgumentNullException("Nonce is null");
+				throw new ArgumentNullException(nameof(nonce));
 			}
+			Nonce = nonce;
 
 			if (nonce.Length != 8 && nonce.Length != 12)
 			{
