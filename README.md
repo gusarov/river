@@ -2,10 +2,11 @@ Azure DevOps build:
 [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
 
 # River - network tunneling
-River is shipped as river.exe for Windows and as a NuGet package, river.dll - for any custom .Net project.
+River is shipped in 2 ways:
 
-River.dll is a .Net Standard 2.0 library for compatibility & cross platfor solutions
-River.exe is a .Net Framwork 4.8 executable for Windows
+1) River.dll in NuGet - is a .Net Standard 2.0 library for any cross platform project
+
+2) River.exe for Windows - is a .Net Framwork 4.8 executable for Windows
 
 # Application Usage
 
