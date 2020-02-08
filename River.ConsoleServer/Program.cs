@@ -13,13 +13,15 @@ namespace River.ConsoleServer
 {
 	class Program
 	{
-		static void Main22(string[] args)
+		static void Main(string[] args)
 		{
-			var cli = new ShadowSocksClientStream("abc");
+			var cli = new ShadowSocksClientStream();
+			cli.Plug(new Uri("ss://chacha20:abc@RHOP2:8338"));
 			cli.Plug("RHOP2", 8338);
 			cli.Route("10.7.1.1", 8338);
-			var cli2 = new ShadowSocksClientStream("def");
-			cli2.Plug(cli);
+
+			var cli2 = new ShadowSocksClientStream();
+			cli2.Plug(new Uri("ss://chacha20:abc@_:0"), cli);
 			cli2.Route("10.7.0.1", 80);
 
 			void read()
@@ -78,7 +80,8 @@ Host: httpbin.org
 
 		static void Main2(string[] args)
 		{
-			var cli1 = new ShadowSocksClientStream("pwd");
+			var cli1 = new ShadowSocksClientStream();
+			cli1.Plug(new Uri($"ss://c:pwd@127.0.0.1:8338"));
 			cli1.Plug("127.0.0.1", 8338);
 			cli1.Route("httpbin.org", 80);
 
@@ -130,14 +133,14 @@ Host: httpbin.org
 			Console.ReadLine();
 		}
 
-		static void Main(string[] args)
+		static void Main22(string[] args)
 		{
 			// FireFox => SocksServer => RiverClient => Fiddler => RiverServer => Internet
 
 			// Trace.Listeners.Add(new ConsoleTraceListener());
 			new Socks4ClientStream();
 			new Socks5ClientStream();
-			new ShadowSocksClientStream("");
+			new ShadowSocksClientStream();
 
 			var server = new ShadowSocksServer
 			{

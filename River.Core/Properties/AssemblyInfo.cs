@@ -35,7 +35,3 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: InternalsVisibleTo("River.Http")]
-[assembly: InternalsVisibleTo("River.Socks")]
-[assembly: InternalsVisibleTo("River.ShadowSocks")]
-[assembly: InternalsVisibleTo("River.ChaCha")]

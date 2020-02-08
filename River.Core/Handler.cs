@@ -231,7 +231,7 @@ namespace River
 				if (_upstreamClient == null)
 				{
 					// create a first client connection
-					clientStream.Plug(proxy.Uri.Host, proxy.Uri.Port);
+					clientStream.Plug(proxy.Uri);
 				}
 				else
 				{
@@ -239,7 +239,7 @@ namespace River
 					_upstreamClient.Route(proxy.Uri.Host, proxy.Uri.Port);
 
 					// and now wrap to new one
-					clientStream.Plug(_upstreamClient);
+					clientStream.Plug(proxy.Uri, _upstreamClient);
 				}
 				_upstreamClient = clientStream;
 			}
@@ -251,7 +251,10 @@ namespace River
 			{
 				// dirrect connection
 				_upstreamClient = new NullClientStream();
-				_upstreamClient.Plug(target.Host ?? target.IPAddress.ToString(), target.Port);
+				var host = target.Host ?? target.IPAddress.ToString();
+				var port = target.Port;
+				var uri = new Uri($"{host}:{port}");
+				_upstreamClient.Plug(uri);
 			}
 
 			// BeginReadSource();

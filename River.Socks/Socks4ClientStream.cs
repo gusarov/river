@@ -17,18 +17,18 @@ namespace River.Socks
 
 		public Socks4ClientStream(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			Plug(proxyHost, proxyPort);
+			Plug(new Uri($"{proxyHost}:{proxyPort}"));
 			Route(targetHost, targetPort, proxyDns);
 		}
 
 		public Socks4ClientStream(Stream stream, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			Plug(stream);
+			Plug(null, stream);
 			Route(targetHost, targetPort, proxyDns);
 		}
 
 		// enable write cache
-		public override void Plug(Stream stream) => base.Plug(new MustFlushStream(stream));
+		public override void Plug(Uri uri, Stream stream) => base.Plug(uri, new MustFlushStream(stream));
 
 		bool _routed;
 

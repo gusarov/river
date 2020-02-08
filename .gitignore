@@ -8,3 +8,4 @@ obj/
 .rid
 packages/
 *.user
+*.nupkg

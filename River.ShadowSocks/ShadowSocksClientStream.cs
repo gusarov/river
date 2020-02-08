@@ -14,7 +14,7 @@ namespace River.ShadowSocks
 {
 	public class ShadowSocksClientStream : ClientStream
 	{
-		readonly ChaCha20B _chachaEncrypt;
+		ChaCha20B _chachaEncrypt;
 		ChaCha20B _chachaDecrypt;
 
 		const int _nonceLen = 8;
@@ -25,27 +25,54 @@ namespace River.ShadowSocks
 		byte[] _key;
 		byte[] _serverNonce;
 
-		public ShadowSocksClientStream(string chachaPassword)
+		(string algo, string pass) GetUserInfo(Uri uri)
 		{
-			_key = ChaCha20B.Kdf(chachaPassword);
+			var info = uri.UserInfo;
+			var i = info.IndexOf(':');
+			if (i >= 0)
+			{
+				return (info.Substring(0, i), info.Substring(i + 1));
+			}
+			return (null, null);
+		}
+
+		void ConfigureUri(Uri proxyUri)
+		{
+			if (proxyUri is null)
+			{
+				throw new ArgumentNullException(nameof(proxyUri));
+			}
+			var (user, pass) = GetUserInfo(proxyUri);
+			_key = ChaCha20B.Kdf(pass);
 			_nonce = Guid.NewGuid().ToByteArray().Take(_nonceLen).ToArray();
 			_chachaEncrypt = new ChaCha20B(_key, _nonce, 0);
 		}
 
-		public ShadowSocksClientStream(string chachaPassword, string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
-			: this(chachaPassword)
+		public ShadowSocksClientStream()
 		{
-			Plug(proxyHost, proxyPort);
+
+		}
+
+		public ShadowSocksClientStream(string algorythm, string password, string targetProxyHost, int targetProxyPort, string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			Plug(new Uri($"ss://{algorythm}:{password}@{targetProxyHost}:{targetProxyPort}"));
 			Route(targetHost, targetPort, proxyDns);
 		}
 
-		public override void Plug(string proxyHost, int proxyPort)
+		public override void Plug(Uri proxyUri)
 		{
-			base.Plug(proxyHost, proxyPort); // base performs regular Tcp connection
+			ConfigureUri(proxyUri);
+			base.Plug(proxyUri); // base performs regular Tcp connection
 			Plug(Client.GetStream()); // but we are wrapping it here a little bit differently
 		}
 
-		public override void Plug(Stream stream)
+		public override void Plug(Uri proxyUri, Stream stream)
+		{
+			ConfigureUri(proxyUri);
+			Plug(stream);
+		}
+
+		void Plug(Stream stream)
 		{
 			Stream = new MustFlushStream(new CustomStream(stream, Encrypt, Decrypt));
 		}

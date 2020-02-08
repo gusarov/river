@@ -42,6 +42,7 @@ namespace River.Socks
 				switch (_buffer[0])
 				{
 					case 4: // SOCKS4
+						#region SOCKS 4
 						if (EnsureReaded(8))
 						{
 							if (_buffer[1] != 1)
@@ -141,8 +142,10 @@ namespace River.Socks
 							}
 							// NOW Stream is established for forwarding
 						}
+						#endregion
 						break;
 					case 5: // SOCKS 5
+						#region SOCKS 4
 						if (EnsureReaded(2))
 						{
 							var authMethodsCount = _buffer[1];
@@ -279,6 +282,7 @@ namespace River.Socks
 								}
 							}
 						}
+						#endregion
 						break;
 					/*
 				case (byte)'P': // HTTP PROXY PUT POST PATCH

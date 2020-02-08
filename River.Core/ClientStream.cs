@@ -23,8 +23,16 @@ namespace River
 		/// <summary>
 		/// Plug to a new socket
 		/// </summary>
-		public virtual void Plug(string proxyHost, int proxyPort)
+		public virtual void Plug(Uri uri)
 		{
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
+			var proxyHost = uri.Host;
+			var proxyPort = uri.Port;
+
 			if (Stream != null)
 			{
 				throw new Exception("Already been plugged");
@@ -32,13 +40,12 @@ namespace River
 			Client = new TcpClient(proxyHost, proxyPort);
 			Client.Client.NoDelay = true;
 			Stream = Client.GetStream();
-			// Stream = new MustFlushStream(Client.GetStream());
 		}
 
 		/// <summary>
 		/// Plug to existing channel
 		/// </summary>
-		public virtual void Plug(Stream stream)
+		public virtual void Plug(Uri uri, Stream stream)
 		{
 			if (Stream != null)
 			{

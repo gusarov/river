@@ -19,6 +19,8 @@ namespace River
 
 		protected bool Disposing { get; private set; }
 
+		public abstract void Run(ServerConfig config);
+
 		public void Dispose()
 		{
 			Dispose(true);

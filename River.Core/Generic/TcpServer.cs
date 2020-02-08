@@ -11,7 +11,7 @@ namespace River.Generic
 	{
 		List<TcpListener> _tcpListeners = new List<TcpListener>();
 
-		public virtual void Run(ServerConfig config)
+		public override void Run(ServerConfig config)
 		{
 			if (config is null)
 			{

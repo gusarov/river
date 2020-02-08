@@ -17,11 +17,11 @@ namespace River.Socks
 
 		public Socks5ClientStream(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			Plug(proxyHost, proxyPort);
+			Plug(new Uri($"{proxyHost}:{proxyPort}"));
 			Route(targetHost, targetPort, proxyDns);
 		}
 
-		public override void Plug(Stream stream)
+		public override void Plug(Uri uri, Stream stream)
 		{
 			// Socks5 implementation here is not very efficient here, so, let's just buffer writes
 			Stream = new MustFlushStream(stream);

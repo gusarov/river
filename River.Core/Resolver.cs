@@ -8,24 +8,48 @@ namespace River
 {
 	public static class Resolver
 	{
-		static Dictionary<string, (Type client, Type server)> _schemas
-			= new Dictionary<string, (Type, Type)>(StringComparer.CurrentCultureIgnoreCase);
+		static Dictionary<string, Type> _schemasClient
+			= new Dictionary<string, Type>(StringComparer.CurrentCultureIgnoreCase);
 
-		public static void RegisterSchema<TClient, TServer>(string schema)
+		static Dictionary<string, Type> _schemasServer
+			= new Dictionary<string, Type>(StringComparer.CurrentCultureIgnoreCase);
+
+		public static void RegisterSchema<TServer, TClient>(string schema)
 		{
-			_schemas.Add(schema, (typeof(TClient), typeof(TServer)));
+			_schemasClient.Add(schema, typeof(TClient));
+			_schemasServer.Add(schema, typeof(TServer));
+		}
+
+		public static void RegisterSchemaClient<TClient>(string schema)
+		{
+			_schemasClient.Add(schema, typeof(TClient));
+		}
+
+		public static void RegisterSchemaServer<TServer>(string schema)
+		{
+			_schemasServer.Add(schema, typeof(TServer));
 		}
 
 		public static Type GetClientType(Uri uri)
 		{
-			_schemas.TryGetValue(uri.Scheme, out var types);
-			return types.client;
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
+			_schemasClient.TryGetValue(uri.Scheme, out var type);
+			return type;
 		}
 
 		public static Type GetServerType(Uri uri)
 		{
-			_schemas.TryGetValue(uri.Scheme, out var types);
-			return types.server;
+			if (uri is null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+
+			_schemasServer.TryGetValue(uri.Scheme, out var type);
+			return type;
 		}
 	}
 }
