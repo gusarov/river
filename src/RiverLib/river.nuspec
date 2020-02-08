@@ -14,6 +14,6 @@
 		<tags>river socks http proxy shadowsocks chacha chacha20</tags>
 	</metadata>
 	<files>
-		<file src="..\_img\break_firewall_128.png" target="" />
+		<file src="..\..\doc\break_firewall_128.png" target="" />
 	</files>
 </package>
