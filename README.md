@@ -47,15 +47,15 @@ var stream = new Socks4ClientStream("127.0.0.1", 1080, "httpbin.org", 80);
 
 Proxy Chain:
 ```cs
-			var step1 = new Socks4ClientStream();
-			step1.Plug("127.0.0.1", 1080); // 1st proxy
-			step1.Route("127.0.0.1", 1081); // 2nd proxy
+var step1 = new Socks4ClientStream();
+step1.Plug("127.0.0.1", 1080); // 1st proxy
+step1.Route("127.0.0.1", 1081); // 2nd proxy
 
-			var step2 = new Socks4ClientStream();
-			step2.Plug(step1);
-			step2.Route("127.0.0.1", 1082); // 3rd proxy
+var step2 = new Socks4ClientStream();
+step2.Plug(step1);
+step2.Route("127.0.0.1", 1082); // 3rd proxy
 
-			var step3 = new Socks4ClientStream(step2, "httpbin.org", 80); // you can do same in constructor - route to destination
+var step3 = new Socks4ClientStream(step2, "httpbin.org", 80); // you can do same in constructor - route to destination
 
-			var stream = step3;
+var stream = step3;
 ```
