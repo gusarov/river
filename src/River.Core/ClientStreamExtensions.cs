@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +17,17 @@ namespace River
 				throw new ArgumentNullException(nameof(clientStream));
 			}
 
-			clientStream.Plug(new Uri($"{proxyServer}:{port}"));
+			if (IPAddress.TryParse(proxyServer, out var ip))
+			{
+				if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+				{
+					proxyServer = $"[{proxyServer}]";
+				}
+			}
+
+			var uri = new Uri($"tcp://{proxyServer}:{port}");
+
+			clientStream.Plug(uri);
 		}
 	}
 }

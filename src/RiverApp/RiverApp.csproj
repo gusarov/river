@@ -78,9 +78,23 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="ILMerge" AfterTargets="Build">
+    <Message Text="ILMerge" Importance="High" />
     <ItemGroup>
       <SrcDll Include="$(OutDir)\*.dll" />
     </ItemGroup>
-    <Exec Command="$(ILMergeConsolePath) /out:$(OutDir)\River.exe $(OutDir)\RiverApp.exe $(SrcDll)" />
+    <Exec Command="$(ILMergeConsolePath) $(OutDir)\RiverApp.exe @(SrcDll, ' ') /out:$(OutDir)\River.exe" />
   </Target>
+  <!--
+	<Target Name="CleanReferenceCopyLocalPaths2" AfterTargets="Build" DependsOnTargets="ILMerge">
+		<Message Text="CleanReferenceCopyLocalPaths2" Importance="High" />
+		<Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
+		<ItemGroup>
+			<Directories Include="$([System.IO.Directory]::GetDirectories('$(OutDir)%(DestinationSubDirectory)', '*', System.IO.SearchOption.AllDirectories))" />
+			<Directories>
+				<Files>$([System.IO.Directory]::GetFiles("%(Directories.Identity)", "*", System.IO.SearchOption.AllDirectories).get_Length())</Files>
+			</Directories>
+		</ItemGroup>
+		<RemoveDir Directories="@(Directories)" Condition="%(Files)=='0'" />
+	</Target>
+-->
 </Project>
