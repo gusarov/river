@@ -1,4 +1,5 @@
 ﻿using River;
+using River.Internal;
 using River.ShadowSocks;
 using River.Socks;
 using System;

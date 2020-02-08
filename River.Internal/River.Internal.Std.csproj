@@ -2,20 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>River.Core</RootNamespace>
-    <AssemblyName>River.Core</AssemblyName>
+    <RootNamespace>River.Internal</RootNamespace>
+    <AssemblyName>River.Internal</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
-  </ItemGroup>
-
+	
 </Project>
