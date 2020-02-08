@@ -1,0 +1,1 @@
+﻿The content of this assembly will be internalized during IL Repack

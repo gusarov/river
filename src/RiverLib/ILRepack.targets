@@ -1,0 +1,55 @@
+﻿<Project>
+	<Target Name="ILRepack2" AfterTargets="Build" >
+		<!--
+		Condition="'$(Configuration)' == 'Release'"
+		-->
+		<Message Text="ILRepack2" Importance="High" />
+		<ItemGroup>
+			<InputAssemblies Include="$(OutDir)River.*.dll" />
+			<InputAssemblies Remove="$(OutDir)RiverLib.dll" />
+			<InputAssemblies Remove="$(OutDir)River.dll" />
+		</ItemGroup>
+		<ItemGroup>
+			<DoNotInternalizeAssembliesFiles Include="$(OutDir)River.*.dll" />
+		</ItemGroup>
+		<ItemGroup>
+			<DoNotInternalizeAssemblies Include="@(DoNotInternalizeAssembliesFiles->'%(FileName)')" />
+			<DoNotInternalizeAssemblies Remove="River.Internal" />
+		</ItemGroup>
+		
+		<Message Importance="high" Text="OutDir = $(OutDir)" />
+		<Message Importance="high" Text="MSBuildThisFileDirectory = $(MSBuildThisFileDirectory)" />
+		<Message Importance="high" Text="Configuration = $(Configuration)" />
+		<Message Importance="high" Text="TargetFramework = $(TargetFramework)" />
+		<Message Importance="high" Text="InputAssemblies = @(InputAssemblies, ' ')" />
+		<Message Importance="high" Text="DoNotInternalizeAssemblies = @(DoNotInternalizeAssemblies, ' ')" />
+
+		<Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
+		<ILRepack
+			Parallel="true"
+			Internalize="true"
+			InternalizeExclude="@(DoNotInternalizeAssemblies)"
+			InputAssemblies="@(InputAssemblies)"
+			TargetKind="SameAsPrimaryAssembly"
+			OutputFile="$(OutDir)River.dll"
+		/>
+	</Target>
+
+	<Target Name="CleanReferenceCopyLocalPaths2" AfterTargets="Build" DependsOnTargets="ILRepack2">
+		<Message Text="CleanReferenceCopyLocalPaths2" Importance="High" />
+		<Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
+		<ItemGroup>
+			<Directories Include="$([System.IO.Directory]::GetDirectories('$(OutDir)%(DestinationSubDirectory)', '*', System.IO.SearchOption.AllDirectories))" />
+			<Directories>
+				<Files>$([System.IO.Directory]::GetFiles("%(Directories.Identity)", "*", System.IO.SearchOption.AllDirectories).get_Length())</Files>
+			</Directories>
+		</ItemGroup>
+		<RemoveDir Directories="@(Directories)" Condition="%(Files)=='0'" />
+	</Target>
+
+	<Target Name="NugetPack" AfterTargets="Build" DependsOnTargets="ILRepack2" Condition="'$(Configuration)'=='Release'">
+		<Message Text="NugetPack" Importance="High" />
+		<Exec Command="cd nuget &amp; nuget pack ..\ -Properties Configuration=Release" />
+	</Target>
+
+</Project>

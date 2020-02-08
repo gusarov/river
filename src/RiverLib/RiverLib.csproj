@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+		<NuspecFile>river.nuspec</NuspecFile>
+		<AssemblyName>River</AssemblyName>
+		<RootNamespace>River</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="NuGet\**" />
+    <EmbeddedResource Remove="NuGet\**" />
+    <None Remove="NuGet\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
+    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
+  </ItemGroup>
+
+
+	
+</Project>

@@ -1,0 +1,5 @@
+<Project>
+	<PropertyGroup>
+		<MSBuildProjectExtensionsPath Condition=" '$(MSBuildProjectExtensionsPath)' == '' ">obj\pext_std</MSBuildProjectExtensionsPath>
+	</PropertyGroup>
+</Project>
