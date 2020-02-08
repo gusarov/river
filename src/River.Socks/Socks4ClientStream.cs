@@ -1,3 +1,4 @@
+using River;
 using River.Common;
 using System;
 using System.IO;
@@ -17,7 +18,7 @@ namespace River.Socks
 
 		public Socks4ClientStream(string proxyHost, int proxyPort, string targetHost, int targetPort, bool? proxyDns = null)
 		{
-			Plug(new Uri($"{proxyHost}:{proxyPort}"));
+			this.Plug(proxyHost, proxyPort);
 			Route(targetHost, targetPort, proxyDns);
 		}
 

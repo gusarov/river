@@ -254,8 +254,7 @@ namespace River
 				_upstreamClient = new NullClientStream();
 				var host = target.Host ?? target.IPAddress.ToString();
 				var port = target.Port;
-				var uri = new Uri($"{host}:{port}");
-				_upstreamClient.Plug(uri);
+				_upstreamClient.Plug(host, port);
 			}
 
 			// BeginReadSource();
