@@ -30,7 +30,8 @@ river -L socks://0.0.0.0:1080 -F socks4://rhop2:1080 -F socks4://10.7.1.1:1080
 # Library Usage
 
 NuGet: https://www.nuget.org/packages/River/
-Installation: Install-Package River
+
+Installation: ```Install-Package River```
 
 How to wrap you existing TCP connection to SOCKS proxy:
 
