@@ -22,7 +22,7 @@ Run ShadowSocks server:
 river -L ss://chacha20:password@0.0.0.0:8338
 ```
 
-Proxy Chain - a list of forwrders:
+Proxy Chain - a list of forwarders:
 ```
 river -L socks://0.0.0.0:1080 -F socks4://rhop2:1080 -F socks4://10.7.1.1:1080 
 ```
