@@ -1,8 +1,10 @@
+using River.Common;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace River.Socks
 {
@@ -25,9 +27,12 @@ namespace River.Socks
 			Route(targetHost, targetPort, proxyDns);
 		}
 
+		// enable write cache
+		public override void Plug(Stream stream) => base.Plug(new MustFlushStream(stream));
+
 		bool _routed;
 
-		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		public override async void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			if (targetHost is null)
 			{
@@ -93,10 +98,11 @@ namespace River.Socks
 			}
 
 			stream.Write(buffer, 0, b);
-			stream.Flush();
-			
+			// stream.Flush(); // do not flush now, let it be write-cached
+
 			// var response = new byte[8];
-			var c = stream.Read(buffer, 0, 8);
+			// first await:
+			var c = await stream.ReadAsync(buffer, 0, 8); // just schecule a 8 bytes read. It will read nothing till actual write-flush happens
 			if (c != 8)
 			{
 				throw new Exception("Answer is too short");

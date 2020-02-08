@@ -138,15 +138,8 @@ Host: httpbin.org
 			new Socks4ClientStream();
 			new Socks5ClientStream();
 			new ShadowSocksClientStream("");
-			
-			var server = new ShadowSocksServer("123", new ServerConfig
-			{
-				EndPoints =
-				{
-					new IPEndPoint(IPAddress.IPv6Loopback, 333),
-					new IPEndPoint(IPAddress.Loopback, 333),
-				},
-			})
+
+			var server = new ShadowSocksServer
 			{
 				Chain =
 				{
@@ -154,6 +147,7 @@ Host: httpbin.org
 					// "socks5://10.7.1.1:1080",
 				},
 			};
+			server.Run("ss://chacha20:123@0.0.0.0:8338");
 
 			// connect to this server and ask super secret web site behind 2 private lan
 			/*

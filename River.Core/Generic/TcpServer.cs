@@ -11,17 +11,7 @@ namespace River.Generic
 	{
 		List<TcpListener> _tcpListeners = new List<TcpListener>();
 
-		public TcpServer()
-		{
-
-		}
-
-		public TcpServer(ServerConfig config)
-		{
-			Run(config);
-		}
-
-		public void Run(ServerConfig config)
+		public virtual void Run(ServerConfig config)
 		{
 			if (config is null)
 			{

@@ -25,7 +25,8 @@ namespace RiverApp
 						{
 							// Listen
 							var listener = args[++i];
-							// Resolver.GetClientStreamType
+							var uri = new Uri(listener);
+							var serverType = Resolver.GetServerType(uri);
 							break;
 						}
 					default:

@@ -12,10 +12,12 @@ namespace River.Socks
 	{
 		public SocksServer()
 		{
+
 		}
 
-		public SocksServer(ServerConfig config) : base(config)
+		public SocksServer(ServerConfig config)
 		{
+			Run(config);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using River.Generic;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,14 +11,16 @@ namespace River.Socks
 {
 	public class ShadowSocksServer : TcpServer<ShadowSocksHandler>
 	{
-		public ShadowSocksServer(string password)
+		public override void Run(ServerConfig config)
 		{
-			Password = password;
-		}
+			if (config is null)
+			{
+				throw new ArgumentNullException(nameof(config));
+			}
 
-		public ShadowSocksServer(string password, ServerConfig config) : base(config)
-		{
-			Password = password;
+			var algo = config["user"];
+			Password = config["password"];
+			base.Run(config);
 		}
 
 		public string Password { get; set; }
