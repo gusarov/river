@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
-		<id>river</id>
-		<version>0.9.1</version>
-		<description>River - tunelling &amp; proxy connectivity</description>
+		<id>River</id>
+		<version>0.8.4</version>
+		<description>Tunelling &amp; proxy connectivity</description>
 		<authors>Dmitry Gusarov</authors>
 		<copyright>Copyright ©2020 Dmitry Gusarov</copyright>
 		<projectUrl>https://github.com/gusarov/river</projectUrl>
@@ -14,7 +14,9 @@
 		<releaseNotes></releaseNotes>
 		<tags>river socks http proxy shadowsocks chacha chacha20</tags>
 	</metadata>
+	<!--
 	<files>
-		<file src="bin\Release\netstandard2.0\River.dll" target="netstandard\River.dll" />
+		<file src="" target="" />
 	</files>
+	-->
 </package>

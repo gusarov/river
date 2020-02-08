@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 		<NuspecFile>river.nuspec</NuspecFile>
+		<AssemblyName>River</AssemblyName>
+		<RootNamespace>River</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="ILMerge" Version="3.0.29" />
-    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,31 +36,28 @@
 	-->
 
 	
-	<Target Name="ILRepack" AfterTargets="Build">
-		<PropertyGroup>
-			<WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
-		</PropertyGroup>
+	<Target Name="ILRepack"  AfterTargets="Build">
 		<ItemGroup>
 			<InputAssemblies Include="$(OutDir)River.*.dll" />
 			<InputAssemblies Remove="$(OutDir)RiverLib.dll" />
 			<InputAssemblies Remove="$(OutDir)River.Core.dll" />
+			<InputAssemblies Remove="$(OutDir)River.dll" />
 		</ItemGroup>
 		<ItemGroup>
-			<!-- Dot not internalize any types inside this assembly 
-			<InternalizeExcludeAssemblies Include="Cake.Core.dll" />
-			-->
+			<InternalizeExcludeAssemblies Include="$(OutDir)River.*.dll" />
 		</ItemGroup>
 		<Message Importance="high" Text="MSBuildThisFileDirectory = $(MSBuildThisFileDirectory)" />
 		<Message Importance="high" Text="Configuration = $(Configuration)" />
 		<Message Importance="high" Text="TargetFramework = $(TargetFramework)" />
 		<Message Importance="high" Text="OutDir = $(OutDir)" />
 		<Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
-		<ILRepack OutputType="$(OutputType)" MainAssembly="River.Core.dll" OutputAssembly="River.dll" InputAssemblies="@(InputAssemblies->'%(Filename).dll')" InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)" WorkingDirectory="$(OutDir)" />
+		<ILRepack OutputType="$(OutputType)" Internalize="false" Parallel="true" OutputAssembly="$(OutDir)River.dll" InputAssemblies="@(InputAssemblies)" />
 
 	</Target>
 
-	<Target Name="Nuget Pack" AfterTargets="Build;ILRepack" Condition="'$(Configuration)'=='Release'">
-		<Exec Command="cd nuget &amp; nuget pack ..\" />
+	<Target Name="Nuget Pack" AfterTargets="Build" DependsOnTargets="ILRepack" Condition="'$(Configuration)'=='Release'">
+		<Exec Command="cd nuget &amp; nuget pack ..\ -Properties Configuration=Release" />
 	</Target>
 
+	
 </Project>
