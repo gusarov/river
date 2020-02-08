@@ -6,7 +6,7 @@ River is shipped in 2 ways:
 
 1) River.dll in NuGet - is a .Net Standard 2.0 library for any cross platform project
 
-2) River.exe for Windows - is a .Net Framwork 4.8 executable for Windows
+2) River.exe for Windows - is a .Net Framwork 4.8 application for Windows
 
 # Application Usage
 
