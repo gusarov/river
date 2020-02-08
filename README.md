@@ -12,13 +12,19 @@ River.exe is a .Net Framwork 4.8 executable for Windows
 The commandline inspired by 'gost' project:
 
 Run SOCKS server:
+```
 river -L socks://0.0.0.0:1080
+```
 
 Run ShadowSocks server:
+```
 river -L ss://chacha20:password@0.0.0.0:8338
+```
 
 Proxy Chain - a list of forwrders:
+```
 river -L socks://0.0.0.0:1080 -F socks4://rhop2:1080 -F socks4://10.7.1.1:1080 
+```
 
 # Library Usage
 
