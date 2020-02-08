@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>River</id>
+		<version>0.8.7</version>
+		<description>Tunelling &amp; proxy connectivity</description>
+		<authors>Dmitry Gusarov</authors>
+		<copyright>Copyright ©2020 Dmitry Gusarov</copyright>
+		<projectUrl>https://github.com/gusarov/river</projectUrl>
+		<license type="expression">Apache-2.0</license>
+		<icon>break_firewall_128.png</icon>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<releaseNotes></releaseNotes>
+		<tags>river socks http proxy shadowsocks chacha chacha20</tags>
+	</metadata>
+	<files>
+		<file src="..\_img\break_firewall_128.png" target="" />
+	</files>
+</package>
