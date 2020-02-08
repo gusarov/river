@@ -34,4 +34,12 @@ NuGet: https://www.nuget.org/packages/River/
 Installation: ```Install-Package River```
 
 How to wrap you existing TCP connection to SOCKS proxy:
-
+Original:
+```chsarp
+			var cli = new TcpClient("httpbin.org", 80);
+			var stream = cli.GetStream();
+```
+Change to:
+```
+var stream = new Socks4ClientStream("127.0.0.1", 1080, "httpbin.org", 80);
+```
