@@ -37,8 +37,8 @@ How to wrap you existing TCP connection to SOCKS proxy:
 
 Original:
 ```chsarp
-			var cli = new TcpClient("httpbin.org", 80);
-			var stream = cli.GetStream();
+var cli = new TcpClient("httpbin.org", 80);
+var stream = cli.GetStream();
 ```
 Change to:
 ```
