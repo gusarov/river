@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILMerge" Version="3.0.29" />
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18" />
   </ItemGroup>
 
@@ -23,41 +22,6 @@
     <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
 
-	<!--
-	<Target Name="ILMerge" AfterTargets="Build">
-		<ItemGroup>
-			<SrcDll Include="$(OutDir)*.dll" />
-			<SrcDll Remove="$(OutDir)RiverLib.dll" />
-		</ItemGroup>
-		<Message Importance="high" Text="OutDir = $(OutDir)" />
-		<Message Importance="high" Text="SrcDll = @(SrcDll, ' ')" />
-		<Exec Command="$(ILMergeConsolePath) /out:$(OutDir)River.dll @(SrcDll, ' ')" />
-	</Target>
-	-->
-
-	
-	<Target Name="ILRepack"  AfterTargets="Build">
-		<ItemGroup>
-			<InputAssemblies Include="$(OutDir)River.*.dll" />
-			<InputAssemblies Remove="$(OutDir)RiverLib.dll" />
-			<InputAssemblies Remove="$(OutDir)River.Core.dll" />
-			<InputAssemblies Remove="$(OutDir)River.dll" />
-		</ItemGroup>
-		<ItemGroup>
-			<InternalizeExcludeAssemblies Include="$(OutDir)River.*.dll" />
-		</ItemGroup>
-		<Message Importance="high" Text="MSBuildThisFileDirectory = $(MSBuildThisFileDirectory)" />
-		<Message Importance="high" Text="Configuration = $(Configuration)" />
-		<Message Importance="high" Text="TargetFramework = $(TargetFramework)" />
-		<Message Importance="high" Text="OutDir = $(OutDir)" />
-		<Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
-		<ILRepack OutputType="$(OutputType)" Internalize="false" Parallel="true" OutputAssembly="$(OutDir)River.dll" InputAssemblies="@(InputAssemblies)" />
-
-	</Target>
-
-	<Target Name="Nuget Pack" AfterTargets="Build" DependsOnTargets="ILRepack" Condition="'$(Configuration)'=='Release'">
-		<Exec Command="cd nuget &amp; nuget pack ..\ -Properties Configuration=Release" />
-	</Target>
 
 	
 </Project>
