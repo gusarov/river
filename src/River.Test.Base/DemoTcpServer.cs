@@ -19,9 +19,16 @@ namespace River.Test
 
 		void AcceptingTcpClient(IAsyncResult ar)
 		{
-			var client = _server.EndAcceptTcpClient(ar);
-			Handler(client);
-			_server.BeginAcceptTcpClient(AcceptingTcpClient, null);
+			try
+			{
+				var client = _server.EndAcceptTcpClient(ar);
+				Handler(client);
+				_server.BeginAcceptTcpClient(AcceptingTcpClient, null);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Trace.TraceError(ex.ToString());
+			}
 		}
 
 		async void Handler(TcpClient client)
