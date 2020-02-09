@@ -1,4 +1,3 @@
-Azure DevOps build:
 [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
 
 # River - network tunneling
