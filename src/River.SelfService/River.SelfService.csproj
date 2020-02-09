@@ -44,5 +44,15 @@
     <Compile Include="RiverSelfService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\doc\break_firewall_512.png">
+      <Link>Resources\break_firewall_512.png</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\doc\favicon.ico">
+      <Link>Resources\favicon.ico</Link>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

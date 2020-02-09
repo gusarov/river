@@ -115,6 +115,10 @@ namespace River.Socks
 			// var response = new byte[8];
 			// first await:
 			var c = await stream.ReadAsync(buffer, 0, 8); // just schecule a 8 bytes read. It will read nothing till actual write-flush happens
+			if (c == 0)
+			{
+				throw new Exception("Disconnected");
+			}
 			if (c != 8)
 			{
 				throw new Exception("Answer is too short");

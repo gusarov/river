@@ -18,7 +18,6 @@ namespace River.ConsoleServer
 		static void Main()
 		{
 			RiverInit.RegAll();
-			Resolver.RegisterOverride("self", x => new RiverSelfService());
 
 			var server = new SocksServer("socks://0.0.0.0:1070")
 			{

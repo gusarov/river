@@ -65,6 +65,10 @@
       <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
       <Name>River.Internal</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
+      <Project>{508767BB-CAF6-42A1-A13F-4E84C2F44C87}</Project>
+      <Name>River.SelfService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
       <Project>{2f41b438-b726-4ff1-a277-4907cb359b81}</Project>
       <Name>River.ShadowSocks</Name>

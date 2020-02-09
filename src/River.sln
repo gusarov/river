@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.SelfService", "River.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.SelfService.Test", "River.SelfService.Test\River.SelfService.Test.csproj", "{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.SelfService.Std", "River.SelfService\River.SelfService.Std.csproj", "{65BD5575-D76F-4D36-96CA-45A5611C96CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +152,10 @@ Global
 		{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65BD5575-D76F-4D36-96CA-45A5611C96CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65BD5575-D76F-4D36-96CA-45A5611C96CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65BD5575-D76F-4D36-96CA-45A5611C96CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65BD5575-D76F-4D36-96CA-45A5611C96CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

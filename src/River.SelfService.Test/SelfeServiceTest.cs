@@ -15,7 +15,7 @@ namespace River.SelfService.Test
 		{
 			var sut = new RiverSelfService();
 
-			var buf = _utf.GetBytes(@"GET / HTTP/1.0\r\nHost: _river\r\n\r\n");
+			var buf = _utf.GetBytes("GET / HTTP/1.0\r\nHost: _river\r\n\r\n");
 
 			sut.Write(buf, 0, buf.Length);
 
