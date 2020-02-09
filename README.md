@@ -46,6 +46,12 @@ Change to:
 ```cs
 var stream = new Socks4ClientStream("127.0.0.1", 1080, "httpbin.org", 80);
 ```
+Or if you need TcpClient to proxy:
+```cs
+var cli = new TcpClient("127.0.0.1", 1080);
+var stream = new Socks4ClientStream(cli.GetStream(), "httpbin.org", 80);
+
+```
 
 Proxy Chain:
 ```cs
