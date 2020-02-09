@@ -12,7 +12,7 @@ namespace River.Test
 
 		public DemoTcpServer()
 		{
-			_server = new TcpListener(IPAddress.Loopback, 0);
+			_server = new TcpListener(IPAddress.Loopback, 0); // port is not specified! Read a Port property instead
 			_server.Start();
 			_server.BeginAcceptTcpClient(AcceptingTcpClient, null);
 		}
