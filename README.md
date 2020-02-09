@@ -1,4 +1,3 @@
-Azure DevOps build:
 [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
 
 # River - network tunneling
@@ -35,7 +34,7 @@ NuGet: https://www.nuget.org/packages/River/
 
 Installation: ```Install-Package River```
 
-How to wrap you existing TCP connection to SOCKS proxy:
+How to wrap your existing TCP connection to SOCKS proxy:
 
 Original:
 ```cs
@@ -44,7 +43,13 @@ var stream = cli.GetStream();
 ```
 Change to:
 ```cs
-var stream = new Socks4ClientStream("127.0.0.1", 1080, "httpbin.org", 80);
+var stream = new Socks4ClientStream("proxyserver", 1080, "httpbin.org", 80);
+```
+Or if you need TcpClient to proxy:
+```cs
+var cli = new TcpClient("proxyserver", 1080);
+var stream = new Socks4ClientStream(cli.GetStream(), "httpbin.org", 80);
+
 ```
 
 Proxy Chain:
