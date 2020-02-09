@@ -1,18 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace River.Internal
 {
 	public static class Resolver
 	{
+		static List<(Regex regex, Func<string, Stream> fact)> _overriders = new List<(Regex, Func<string, Stream>)>();
+
 		static Dictionary<string, Type> _schemasClient
 			= new Dictionary<string, Type>(StringComparer.CurrentCultureIgnoreCase);
 
 		static Dictionary<string, Type> _schemasServer
 			= new Dictionary<string, Type>(StringComparer.CurrentCultureIgnoreCase);
+
+		public static void RegisterOverride(string hostPattern, Func<string, Stream> fact)
+		{
+			_overriders.Add((new Regex(hostPattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture), fact));
+		}
 
 		public static void RegisterSchema<TServer, TClient>(string schema)
 		{
@@ -50,6 +59,18 @@ namespace River.Internal
 
 			_schemasServer.TryGetValue(uri.Scheme, out var type);
 			return type;
+		}
+
+		public static Stream GetStreamOverride(string hostName)
+		{
+			foreach (var ov in _overriders)
+			{
+				if (ov.regex.IsMatch(hostName))
+				{
+					return ov.fact(hostName);
+				}
+			}
+			return null;
 		}
 	}
 }

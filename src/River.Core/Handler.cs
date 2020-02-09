@@ -216,7 +216,7 @@ namespace River
 			}
 		}
 
-		ClientStream _upstreamClient;
+		Stream _upstreamClient;
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
@@ -225,40 +225,45 @@ namespace River
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			foreach (var proxy in Server.Chain)
+			var ov = Resolver.GetStreamOverride(target.Host);
+			if (ov != null)
 			{
-				var clientType = Resolver.GetClientType(proxy.Uri);
-				var clientStream = (ClientStream)Activator.CreateInstance(clientType);
-				if (_upstreamClient == null)
-				{
-					// create a first client connection
-					clientStream.Plug(proxy.Uri);
-				}
-				else
-				{
-					// route in old client
-					_upstreamClient.Route(proxy.Uri.Host, proxy.Uri.Port);
-
-					// and now wrap to new one
-					clientStream.Plug(proxy.Uri, _upstreamClient);
-				}
-				_upstreamClient = clientStream;
-			}
-			if (_upstreamClient != null)
-			{
-				_upstreamClient.Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+				_upstreamClient = ov;
 			}
 			else
 			{
-				// dirrect connection
-				_upstreamClient = new NullClientStream();
-				var host = target.Host ?? target.IPAddress.ToString();
-				var port = target.Port;
-				_upstreamClient.Plug(host, port);
-			}
+				foreach (var proxy in Server.Chain)
+				{
+					var clientType = Resolver.GetClientType(proxy.Uri);
+					var clientStream = (ClientStream)Activator.CreateInstance(clientType);
+					if (_upstreamClient == null)
+					{
+						// create a first client connection
+						clientStream.Plug(proxy.Uri);
+					}
+					else
+					{
+						// route in old client
+						((ClientStream)_upstreamClient).Route(proxy.Uri.Host, proxy.Uri.Port);
 
-			// BeginReadSource();
-			// BeginReadTarget();
+						// and now wrap to new one
+						clientStream.Plug(proxy.Uri, _upstreamClient);
+					}
+					_upstreamClient = clientStream;
+				}
+				if (_upstreamClient != null)
+				{
+					((ClientStream)_upstreamClient).Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+				}
+				else
+				{
+					// dirrect connection
+					_upstreamClient = new NullClientStream();
+					var host = target.Host ?? target.IPAddress.ToString();
+					var port = target.Port;
+					((ClientStream)_upstreamClient).Plug(host, port);
+				}
+			}
 		}
 
 	}

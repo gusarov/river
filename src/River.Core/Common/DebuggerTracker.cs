@@ -31,14 +31,14 @@ namespace River.Common
 
 		public DebuggerTracker()
 		{
-			_timer = new Timer(Callback, null, 0, 1000);
-
 			// initialize a _lastCallbacks window
 			var now = DateTime.UtcNow;
 			for (var i = 0; i < _max; i++)
 			{
-				_lastCallbacks[i++] = now.AddSeconds(i - _max);
+				_lastCallbacks[i] = now.AddSeconds(i - _max);
 			}
+
+			_timer = new Timer(Callback, null, 0, 1000);
 		}
 
 		~DebuggerTracker()

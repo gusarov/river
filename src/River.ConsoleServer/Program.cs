@@ -6,6 +6,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using River.Internal;
+using River.SelfService;
 using River.ShadowSocks;
 using River.Socks;
 
@@ -14,6 +16,22 @@ namespace River.ConsoleServer
 	class Program
 	{
 		static void Main()
+		{
+			RiverInit.RegAll();
+			Resolver.RegisterOverride("self", x => new RiverSelfService());
+
+			var server = new SocksServer("socks://0.0.0.0:1070")
+			{
+				Chain =
+				{
+					"socks4://37.192.194.50:35437",
+				},
+			};
+
+			Console.ReadLine();
+		}
+
+		static void Main11()
 		{
 			/*
 			var cli = new TcpClient("httpbin.org", 80);

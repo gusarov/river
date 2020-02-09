@@ -1,18 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildProjectExtensionsPath>obj\pext_dsk</MSBuildProjectExtensionsPath>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{DDA8905A-ACC6-43A4-97AE-01CB5E1AF021}</ProjectGuid>
+    <ProjectGuid>{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.V2.Tests</RootNamespace>
-    <AssemblyName>River.V2.Tests</AssemblyName>
+    <RootNamespace>River.RiverSelfService.Test</RootNamespace>
+    <AssemblyName>River.RiverSelfService.Test</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -46,15 +42,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="SelfeServiceTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>2.9.8</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
       <Version>2.1.0</Version>
     </PackageReference>
@@ -63,17 +54,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
-      <Name>River.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
-      <Name>River.Socks</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">
-      <Project>{DF51D93F-751F-4787-A8EE-33289860F6DF}</Project>
-      <Name>River.Test.Base</Name>
+    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
+      <Project>{508767bb-caf6-42a1-a13f-4e84c2f44c87}</Project>
+      <Name>River.SelfService</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
