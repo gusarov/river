@@ -13,7 +13,48 @@ namespace River.ConsoleServer
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main()
+		{
+			/*
+			var cli = new TcpClient("httpbin.org", 80);
+			var stream = cli.GetStream();
+			*/
+
+			var step1 = new Socks4ClientStream();
+			step1.Plug("127.0.0.1", 1080);
+			step1.Route("127.0.0.1", 1081);
+
+			var step2 = new Socks4ClientStream(step1, "127.0.0.1", 1082);
+			var step3 = new Socks4ClientStream(step2, "httpbin.org", 80);
+
+			var stream = step3;
+
+			void read()
+			{
+				var buf = new byte[16 * 1024];
+				var c = stream.Read(buf, 0, buf.Length);
+				if (c > 0)
+				{
+					var str = Encoding.UTF8.GetString(buf, 0, c);
+					Console.WriteLine(str);
+					// Console.WriteLine("\r\n==========<< " + c);
+					Task.Run(delegate
+					{
+						read();
+					});
+				}
+			}
+			Task.Run(delegate
+			{
+				read();
+			});
+
+			var buf2 = Encoding.ASCII.GetBytes("GET /\r\n\r\n");
+			stream.Write(buf2, 0, buf2.Length);
+			Console.ReadLine();
+		}
+
+		static void Main2(string[] args)
 		{
 			var cli = new ShadowSocksClientStream();
 			cli.Plug(new Uri("ss://chacha20:abc@RHOP2:8338"));
@@ -78,7 +119,7 @@ Host: httpbin.org
 			*/
 		}
 
-		static void Main2(string[] args)
+		static void Main3(string[] args)
 		{
 			var cli1 = new ShadowSocksClientStream();
 			cli1.Plug(new Uri($"ss://c:pwd@127.0.0.1:8338"));

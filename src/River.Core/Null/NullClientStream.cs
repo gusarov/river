@@ -10,7 +10,7 @@ namespace River
 	/// <summary>
 	/// Just create real direct connection
 	/// </summary>
-	public sealed class NullClientStream : ClientStream
+	sealed class NullClientStream : ClientStream
 	{
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
