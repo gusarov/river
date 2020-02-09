@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace River.Test.Api
+namespace River.Test
 {
 	public class DemoTcpServer : IDisposable
 	{
@@ -42,10 +42,21 @@ namespace River.Test.Api
 
 		bool _disposed;
 
-		public void Dispose()
+		~DemoTcpServer()
+		{
+			Dispose(false);
+		}
+
+		protected virtual void Dispose(bool managed)
 		{
 			_disposed = true;
 			_server.Stop();
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -14,10 +14,7 @@ namespace RiverApp
 	{
 		static void Main(string[] args)
 		{
-			Resolver.RegisterSchema<SocksServer, Socks4ClientStream>("socks4");
-			Resolver.RegisterSchema<SocksServer, Socks5ClientStream>("socks5");
-			Resolver.RegisterSchema<SocksServer, ShadowSocksClientStream>("ss");
-			Resolver.RegisterSchemaServer<SocksServer>("socks");
+			RiverInit.RegAll();
 
 			var servers = new List<(RiverServer, Uri)>();
 			var forwarders = new List<string>();

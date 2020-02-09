@@ -2,12 +2,23 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>River.Internal</RootNamespace>
-    <AssemblyName>River.Internal</AssemblyName>
+    <AssemblyName>River.All</AssemblyName>
+    <RootNamespace>River.All</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
+    <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
+    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
@@ -17,5 +28,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-	
+
 </Project>

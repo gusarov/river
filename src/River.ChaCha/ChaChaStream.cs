@@ -1,5 +1,4 @@
-﻿using CSChaCha20;
-using River.Common;
+﻿using River.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,11 +12,11 @@ namespace River.ChaCha
 	{
 		private readonly byte[] _key;
 
-		ChaCha20B _chachaEncrypt;
-		ChaCha20B _chachaDecrypt;
+		ChaCha20 _chachaEncrypt;
+		ChaCha20 _chachaDecrypt;
 
 		public ChaChaStream(Stream underlying, string password)
-			: this(underlying, ChaCha20B.Kdf(password))
+			: this(underlying, ChaCha20.Kdf(password))
 		{
 
 		}
@@ -26,7 +25,7 @@ namespace River.ChaCha
 			: base(underlying)
 		{
 			_key = key;
-			_chachaEncrypt = new ChaCha20B(_key, _nonceLen);
+			_chachaEncrypt = new ChaCha20(_key, _nonceLen);
 			Init(Send, Read);
 		}
 
@@ -49,7 +48,7 @@ namespace River.ChaCha
 				_icReceived = true;
 				r -= _nonceLen;
 				ro += _nonceLen;
-				_chachaDecrypt = new ChaCha20B(_key, remoteNonce);
+				_chachaDecrypt = new ChaCha20(_key, remoteNonce);
 			}
 			_chachaDecrypt.Crypt(_readBuffer, ro, buf, pos, r);
 			Trace.WriteLine("DEC << " + Utils.Utf8.GetString(buf, pos, Math.Max(r, 40)));

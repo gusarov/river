@@ -1,14 +1,12 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using River.Socks;
 
 namespace River.Test.Api
 {
 	[TestClass]
-	public class SocksTests : NetworkTest
+	public class SocksTests : TestClass
 	{
 		[TestMethod]
 		public void Should_socks4_have_a_ctor_with_proxy_and_host()
@@ -26,6 +24,10 @@ namespace River.Test.Api
 			Assert.AreEqual(4, d, "Should read 4 bytes in a single packet");
 			// demo server is XOR 37
 			CollectionAssert.AreEqual(data.Select(x => (byte)(x ^ 37)).ToArray(), buf.Take(d).ToArray());
+
+			server.Dispose();
+			proxy.Dispose();
+			proxyClient.Dispose();
 		}
 
 		[TestMethod]
@@ -44,19 +46,10 @@ namespace River.Test.Api
 			Assert.AreEqual(4, d, "Should read 4 bytes in a single packet");
 			// demo server is XOR 37
 			CollectionAssert.AreEqual(data.Select(x => (byte)(x ^ 37)).ToArray(), buf.Take(d).ToArray());
-		}
-	}
-
-	public class NetworkTest
-	{
-		protected int GetFreePort()
-		{
-			var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-			var ipe = (IPEndPoint)socket.LocalEndPoint;
-			var port = ipe.Port;
-			socket.Close();
-			return port;
+			
+			server.Dispose();
+			proxy.Dispose();
+			proxyClient.Dispose();
 		}
 	}
 }

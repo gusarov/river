@@ -7,15 +7,15 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using CSChaCha20;
+using River.ChaCha;
 using River.Common;
 
 namespace River.ShadowSocks
 {
 	public class ShadowSocksClientStream : ClientStream
 	{
-		ChaCha20B _chachaEncrypt;
-		ChaCha20B _chachaDecrypt;
+		ChaCha20 _chachaEncrypt;
+		ChaCha20 _chachaDecrypt;
 
 		const int _nonceLen = 8;
 
@@ -43,9 +43,9 @@ namespace River.ShadowSocks
 				throw new ArgumentNullException(nameof(proxyUri));
 			}
 			var (user, pass) = GetUserInfo(proxyUri);
-			_key = ChaCha20B.Kdf(pass);
+			_key = ChaCha20.Kdf(pass);
 			_nonce = Guid.NewGuid().ToByteArray().Take(_nonceLen).ToArray();
-			_chachaEncrypt = new ChaCha20B(_key, _nonce, 0);
+			_chachaEncrypt = new ChaCha20(_key, _nonce, 0);
 		}
 
 		public ShadowSocksClientStream()
@@ -117,7 +117,7 @@ namespace River.ShadowSocks
 				_icReceived = true;
 				r -= _nonceLen;
 				ro += _nonceLen;
-				_chachaDecrypt = new ChaCha20B(_key, _serverNonce);
+				_chachaDecrypt = new ChaCha20(_key, _serverNonce);
 			}
 
 #if DEBUG

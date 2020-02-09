@@ -1,20 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A8C6EDC3-DB60-461C-AB71-770F30713820}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>River</RootNamespace>
-    <AssemblyName>RiverApp</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
+    <MSBuildProjectExtensionsPath>obj\pext_dsk</MSBuildProjectExtensionsPath>
     <TargetFrameworkProfile />
   </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{759CDF6C-BDFD-464C-AD53-BCC17D1326C9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RiverLib.All</RootNamespace>
+    <AssemblyName>RiverLib.All</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +27,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,27 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Init.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="ilmerge">
-      <Version>3.0.29</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>2.9.8</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\River.All\River.All.csproj">
-      <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
-      <Name>River.All</Name>
-    </ProjectReference>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
       <Project>{ddaba839-27aa-4ae0-ba2e-340c975669bb}</Project>
       <Name>River.ChaCha</Name>
@@ -71,6 +56,10 @@
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
+      <Name>River.Http</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Internal\River.Internal.csproj">
       <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
@@ -86,24 +75,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="ILMerge" AfterTargets="Build">
-    <Message Text="ILMerge" Importance="High" />
-    <ItemGroup>
-      <SrcDll Include="$(OutDir)\*.dll" />
-    </ItemGroup>
-    <Exec Command="$(ILMergeConsolePath) $(OutDir)\RiverApp.exe @(SrcDll, ' ') /out:$(OutDir)\River.exe" />
-  </Target>
-  <!--
-	<Target Name="CleanReferenceCopyLocalPaths2" AfterTargets="Build" DependsOnTargets="ILMerge">
-		<Message Text="CleanReferenceCopyLocalPaths2" Importance="High" />
-		<Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
-		<ItemGroup>
-			<Directories Include="$([System.IO.Directory]::GetDirectories('$(OutDir)%(DestinationSubDirectory)', '*', System.IO.SearchOption.AllDirectories))" />
-			<Directories>
-				<Files>$([System.IO.Directory]::GetFiles("%(Directories.Identity)", "*", System.IO.SearchOption.AllDirectories).get_Length())</Files>
-			</Directories>
-		</ItemGroup>
-		<RemoveDir Directories="@(Directories)" Condition="%(Files)=='0'" />
-	</Target>
--->
 </Project>

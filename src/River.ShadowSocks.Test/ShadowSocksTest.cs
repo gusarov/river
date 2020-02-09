@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using CSChaCha20;
+using River.ChaCha;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace River.ShadowSocks.Test
@@ -30,9 +30,9 @@ func kdf(password string, keyLen int) []byte {
 		[TestMethod]
 		public void Should_derive_key_as_original_shadow_socks()
 		{
-			Assert.AreEqual("202cb962ac59075b964b07152d234b70d1d99ca9b7ec0708c83ecca4b635dbf1", Hex(ChaCha20B.Kdf("123")));
-			Assert.AreEqual("250cf8b51c773f3f8dc8b4be867a9a02e34b5564d64960137c5fb9c6c5e80797", Hex(ChaCha20B.Kdf("456")));
-			Assert.AreEqual("23308d9f4c4f0e40077418ca045792abda991f59ef37305c64e8f8e9c3af8549", Hex(ChaCha20B.Kdf("202cb962ac59075b964b07152d234b70d1d99ca9b7ec0708c83ecca4b635dbf1")));
+			Assert.AreEqual("202cb962ac59075b964b07152d234b70d1d99ca9b7ec0708c83ecca4b635dbf1", Hex(ChaCha20.Kdf("123")));
+			Assert.AreEqual("250cf8b51c773f3f8dc8b4be867a9a02e34b5564d64960137c5fb9c6c5e80797", Hex(ChaCha20.Kdf("456")));
+			Assert.AreEqual("23308d9f4c4f0e40077418ca045792abda991f59ef37305c64e8f8e9c3af8549", Hex(ChaCha20.Kdf("202cb962ac59075b964b07152d234b70d1d99ca9b7ec0708c83ecca4b635dbf1")));
 		}
 
 		private const int validKeyLength = 32;
@@ -53,7 +53,7 @@ func kdf(password string, keyLen int) []byte {
 
 			var enc = "c04da2490ee5658a19d282ca4fdb359e9e2028e7e871af3a642b67123fc296916976b535facd57f4f847ae9fe6412f8de3ad652290a5184043f88050aac7e0cc729a396a967dd8d2a4baa62a880af73006322aa0f219d932d91fbcf6a9b00ce864f7c28a7e57a912fd98454c14e040d91e4a2e848c1b87bb0b7735cf2a87c55cba78cb07e389f30a05efdff937ed35fc14116ab14aed2650fd5cdc981b0020bc58d798b011bc92c47bdc7579ccf100ac87c8d7a31239a81151403325";
 
-			Assert.AreEqual(enc, Hex(new ChaCha20B(ChaCha20B.Kdf("pwd"), nonce, 0).EncryptBytes(origBytes)));
+			Assert.AreEqual(enc, Hex(new ChaCha20(ChaCha20.Kdf("pwd"), nonce, 0).EncryptBytes(origBytes)));
 		}
 
 		[TestMethod]
@@ -68,7 +68,7 @@ func kdf(password string, keyLen int) []byte {
 			var part3 = data.Skip(160).ToArray();
 
 			var result = new byte[16 * 1024];
-			var chacha = new ChaCha20B(ChaCha20B.Kdf("pwd"), nonce, 0);
+			var chacha = new ChaCha20(ChaCha20.Kdf("pwd"), nonce, 0);
 			chacha.Crypt(part1, 0, result, 0, part1.Length);
 			chacha.Crypt(part2, 0, result, part1.Length, part2.Length);
 			chacha.Crypt(part3, 0, result, part1.Length + part2.Length, part3.Length);
@@ -174,9 +174,9 @@ func kdf(password string, keyLen int) []byte {
 			var output3 = new byte[lengthOfContent3];
 
 
-			var forEncrypting1 = new ChaCha20B(key1, nonce1, counter1);
-			var forEncrypting2 = new ChaCha20B(key2, nonce2, counter2);
-			var forEncrypting3 = new ChaCha20B(key3, nonce3, counter3);
+			var forEncrypting1 = new ChaCha20(key1, nonce1, counter1);
+			var forEncrypting2 = new ChaCha20(key2, nonce2, counter2);
+			var forEncrypting3 = new ChaCha20(key3, nonce3, counter3);
 
 			// Act
 			forEncrypting1.EncryptBytes(output1, content1, lengthOfContent1);
