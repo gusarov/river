@@ -2,7 +2,9 @@ Azure DevOps build:
 [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
 
 # River - network tunneling
-River is shipped in 2 ways:
+River is a proxy client & server with cryptography. Everything is pure .Net CLR without external dependancies.
+
+Shipped in 2 ways:
 
 1) [River.dll in NuGet](https://www.nuget.org/packages/River/) - is a .Net Standard 2.0 library for any cross platform project
 
