@@ -34,7 +34,7 @@ NuGet: https://www.nuget.org/packages/River/
 
 Installation: ```Install-Package River```
 
-How to wrap you existing TCP connection to SOCKS proxy:
+How to wrap your existing TCP connection to SOCKS proxy:
 
 Original:
 ```cs
