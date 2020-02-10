@@ -91,9 +91,9 @@ Server: river
 ETag: {_etag}
 
 ";
-*/
 					}
 				}
+ETag: {_etag}
 */
 
 				var url = str.Substring(is1 + 1, is2 - is1 - 1).Trim();
@@ -105,7 +105,6 @@ Content-Length: {c}
 Content-Type: {contentType}
 Connection: keep-alive
 Server: river
-ETag: {_etag}
 
 ";
 
