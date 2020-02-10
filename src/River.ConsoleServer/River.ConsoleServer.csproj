@@ -57,6 +57,10 @@
       <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
       <Name>River.All</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
+      <Project>{DDABA839-27AA-4AE0-BA2E-340C975669BB}</Project>
+      <Name>River.ChaCha</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
