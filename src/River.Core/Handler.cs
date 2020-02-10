@@ -253,7 +253,8 @@ namespace River
 				}
 				if (_upstreamClient != null)
 				{
-					((ClientStream)_upstreamClient).Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+					var client = (ClientStream)_upstreamClient;
+					client.Route(target.Host ?? target.IPAddress.ToString(), target.Port);
 				}
 				else
 				{
