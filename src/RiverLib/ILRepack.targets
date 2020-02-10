@@ -47,9 +47,10 @@
 		<RemoveDir Directories="@(Directories)" Condition="%(Files)=='0'" />
 	</Target>
 
+<!--
 	<Target Name="NugetPack" AfterTargets="Build" DependsOnTargets="ILRepack2" Condition="'$(Configuration)'=='Release'">
 		<Message Text="NugetPack" Importance="High" />
 		<Exec Command="cd nuget &amp; nuget pack ..\ -Properties Configuration=Release" />
 	</Target>
-
+-->
 </Project>

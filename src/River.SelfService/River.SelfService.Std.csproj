@@ -2,12 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>River.Internal</RootNamespace>
-    <AssemblyName>River.Internal</AssemblyName>
+    <AssemblyName>River.SelfService</AssemblyName>
+    <RootNamespace>River.SelfService</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
@@ -17,5 +24,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-	
+
 </Project>

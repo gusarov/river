@@ -162,72 +162,75 @@ namespace River.Socks
 											supportsNoAuth = true;
 										}
 									}
-									_bufferProcessedCount = 2 + authMethodsCount;
 									if (authMethodsCount == 0 || !supportsNoAuth) // also, when list is empty, assume NoAuth
 									{
 										throw new Exception("Client must support NoAuth mode");
 									}
+									// Remember that we passed this stage
+									_bufferProcessedCount = 2 + authMethodsCount;
+									_authenticationNegotiated = true;
 									// PROVIDE MY CONCLUSION
 									Stream.Write(0x05, 0x00); // v5, APPROVED - NO AUTH
-									_authenticationNegotiated = true;
 								}
 								// continue - wait for reques
 								if (EnsureReaded(_bufferProcessedCount + 4))
 								{
-									if (_buffer[_bufferProcessedCount + 0] != 5)
+									int b = _bufferProcessedCount;
+
+									if (_buffer[b++] != 5)
 									{
 										throw new Exception("Request v5 expected");
 									}
-									if (_buffer[_bufferProcessedCount + 1] != 1)
+									if (_buffer[b++] != 1)
 									{
 										throw new Exception("Only Stream Command supported");
 									}
-									// reserved byte 2 skipped
-									var addressType = _buffer[_bufferProcessedCount + 3];
-									_bufferProcessedCount += 4; // we just processed Ver,Cmd,Rsv,AdrType
+									// reserved byte #2 skipped
+									b++;
+									var addressType = _buffer[b++];
+									// _bufferProcessedCount += 4; // we just processed Ver,Cmd,Rsv,AdrType
 									bool addressTypeProcessed = false;
 									switch (addressType)
 									{
 										case 1: // IPv4
-											if (EnsureReaded(_bufferProcessedCount + 4))
+											if (EnsureReaded(b + 4))
 											{
 												var ipv4 = new byte[4];
-												Array.Copy(_buffer, _bufferProcessedCount, ipv4, 0, 4);
+												Array.Copy(_buffer, b, ipv4, 0, 4);
 												_addressRequested = new IPAddress(ipv4);
-												_bufferProcessedCount += 4;
+												b += 4;
 												addressTypeProcessed = true;
 											}
 											break;
 										case 3: // DNS
-											if (EnsureReaded(_bufferProcessedCount + 1))
+											if (EnsureReaded(b + 1))
 											{
-												var len = _buffer[_bufferProcessedCount];
-												if (EnsureReaded(_bufferProcessedCount + 1 + len))
+												var len = _buffer[b++];
+												if (EnsureReaded(b + len))
 												{
-													_dnsNameRequested = _utf.GetString(_buffer, _bufferProcessedCount + 1, len);
+													_dnsNameRequested = _utf.GetString(_buffer, b, len);
 													// 256 max, no need to check for overflow
+													b += len;
+													addressTypeProcessed = true;
 												}
-												_bufferProcessedCount += 1 + len;
-												addressTypeProcessed = true;
 											}
 											break;
 										case 4: // IPv6
-											if (EnsureReaded(_bufferProcessedCount + 16))
+											if (EnsureReaded(b + 16))
 											{
 												var ipv6 = new byte[16];
-												Array.Copy(_buffer, _bufferProcessedCount, ipv6, 0, 16);
+												Array.Copy(_buffer, b, ipv6, 0, 16);
 												_addressRequested = new IPAddress(ipv6);
-												_bufferProcessedCount += 16;
+												b += 16;
 												addressTypeProcessed = true;
 											}
 											break;
 									}
 									if (addressTypeProcessed) // continue
 									{
-										if (EnsureReaded(_bufferProcessedCount + 2))
+										if (EnsureReaded(b + 2))
 										{
-											_portRequested = _buffer[_bufferProcessedCount] * 256 + _buffer[_bufferProcessedCount + 1];
-											_bufferProcessedCount += 2;
+											_portRequested = _buffer[b++] * 256 + _buffer[b++];
 
 											Exception ex = null;
 											try
@@ -238,7 +241,7 @@ namespace River.Socks
 													IPAddress = _addressRequested,
 													Port = _portRequested,
 												});
-												if (_bufferProcessedCount < _bufferReceivedCount)
+												if (b < _bufferReceivedCount)
 												{
 													// forward the rest of the buffer
 													Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
@@ -261,20 +264,20 @@ namespace River.Socks
 											// 	response[i] = 0;
 											// }
 
-											// it appears, not all clients can handle domain name response... Hello to Telegram.
+											// it appears, not all clients can handle domain name response... Hello to Telegram & QT platform.
 											// Let's go with IPv4
 											var response = new byte[]
 											{
 													0x05, // ver
 													(ex == null ? (byte) 0x00 : (byte) 0x01), // state = granted / rejected
-													0x00, // null
+													0x00, // null rsv
 													0x01, // adr_type ipv4
-													0x00, // ipv4
-													0x00, // ipv4
-													0x00, // ipv4
-													0x00, // ipv4
-													0x00, // port
-													0x00, // port
+													0x00, // ipv4 1
+													0x00, // ipv4 2
+													0x00, // ipv4 3
+													0x00, // ipv4 4
+													0x00, // port H
+													0x00, // port L
 											};
 											Stream.Write(response, 0, response.Length);
 										}

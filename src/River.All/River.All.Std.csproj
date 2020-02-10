@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>River.ShadowSocks</AssemblyName>
-    <RootNamespace>River.ShadowSocks</RootNamespace>
+    <AssemblyName>River.All</AssemblyName>
+    <RootNamespace>River.All</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +13,10 @@
   <ItemGroup>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
+    <ProjectReference Include="..\River.SelfService\River.SelfService.Std.csproj" />
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
+    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
 
   <ItemGroup>

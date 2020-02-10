@@ -1,5 +1,4 @@
-﻿using CSChaCha20;
-using River.ChaCha;
+﻿using River.ChaCha;
 using System;
 using System.IO;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-namespace River.Socks
+namespace River.ShadowSocks
 {
 	public class ShadowSocksHandler : Handler
 	{

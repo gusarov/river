@@ -28,6 +28,16 @@ namespace River.Socks
 			Route(targetHost, targetPort, proxyDns);
 		}
 
+		public void Plug(string host, int port)
+		{
+			ClientStreamExtensions.Plug(this, host, port);
+		}
+
+		public void Plug(Stream stream)
+		{
+			Plug(null, stream);
+		}
+
 		// enable write cache
 		public override void Plug(Uri uri, Stream stream) => base.Plug(uri, new MustFlushStream(stream));
 
@@ -57,6 +67,7 @@ namespace River.Socks
 			var ipv4 = proxyDns == true
 				? null
 				: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
+
 			if (ipv4 == null && IPAddress.TryParse(targetHost, out var ipv4g))
 			{
 				if (ipv4g.AddressFamily == AddressFamily.InterNetwork)
@@ -99,11 +110,15 @@ namespace River.Socks
 			}
 
 			stream.Write(buffer, 0, b);
-			// stream.Flush(); // do not flush now, let it be write-cached
+			stream.Flush(); // todo do not flush now, let it be write-cached
 
 			// var response = new byte[8];
 			// first await:
 			var c = await stream.ReadAsync(buffer, 0, 8); // just schecule a 8 bytes read. It will read nothing till actual write-flush happens
+			if (c == 0)
+			{
+				throw new Exception("Disconnected");
+			}
 			if (c != 8)
 			{
 				throw new Exception("Answer is too short");

@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace River.Socks
+namespace River.ShadowSocks
 {
 	public class ShadowSocksServer : TcpServer<ShadowSocksHandler>
 	{

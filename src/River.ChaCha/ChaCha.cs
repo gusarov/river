@@ -21,12 +21,12 @@ using System.Text;
 using System.Runtime.CompilerServices; // For MethodImplOptions.AggressiveInlining
 using System.Security.Cryptography;
 
-namespace CSChaCha20
+namespace River.ChaCha
 {
 	/// <summary>
 	/// Class that can be used for ChaCha20 encryption / decryption
 	/// </summary>
-	public sealed class ChaCha20B
+	public sealed class ChaCha20
 	{
 		/// <summary>
 		/// Key lenght in bytes
@@ -60,24 +60,24 @@ namespace CSChaCha20
 		/// <param name="counter">
 		/// A 4-byte (32-bit) block counter, treated as a 32-bit little-endian integer
 		/// </param>
-		public ChaCha20B(byte[] key, byte[] nonce, uint counter = 0)
+		public ChaCha20(byte[] key, byte[] nonce, uint counter = 0)
 		{
 			KeySetup(key);
 			IvSetup(nonce, counter);
 		}
 
-		public ChaCha20B(string password, byte[] nonce, uint counter = 0)
+		public ChaCha20(string password, byte[] nonce, uint counter = 0)
 		{
 			KeySetup(Kdf(password));
 			IvSetup(nonce, counter);
 		}
 
-		public ChaCha20B(string password, int nonceLen, uint counter = 0)
+		public ChaCha20(string password, int nonceLen, uint counter = 0)
 			: this(Kdf(password), nonceLen, counter)
 		{
 		}
 
-		public ChaCha20B(byte[] key, int nonceLen, uint counter = 0)
+		public ChaCha20(byte[] key, int nonceLen, uint counter = 0)
 		{
 			KeySetup(key);
 
@@ -227,6 +227,18 @@ namespace CSChaCha20
 		/// Keep track of how many bytes already fulfilled in current block
 		/// </summary>
 		int _currentBlockBytes;
+
+		public int Encrypt(byte[] sourceArray, int sourceIndex, byte[] destinationArray, int destinationIndex, int length)
+		{
+			Crypt(sourceArray, sourceIndex, destinationArray, destinationIndex, length);
+			return length;
+		}
+
+		public int Dencrypt(byte[] sourceArray, int sourceIndex, byte[] destinationArray, int destinationIndex, int length)
+		{
+			Crypt(sourceArray, sourceIndex, destinationArray, destinationIndex, length);
+			return length;
+		}
 
 		/// <summary>
 		/// Encrypt or decrypt the buffers (this is bidirectional for chacha due to xor)
