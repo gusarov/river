@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using River.ChaCha;
 using River.Internal;
 using River.SelfService;
 using River.ShadowSocks;
@@ -23,14 +24,14 @@ namespace River.ConsoleServer
 			{
 				Chain =
 				{
-					// "socks4://37.192.194.50:35437",
+					// "ss://c:123@127.0.0.1:8338",
 				},
 			};
 
 			Console.ReadLine();
 		}
 
-		static void Main11()
+		static void Main2()
 		{
 			/*
 			var cli = new TcpClient("httpbin.org", 80);
@@ -71,7 +72,7 @@ namespace River.ConsoleServer
 			Console.ReadLine();
 		}
 
-		static void Main2(string[] args)
+		static void Main3(string[] args)
 		{
 			var cli = new ShadowSocksClientStream();
 			cli.Plug(new Uri("ss://chacha20:abc@RHOP2:8338"));
@@ -136,10 +137,10 @@ Host: httpbin.org
 			*/
 		}
 
-		static void Main3(string[] args)
+		static void Main4(string[] args)
 		{
 			var cli1 = new ShadowSocksClientStream();
-			cli1.Plug(new Uri($"ss://c:pwd@127.0.0.1:8338"));
+			cli1.Plug(new Uri($"ss://c:123@127.0.0.1:8338"));
 			cli1.Plug("127.0.0.1", 8338);
 			cli1.Route("httpbin.org", 80);
 
@@ -191,13 +192,14 @@ Host: httpbin.org
 			Console.ReadLine();
 		}
 
-		static void Main22(string[] args)
+		static void Main5(string[] args)
 		{
 			// FireFox => SocksServer => RiverClient => Fiddler => RiverServer => Internet
 
 			// Trace.Listeners.Add(new ConsoleTraceListener());
 			new Socks4ClientStream();
 			new Socks5ClientStream();
+
 			new ShadowSocksClientStream();
 
 			var server = new ShadowSocksServer
