@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 
 namespace River.ChaCha
 {
-	public class ChaChaStream : CustomStream
+	public class ChaCha20Stream : CustomStream
 	{
 		private readonly byte[] _key;
 
 		ChaCha20 _chachaEncrypt;
 		ChaCha20 _chachaDecrypt;
 
-		public ChaChaStream(Stream underlying, string password)
+		public ChaCha20Stream(Stream underlying, string password)
 			: this(underlying, ChaCha20.Kdf(password))
 		{
 
 		}
 
-		public ChaChaStream(Stream underlying, byte[] key)
+		public ChaCha20Stream(Stream underlying, byte[] key)
 			: base(underlying)
 		{
 			_key = key;

@@ -89,7 +89,8 @@ namespace River.ChaCha
 
 		static Encoding _utf8 = new UTF8Encoding(false, false);
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-		static MD5 _md5 = MD5.Create();
+		static Lazy<MD5> _lazyMd5 = new Lazy<MD5>(() => MD5.Create());
+		static MD5 _md5 => _lazyMd5.Value;
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
 
 		public static byte[] Kdf(string password)
