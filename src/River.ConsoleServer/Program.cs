@@ -23,7 +23,7 @@ namespace River.ConsoleServer
 			{
 				Chain =
 				{
-					"socks4://37.192.194.50:35437",
+					// "socks4://37.192.194.50:35437",
 				},
 			};
 
