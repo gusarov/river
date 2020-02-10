@@ -22,7 +22,7 @@ namespace River.ShadowSocks
 
 		protected override Stream WrapStream(Stream stream)
 		{
-			return new ChaChaStream(stream, Server.Password);
+			return new ChaCha20Stream(stream, Server.Password);
 		}
 
 		protected override void HandshakeHandler()
