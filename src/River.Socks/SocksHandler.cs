@@ -37,33 +37,39 @@ namespace River.Socks
 			// get request from client
 			if (EnsureReaded(1))
 			{
-				Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
+				var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
+				// Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
 
-				switch (_buffer[0])
+				switch (_buffer[0]) // 0
 				{
 					case 4: // SOCKS4
 						#region SOCKS 4
 						if (EnsureReaded(8))
 						{
-							if (_buffer[1] != 1)
+							var b = 1;
+							if (_buffer[b++] != 1) // 1
 							{
 								throw new NotSupportedException("command type not supported");
 							}
-							_portRequested = (_buffer[2] << 8) + _buffer[3];
-							if (_buffer[4] != 0) // 0 means v4a mode (0.0.0.X)
+							_portRequested = (_buffer[b++] << 8) + _buffer[b++]; // 2 & 3
+							_addressRequested = null;
+							if (_buffer[b] != 0) // #4 - 0 means v4a mode (0.0.0.X)
 							{
 								var bufAddress4 = new byte[4];
 								Array.Copy(_buffer, 4, bufAddress4, 0, 4);
 								_addressRequested = new IPAddress(bufAddress4);
 							}
+							b += 4;
 							// read user id, throw it away and look for null
+							Debug.Assert(b == 8);
 							bool nullOk = false;
-							for (int i = 1; i < 256; i++)
+							for (int i = 0; i < 255; i++)
 							{
-								EnsureReaded(8 + i);
-								if (_buffer[7 + i] == 0)
+								EnsureReaded(b);
+								if (_buffer[b++] == 0)
 								{
-									_bufferProcessedCount = 8 + i;
+									// _bufferProcessedCount = 8 + i;
+									// b += i + 1;
 									nullOk = true;
 									break;
 								}
@@ -77,13 +83,13 @@ namespace River.Socks
 							{
 								// read dns name
 								string dnsName = null;
-								for (int i = 1; i < 256; i++)
+								int dnsBegin = b;
+								for (int i = 0; i < 255; i++)
 								{
-									EnsureReaded(_bufferProcessedCount + i);
-									if (_buffer[_bufferProcessedCount + i - 1] == 0)
+									EnsureReaded(b);
+									if (_buffer[b++] == 0)
 									{
-										dnsName = _utf.GetString(_buffer, _bufferProcessedCount, i - 1);
-										_bufferProcessedCount += i;
+										dnsName = _utf.GetString(_buffer, dnsBegin, i);
 										break;
 									}
 								}
@@ -99,18 +105,28 @@ namespace River.Socks
 							Exception ex = null;
 							try
 							{
+#if DEBUG
+								if (_addressRequested == null)
+								{
+									Trace.WriteLine($"Socks v4a Route: {_dnsNameRequested}:{_portRequested} {msg}");
+								}
+								else
+								{
+									Trace.WriteLine($"Socks v4 Route: {_addressRequested}:{_portRequested} {msg}");
+								}
+#endif
 								EstablishUpstream(new DestinationIdentifier
 								{
 									Host = _dnsNameRequested,
 									IPAddress = _addressRequested,
 									Port = _portRequested,
 								});
-								if (_bufferProcessedCount < _bufferReceivedCount)
+								if (b < _bufferReceivedCount)
 								{
 									// forward the rest of the buffer
 									// TODO do not do this when proxy chain expected
-									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
-									SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
+									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
+									SendForward(_buffer, b, _bufferReceivedCount - b);
 								}
 								// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
 							}
@@ -145,7 +161,7 @@ namespace River.Socks
 						#endregion
 						break;
 					case 5: // SOCKS 5
-						#region SOCKS 4
+						#region SOCKS 5
 						if (EnsureReaded(2))
 						{
 							var authMethodsCount = _buffer[1];
@@ -232,6 +248,20 @@ namespace River.Socks
 										{
 											_portRequested = _buffer[b++] * 256 + _buffer[b++];
 
+#if DEBUG
+											string adrMsg;
+											switch (addressType)
+											{
+												case 3:
+													adrMsg = _dnsNameRequested;
+													break;
+												default:
+													adrMsg = _addressRequested.ToString();
+													break;
+											}
+											Trace.WriteLine($"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested} {msg}");
+#endif
+
 											Exception ex = null;
 											try
 											{
@@ -255,14 +285,6 @@ namespace River.Socks
 											{
 												ex = exx;
 											}
-											// var response = new byte[_bufferProcessedCount - requestStartedAt];
-											// Array.Copy(_buffer, requestStartedAt, response, 0, response.Length);
-											// response[1] = (ex == null ? (byte)0x00 : (byte)0x01); // state = granted / rejected
-											// do not expose multihoming or whatever
-											// for (int i = 4; i < response.Length; i++)
-											// {
-											// 	response[i] = 0;
-											// }
 
 											// it appears, not all clients can handle domain name response... Hello to Telegram & QT platform.
 											// Let's go with IPv4
