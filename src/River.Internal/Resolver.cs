@@ -63,11 +63,14 @@ namespace River.Internal
 
 		public static Stream GetStreamOverride(string hostName)
 		{
-			foreach (var ov in _overriders)
+			if (!string.IsNullOrEmpty(hostName))
 			{
-				if (ov.regex.IsMatch(hostName))
+				foreach (var ov in _overriders)
 				{
-					return ov.fact(hostName);
+					if (ov.regex.IsMatch(hostName))
+					{
+						return ov.fact(hostName);
+					}
 				}
 			}
 			return null;
