@@ -11,7 +11,7 @@ Shipped in 2 ways:
 
 # Application Usage
 
-The commandline inspired by '[gost](https://github.com/ginuerzh/gost)' project:
+The commandline inspired by [gost](https://github.com/ginuerzh/gost) project:
 
 Run SOCKS server:
 ```
