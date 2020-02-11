@@ -20,13 +20,25 @@ namespace River.ConsoleServer
 		{
 			RiverInit.RegAll();
 
-			var server = new SocksServer("socks://0.0.0.0:1070")
+			var server1 = new SocksServer
 			{
 				Chain =
 				{
-					"ss://c:123@127.0.0.1:8338",
+					"ss://chacha20:123@127.0.0.1:8338",
 				},
 			};
+			server1.Run("socks://0.0.0.0:1080");
+
+			
+			var server2 = new ShadowSocksServer
+			{
+				Chain =
+				{
+					// "ss://chacha20:123@127.0.0.1:8338",
+				},
+			};
+			server2.Run("ss://chacha20:123@0.0.0.0:8338");
+			
 
 			Console.ReadLine();
 		}

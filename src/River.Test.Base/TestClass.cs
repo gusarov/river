@@ -68,33 +68,50 @@ namespace River.Test
 		/// Test current connection to web server
 		/// E.g. you can connect to httpbin.org to do this testing
 		/// </summary>
-		protected static string TestConnction(Stream client)
+		protected static string TestConnction(Stream client, string host = "www.google.com")
 		{
-			var ms = new MemoryStream();
-			var readBuf = new byte[16 * 1024];
+			var expected = "onclick=gbar.logger"; // google.com
+
+			var readBuf = new byte[1024 * 1024];
+			var readBufPos = 0;
+			var are = new AutoResetEvent(false);
+			var connected = true;
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
+			// bool found = false;
 			void Read(IAsyncResult ar)
 			{
 				var c = client.EndRead(ar);
-				if (c == 0) return;
-				var line = Encoding.UTF8.GetString(readBuf, 0, c);
-				Console.WriteLine(">>> " + line);
-				ms.Write(readBuf, 0, c);
-				client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
+				if (c == 0)
+				{
+					connected = false;
+					return;
+				}
+				var line = Encoding.UTF8.GetString(readBuf, readBufPos, c);
+				if (line.Contains(expected))
+				{
+					// found = true;
+					are.Set();
+				}
+				readBufPos += c;
+				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
+				// Console.WriteLine(">>> " + line);
+				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
 			}
 
 
-			var request = Encoding.ASCII.GetBytes("GET /get HTTP/1.0\r\nConnection: keep-alive\r\n\r\n");
+			var request = Encoding.ASCII.GetBytes($"GET / HTTP/1.1\r\nHost: {host}\r\nConnection: keep-alive\r\n\r\n");
 			client.Write(request, 0, request.Length);
 
-			WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains("gunicorn"));
-
-			ms = new MemoryStream();
+			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);
+			Assert.IsTrue(are.WaitOne(5000));
+			Assert.IsTrue(connected);
 
 			client.Write(request, 0, request.Length);
-			WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains("gunicorn"));
 
-			return Encoding.UTF8.GetString(ms.ToArray());
+			Assert.IsTrue(are.WaitOne(5000));
+			Assert.IsTrue(connected);
+
+			return ""; // Encoding.UTF8.GetString(ms.ToArray());
 		}
 	}
 }

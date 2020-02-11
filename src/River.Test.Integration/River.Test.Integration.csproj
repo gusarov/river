@@ -58,6 +58,10 @@
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
+      <Project>{2F41B438-B726-4FF1-A277-4907CB359B81}</Project>
+      <Name>River.ShadowSocks</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8ADF475C-8E47-4B22-85F2-69614AF9144B}</Project>
       <Name>River.Socks</Name>

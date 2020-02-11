@@ -70,6 +70,7 @@ namespace River
 		protected virtual void Dispose(bool managed)
 		{
 			Disposing = true;
+			Trace.WriteLine("Closing Handler...");
 			var client = Client;
 			var stream = Stream;
 			try
@@ -78,16 +79,16 @@ namespace River
 				client?.Client?.Shutdown(SocketShutdown.Both);
 			}
 			catch { }
-			try
+			try		
 			{
 				client?.Close();
-				Client = null;
+				// Client = null;
 			}
 			catch { }
 			try
 			{
 				stream?.Close();
-				Stream = null;
+				// Stream = null;
 			}
 			catch { }
 		}
@@ -220,50 +221,58 @@ namespace River
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
-			if (target is null)
+			try
 			{
-				throw new ArgumentNullException(nameof(target));
-			}
-
-			var ov = Resolver.GetStreamOverride(target.Host);
-			if (ov != null)
-			{
-				_upstreamClient = ov;
-			}
-			else
-			{
-				foreach (var proxy in Server.Chain)
+				if (target is null)
 				{
-					var clientType = Resolver.GetClientType(proxy.Uri);
-					var clientStream = (ClientStream)Activator.CreateInstance(clientType);
-					if (_upstreamClient == null)
-					{
-						// create a first client connection
-						clientStream.Plug(proxy.Uri);
-					}
-					else
-					{
-						// route in old client
-						((ClientStream)_upstreamClient).Route(proxy.Uri.Host, proxy.Uri.Port);
-
-						// and now wrap to new one
-						clientStream.Plug(proxy.Uri, _upstreamClient);
-					}
-					_upstreamClient = clientStream;
+					throw new ArgumentNullException(nameof(target));
 				}
-				if (_upstreamClient != null)
+
+				var ov = Resolver.GetStreamOverride(target.Host);
+				if (ov != null)
 				{
-					var client = (ClientStream)_upstreamClient;
-					client.Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+					_upstreamClient = ov;
 				}
 				else
 				{
-					// dirrect connection
-					_upstreamClient = new NullClientStream();
-					var host = target.Host ?? target.IPAddress.ToString();
-					var port = target.Port;
-					((ClientStream)_upstreamClient).Plug(host, port);
+					foreach (var proxy in Server.Chain)
+					{
+						var clientType = Resolver.GetClientType(proxy.Uri);
+						var clientStream = (ClientStream)Activator.CreateInstance(clientType);
+						if (_upstreamClient == null)
+						{
+							// create a first client connection
+							clientStream.Plug(proxy.Uri);
+						}
+						else
+						{
+							// route in old client
+							((ClientStream)_upstreamClient).Route(proxy.Uri.Host, proxy.Uri.Port);
+
+							// and now wrap to new one
+							clientStream.Plug(proxy.Uri, _upstreamClient);
+						}
+						_upstreamClient = clientStream;
+					}
+					if (_upstreamClient != null)
+					{
+						var client = (ClientStream)_upstreamClient;
+						client.Route(target.Host ?? target.IPAddress.ToString(), target.Port);
+					}
+					else
+					{
+						// dirrect connection
+						_upstreamClient = new NullClientStream();
+						var host = target.Host ?? target.IPAddress.ToString();
+						var port = target.Port;
+						((ClientStream)_upstreamClient).Plug(host, port);
+					}
 				}
+			}
+			catch
+			{
+				Dispose();
+				throw;
 			}
 		}
 

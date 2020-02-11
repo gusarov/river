@@ -73,7 +73,7 @@ namespace River.Socks
 				var ipv4 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 				var ipv6 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 
-				ip = ipv6 ?? ipv4;
+				ip = ipv4 ?? ipv6; // have to take ipv4 first because ipv6 is not working most of the times and HappyEyeballs is not possible via socks due to single connection
 			}
 
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name

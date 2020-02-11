@@ -51,13 +51,13 @@ namespace River.ChaCha
 				_chachaDecrypt = new ChaCha20(_key, remoteNonce);
 			}
 			_chachaDecrypt.Crypt(_readBuffer, ro, buf, pos, r);
-			Trace.WriteLine("DEC << " + Utils.Utf8.GetString(buf, pos, Math.Max(r, 40)));
+			// Trace.WriteLine("DEC << " + Utils.Utf8.GetString(buf, pos, Math.Max(r, 40)));
 			return r;
 		}
 
 		void Send(Stream underlying, byte[] buf, int pos, int cnt)
 		{
-			Trace.WriteLine("ENC >> " + Utils.Utf8.GetString(buf, pos, Math.Max(cnt, 40)));
+			// Trace.WriteLine("ENC >> " + Utils.Utf8.GetString(buf, pos, Math.Max(cnt, 40)));
 
 			_chachaEncrypt.Crypt(buf, pos, _encryptBuffer, _icSent ? 0 : _nonceLen, cnt);
 			if (!_icSent)

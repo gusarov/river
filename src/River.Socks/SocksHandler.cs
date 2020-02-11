@@ -301,7 +301,10 @@ namespace River.Socks
 													0x00, // port H
 													0x00, // port L
 											};
-											Stream.Write(response, 0, response.Length);
+											if (!Disposing)
+											{
+												Stream.Write(response, 0, response.Length);
+											}
 										}
 									}
 								}
