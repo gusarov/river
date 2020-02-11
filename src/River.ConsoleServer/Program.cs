@@ -24,7 +24,7 @@ namespace River.ConsoleServer
 			{
 				Chain =
 				{
-					// "ss://c:123@127.0.0.1:8338",
+					"ss://c:123@127.0.0.1:8338",
 				},
 			};
 

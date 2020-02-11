@@ -67,7 +67,7 @@ namespace River.Socks
 			stream.WriteByte(0x00); // reserved
 
 			var targetIsIp = IPAddress.TryParse(targetHost, out var ip);
-			if (proxyDns != false && !targetIsIp) // if targetHost is IP - just use IP
+			if (!targetIsIp) // if targetHost is IP - just use IP
 			{
 				var dns = Dns.GetHostAddresses(targetHost);
 				var ipv4 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
@@ -75,6 +75,7 @@ namespace River.Socks
 
 				ip = ipv6 ?? ipv4;
 			}
+
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
 			{
 				stream.WriteByte(0x03); // adress type = domain name

@@ -60,6 +60,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.SelfService.Std", "Ri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test", "River.Test\River.Test.csproj", "{87472750-B7D5-4496-A7EF-675CCFD58C8A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test.Integration", "River.Test.Integration\River.Test.Integration.csproj", "{F46CACCF-D7D1-4062-8886-B0B30879B390}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -162,6 +164,10 @@ Global
 		{87472750-B7D5-4496-A7EF-675CCFD58C8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87472750-B7D5-4496-A7EF-675CCFD58C8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87472750-B7D5-4496-A7EF-675CCFD58C8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,6 +182,7 @@ Global
 		{DF51D93F-751F-4787-A8EE-33289860F6DF} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 		{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 		{87472750-B7D5-4496-A7EF-675CCFD58C8A} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
+		{F46CACCF-D7D1-4062-8886-B0B30879B390} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5977966-1CCA-49B1-8512-C57AC4A77656}

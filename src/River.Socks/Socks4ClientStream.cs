@@ -39,7 +39,8 @@ namespace River.Socks
 		}
 
 		// enable write cache
-		public override void Plug(Uri uri, Stream stream) => base.Plug(uri, new MustFlushStream(stream));
+		public override void Plug(Uri uri, Stream stream)
+			=> base.Plug(uri, new MustFlushStream(stream));
 
 		bool _routed;
 

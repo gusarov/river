@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{87472750-B7D5-4496-A7EF-675CCFD58C8A}</ProjectGuid>
+    <ProjectGuid>{F46CACCF-D7D1-4062-8886-B0B30879B390}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.Test</RootNamespace>
-    <AssemblyName>River.Test</AssemblyName>
+    <RootNamespace>River.Test.Integration</RootNamespace>
+    <AssemblyName>River.Test.Integration</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -42,7 +42,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HappyEyeballsTest.cs" />
+    <Compile Include="CheckSocks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +57,14 @@
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
+      <Project>{8ADF475C-8E47-4B22-85F2-69614AF9144B}</Project>
+      <Name>River.Socks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">
+      <Project>{df51d93f-751f-4787-a8ee-33289860f6df}</Project>
+      <Name>River.Test.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
