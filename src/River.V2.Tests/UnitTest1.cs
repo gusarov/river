@@ -73,8 +73,8 @@ namespace River.V2.Tests
 				},
 			};
 
-			var cli = new Socks4ClientStream("localhost", port0, "httpbin.org", 80);
-			TestConnction(cli);
+			var cli = new Socks4ClientStream("localhost", port0, "www.google.com", 80);
+			TestConnction(cli, "www.google.com");
 
 			proxy1.Dispose();
 			proxy2.Dispose();
