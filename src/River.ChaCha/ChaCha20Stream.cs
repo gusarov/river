@@ -59,14 +59,22 @@ namespace River.ChaCha
 		{
 			// Trace.WriteLine("ENC >> " + Utils.Utf8.GetString(buf, pos, Math.Max(cnt, 40)));
 
-			_chachaEncrypt.Crypt(buf, pos, _encryptBuffer, _icSent ? 0 : _nonceLen, cnt);
+			var total = Math.Min(cnt, _encryptBuffer.Length - (_icSent ? 0 : _nonceLen));
+			_chachaEncrypt.Crypt(buf, pos, _encryptBuffer, _icSent ? 0 : _nonceLen, total);
+			var size = total;
 			if (!_icSent)
 			{
 				_chachaEncrypt.Nonce.CopyTo(_encryptBuffer, 0); // crypt been done with a shift to left this space for nonce
-				cnt += _nonceLen;
+				size += _nonceLen;
 				_icSent = true;
 			}
-			underlying.Write(_encryptBuffer, 0, cnt);
+			underlying.Write(_encryptBuffer, 0, size);
+
+			// write the rest in case if _encryptBuffer is smaller than buf + nonce
+			if (total < cnt)
+			{
+				Send(underlying, buf, pos + total, cnt - total);
+			}
 		}
 
 

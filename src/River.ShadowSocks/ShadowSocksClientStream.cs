@@ -155,7 +155,7 @@ namespace River.ShadowSocks
 				ipr4 = Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 
 				ipr6 = Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
-				ip = ipr6 ?? ipr4;
+				ip = ipr4 ?? ipr6;
 			}
 
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name

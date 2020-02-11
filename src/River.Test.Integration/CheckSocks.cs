@@ -112,5 +112,16 @@ namespace River.Test.Integration
 			TestConnction(cli, host);
 		}
 
+		[TestMethod]
+		public void Check_ss()
+		{
+			var server = new ShadowSocksServer();
+			server.Run("ss://chacha20:123@0.0.0.0:18338");
+
+			var cli = new ShadowSocksClientStream("chacha20", "123", "127.0.0.1", 18338, host, 80);
+			TestConnction(cli, host);
+
+		}
+
 	}
 }
