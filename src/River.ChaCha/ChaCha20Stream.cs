@@ -37,7 +37,7 @@ namespace River.ChaCha
 
 		int Read(Stream underlying, byte[] buf, int pos, int cnt)
 		{
-			var r = underlying.Read(_readBuffer, 0, cnt);
+			var r = underlying.Read(_readBuffer, 0, Math.Min(cnt, _readBuffer.Length));
 			if (r == 0) return 0;
 			var ro = 0;
 
