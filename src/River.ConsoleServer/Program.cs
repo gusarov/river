@@ -262,10 +262,17 @@ Keep-Alive: true
 
 		static void Main()
 		{
+			/*
+			var ss = new ShadowSocksServer();
+			ss.Run("ss://chacha20:123@0.0.0.0:18338");
+			*/
+
 			string host = "www.google.com";
 			// default null
-			var cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80);
+			var cli = new ShadowSocksClientStream("chacha20", "123", "127.0.0.1", 18338, host, 80);
 			TestConnction(cli, host);
+
+			Console.ReadLine();
 		}
 
 		static string TestConnction(Stream client, string host = "www.google.com")
@@ -316,10 +323,18 @@ Keep-Alive: true
 
 		static void IsTrue(bool cond, string msg = null)
 		{
+			var b = Console.ForegroundColor;
 			if (!cond)
 			{
+				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("IsTrue failed: " + msg);
 			}
+			else
+			{
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine("IsTrue pass");
+			}
+			Console.ForegroundColor = b;
 		}
 	}
 }

@@ -74,7 +74,7 @@ namespace River.ShadowSocks
 				{
 					_portRequested = _buffer[b++] * 256 + _buffer[b++];
 
-					Trace.WriteLine($"ShadowSocks Route: A{addressType} [N:{_dnsNameRequested}][IP:{_addressRequested}]:{_portRequested}");
+					Trace.WriteLine($"ShadowSocks Route: A{addressType} {_dnsNameRequested}{_addressRequested}:{_portRequested}");
 
 					try
 					{
