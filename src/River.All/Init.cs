@@ -20,6 +20,7 @@ namespace River
 			Resolver.RegisterSchema<ShadowSocksServer, ShadowSocksClientStream>("ss");
 			Resolver.RegisterSchema<HttpProxyServer, HttpProxyClientStream>("http");
 			Resolver.RegisterSchemaServer<SocksServer>("socks");
+			Resolver.RegisterSchemaServer<SocksServer>("any");
 		}
 	}
 }
