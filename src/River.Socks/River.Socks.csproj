@@ -58,6 +58,10 @@
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
+      <Name>River.HttpUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">

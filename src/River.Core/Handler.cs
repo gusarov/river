@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace River
 {
@@ -26,10 +27,11 @@ namespace River
 
 		public Handler()
 		{
-
+			StatService.Instance.HandlerAdd(this);
 		}
 
 		public Handler(RiverServer server, TcpClient client)
+			: this()
 		{
 			Init(server, client);
 		}
@@ -69,7 +71,14 @@ namespace River
 
 		protected virtual void Dispose(bool managed)
 		{
-			Disposing = true;
+			lock (this)
+			{
+				if (Disposing) return;
+				Disposing = true;
+			}
+
+			StatService.Instance.HandlerRemove(this);
+
 			Trace.WriteLine($"{Client?.GetHashCode():X4} Closing Handler...");
 			var client = Client;
 			var stream = Stream;
@@ -108,7 +117,7 @@ namespace River
 					return;
 				}
 
-				Trace.TraceError($"{Source} Handshake...");
+				Trace.TraceError($"{Source} Handshake... {_buffer[0]:X2} {_utf8.GetString(_buffer, 0, 1)}");
 				HandshakeHandler();
 			}
 			catch (Exception ex)

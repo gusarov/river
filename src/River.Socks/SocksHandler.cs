@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -312,7 +313,6 @@ namespace River.Socks
 						}
 						#endregion
 						break;
-					/*
 				case (byte)'P': // HTTP PROXY PUT POST PATCH
 				case (byte)'G': // HTTP PROXY GET
 				case (byte)'D': // HTTP PROXY DELETE
@@ -320,98 +320,76 @@ namespace River.Socks
 				case (byte)'H': // HTTP PROXY HEAD
 				case (byte)'T': // HTTP PROXY TRACE
 				case (byte)'O': // HTTP PROXY OPTIONS
-								// we must wait till entire heder comes
-					int eoh;
-					var headers = Utils.TryParseHttpHeader(_buffer, 0, _bufferReceivedCount, out eoh);
-					if (headers != null)
-					{
-						string hostHeader;
-						headers.TryGetValue("HOST", out hostHeader);
-						string host;
-						headers.TryGetValue("_url_host", out host);
-						string port;
-						headers.TryGetValue("_url_port", out port);
+						#region HTTP
 
-						int hostHeaderSplitter = hostHeader.IndexOf(':');
-						string hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
-						string hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
+						// we must wait till entire heder comes
+						int eoh;
+						var headers = HttpUtils.TryParseHttpHeader(_buffer, 0, _bufferReceivedCount, out eoh);
+						if (headers != null)
+						{
+							headers.TryGetValue("HOST", out var hostHeader);
+							headers.TryGetValue("_url_host", out var host);
+							headers.TryGetValue("_url_port", out var port);
 
-						if (string.IsNullOrEmpty(hostHeader))
-						{
-							_portRequested = string.IsNullOrEmpty(port) ? 80 : int.Parse(port);
-							_dnsNameRequested = host;
-						}
-						else
-						{
-							_portRequested = int.Parse(hostHeaderPort);
-							_dnsNameRequested = hostHeaderHost;
-						}
+							var hostHeaderSplitter = hostHeader.IndexOf(':');
+							var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
+							var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
 
-						try
-						{
-							EstablishForwardConnection();
-							if (headers["_verb"] == "CONNECT")
+							if (string.IsNullOrEmpty(hostHeader))
 							{
-								_stream.Write(_utf.GetBytes("200 OK\r\n\r\n")); // ok to CONNECT
-																				// for connect - forward the rest of the buffer
-								if (_bufferReceivedCount - eoh > 0)
-								{
-									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
-									SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
-								}
+								_portRequested = string.IsNullOrEmpty(port)
+										? 80
+										: int.Parse(port, CultureInfo.InvariantCulture);
+								_dnsNameRequested = host;
 							}
 							else
 							{
-								// otherwise forward entire buffer without change
-								SendForward(_buffer, 0, _bufferReceivedCount);
+								_portRequested = int.Parse(hostHeaderPort, CultureInfo.InvariantCulture);
+								_dnsNameRequested = hostHeaderHost;
 							}
-							_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
+
+							try
+							{
+								EstablishUpstream(new DestinationIdentifier
+								{
+									Host = _dnsNameRequested,
+									Port = _portRequested,
+								});
+
+								if (headers["_verb"] == "CONNECT")
+								{
+									Stream.Write(_utf.GetBytes("200 OK\r\n\r\n")); // ok to CONNECT
+																					// for connect - forward the rest of the buffer
+									if (_bufferReceivedCount - eoh > 0)
+									{
+										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
+										SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
+									}
+								}
+								else
+								{
+									// otherwise forward entire buffer without change
+									SendForward(_buffer, 0, _bufferReceivedCount);
+								}
+								BeginStreaming();
+							}
+							catch (Exception ex)
+							{
+								// write response
+								Dispose();
+							}
 						}
-						catch (Exception ex)
+						else
 						{
-							// write response
-							Dispose();
+							ReadMoreHandshake();
 						}
-					}
-					else
-					{
-						ReadMore();
-					}
-					break;
-					*/
+						#endregion
+						break;
 					default:
-						throw new NotSupportedException("Socks Version not supported");
+						throw new NotSupportedException($"Protocol not supported. First byte is {_buffer[0]:X2} {_utf.GetString(_buffer, 0, 1)}");
 				}
 			}
 		}
 
-		/*
-		private void ReceivedStreaming(IAsyncResult ar)
-		{
-			if (Disposing)
-			{
-				return;
-			}
-			try
-			{
-				var count = _stream.EndRead(ar);
-				Trace.WriteLine("Streaming - received from client >> " + count + " bytes");
-				if (count > 0 && Client.Connected)
-				{
-					SendForward(_buffer, 0, count);
-					_stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
-				}
-				else
-				{
-					Dispose();
-				}
-			}
-			catch (Exception ex)
-			{
-				Trace.TraceError("Streaming - received from client: " + ex);
-				Dispose();
-			}
-		}
-		*/
 	}
 }

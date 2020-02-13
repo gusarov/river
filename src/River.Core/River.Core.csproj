@@ -55,6 +55,7 @@
     <Compile Include="Generic\TcpServer.cs" />
     <Compile Include="Handler.cs" />
     <Compile Include="Internal\HappyEyeballs.cs" />
+    <Compile Include="Internal\StatService.cs" />
     <Compile Include="Properties\AssemblyInfoExtra.cs" />
     <Compile Include="ServerConfig.cs" />
     <Compile Include="RiverServer.cs" />
