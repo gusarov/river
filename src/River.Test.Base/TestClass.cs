@@ -41,7 +41,7 @@ namespace River.Test
 			Tracker.Explode(this);
 		}
 
-		protected int GetFreePort()
+		protected static int GetFreePort()
 		{
 			var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
@@ -61,6 +61,14 @@ namespace River.Test
 					throw new TimeoutException("WaitFor timed out");
 				}
 				Thread.Sleep(100);
+			}
+		}
+
+		public string Host
+		{
+			get
+			{
+				return "www.google.com";
 			}
 		}
 

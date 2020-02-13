@@ -70,7 +70,7 @@ namespace River
 		protected virtual void Dispose(bool managed)
 		{
 			Disposing = true;
-			Trace.WriteLine("Closing Handler...");
+			Trace.WriteLine($"{Client?.GetHashCode():X4} Closing Handler...");
 			var client = Client;
 			var stream = Stream;
 			try
@@ -108,8 +108,8 @@ namespace River
 					return;
 				}
 
+				Trace.TraceError($"{Source} Handshake...");
 				HandshakeHandler();
-
 			}
 			catch (Exception ex)
 			{
@@ -181,14 +181,49 @@ namespace River
 			}
 		}
 
-		protected void SendForward(byte[] buf, int pos, int cnt)
+		protected void SendForward(byte[] buf, int pos = 0, int cnt = -1)
 		{
+			if (buf is null)
+			{
+				throw new ArgumentNullException(nameof(buf));
+			}
+
+			if (cnt == -1)
+			{
+				cnt = buf.Length;
+			}
+
+			Trace.WriteLine($"{Source} >>> send {cnt} bytes >>> {Destination} {Preview(buf, pos, cnt)}");
 			_upstreamClient.Write(buf, pos, cnt);
 		}
 
 		protected void BeginReadTarget()
 		{
 			_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+		}
+
+		string Source
+		{
+			get
+			{
+				return $"{Client.GetHashCode():X4} {Client.Client.RemoteEndPoint}";
+			}
+		}
+
+		string Destination
+		{
+			get
+			{
+				if (_target != null)
+				{
+					return $"{_target.Host}{_target.IPAddress}:{_target.Port}";
+				}
+				if (_upstreamClient is ClientStream cs)
+				{
+					return cs?.Client?.Client?.RemoteEndPoint?.ToString();
+				}
+				return null;
+			}
 		}
 
 		private void TargetReceived(IAsyncResult ar)
@@ -200,6 +235,7 @@ namespace River
 			try
 			{
 				var c = _upstreamClient.EndRead(ar);
+				Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
 				Stream.Write(_bufferTarget, 0, c);
 				if (c > 0)
 				{
@@ -217,7 +253,16 @@ namespace River
 			}
 		}
 
+		static Encoding _utf8 = new UTF8Encoding(false, false);
+
+		private string Preview(byte[] buf, int pos, int cnt)
+		{
+			var lim = Math.Min(cnt, 32);
+			return _utf8.GetString(buf, pos, lim) + (lim < cnt ? "..." : "");
+		}
+
 		Stream _upstreamClient;
+		DestinationIdentifier _target;
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
@@ -227,6 +272,9 @@ namespace River
 				{
 					throw new ArgumentNullException(nameof(target));
 				}
+
+				_target = target;
+				Trace.WriteLine($"{Source} Route to {Destination}");
 
 				var ov = Resolver.GetStreamOverride(target.Host);
 				if (ov != null)

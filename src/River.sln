@@ -62,6 +62,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test", "River.Test\Ri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test.Integration", "River.Test.Integration\River.Test.Integration.csproj", "{F46CACCF-D7D1-4062-8886-B0B30879B390}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.Http.Std", "River.Http\River.Http.Std.csproj", "{AB45D853-37A2-4926-8822-9BE04FD3F225}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.HttpUtils", "River.HttpUtils\River.HttpUtils.csproj", "{F30348D4-C721-483F-BB28-93538C501E0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,6 +172,14 @@ Global
 		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F46CACCF-D7D1-4062-8886-B0B30879B390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F30348D4-C721-483F-BB28-93538C501E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F30348D4-C721-483F-BB28-93538C501E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F30348D4-C721-483F-BB28-93538C501E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F30348D4-C721-483F-BB28-93538C501E0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using River.ChaCha;
+using River.Http;
 using River.Internal;
 using River.SelfService;
 using River.ShadowSocks;
@@ -260,7 +261,7 @@ Keep-Alive: true
 		}
 
 
-		static void Main()
+		static void Main6()
 		{
 			/*
 			var ss = new ShadowSocksServer();
@@ -335,6 +336,15 @@ Keep-Alive: true
 				Console.WriteLine("IsTrue pass");
 			}
 			Console.ForegroundColor = b;
+		}
+
+
+		static void Main()
+		{
+			var ss = new HttpProxyServer();
+			ss.Run("http://0.0.0.0:8080");
+	
+			Console.ReadLine();
 		}
 	}
 }

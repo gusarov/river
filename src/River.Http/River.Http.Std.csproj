@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>River.All</AssemblyName>
-    <RootNamespace>River.All</RootNamespace>
+    <AssemblyName>River.Http</AssemblyName>
+    <RootNamespace>River.Http</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,13 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
-    <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />
-    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
-    <ProjectReference Include="..\River.SelfService\River.SelfService.Std.csproj" />
-    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
-    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
 
   <ItemGroup>

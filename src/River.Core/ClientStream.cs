@@ -12,7 +12,7 @@ namespace River
 {
 	public abstract class ClientStream : SimpleNetworkStream
 	{
-		protected TcpClient Client { get; private set; }
+		public TcpClient Client { get; private set; }
 		protected Stream Stream { get; set; }
 
 		/// <summary>

@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Meta.cs" />
-    <Compile Include="SocksTests.cs" />
+    <Compile Include="ClientApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +63,10 @@
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{C69D29FC-CC8D-4205-BFB2-20ABD376177E}</Project>
+      <Name>River.Http</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8ADF475C-8E47-4B22-85F2-69614AF9144B}</Project>

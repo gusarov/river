@@ -17,6 +17,7 @@ namespace River.Generic
 			{
 				throw new ArgumentNullException(nameof(config));
 			}
+			Trace.WriteLine($"Running {GetType().Name} :{config.EndPoints.First().Port}...");
 
 			lock (_tcpListeners)
 			{
