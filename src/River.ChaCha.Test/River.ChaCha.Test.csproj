@@ -11,8 +11,8 @@
     <ProjectGuid>{8D361075-47C4-4AFD-8220-31D79194D810}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.ShadowSocks.Test</RootNamespace>
-    <AssemblyName>River.ShadowSocks.Test</AssemblyName>
+    <RootNamespace>River.ChaCha.Test</RootNamespace>
+    <AssemblyName>River.ChaCha.Test</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

@@ -5,7 +5,7 @@ using System.Text;
 using River.ChaCha;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace River.ShadowSocks.Test
+namespace River.ChaCha.Test
 {
 	[TestClass]
 	public class ChaChaTest
