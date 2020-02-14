@@ -65,15 +65,15 @@
       <Name>River.Any</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
+      <Project>{b9c5e0b1-3e98-46dc-abf8-ac18804612e0}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
-      <Project>{2F41B438-B726-4FF1-A277-4907CB359B81}</Project>
+      <Project>{2452f1bb-58bb-4958-8273-c79367866bbe}</Project>
       <Name>River.ShadowSocks</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8ADF475C-8E47-4B22-85F2-69614AF9144B}</Project>
+      <Project>{baa5effb-94cd-4a7a-8cb6-92fb08bdbae3}</Project>
       <Name>River.Socks</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">

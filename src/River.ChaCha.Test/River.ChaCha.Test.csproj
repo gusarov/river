@@ -64,20 +64,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
-      <Project>{ddaba839-27aa-4ae0-ba2e-340c975669bb}</Project>
+      <Project>{ce189e3f-0853-423e-9a79-f71369316c0d}</Project>
       <Name>River.ChaCha</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
-      <Name>River.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
-      <Project>{2f41b438-b726-4ff1-a277-4907cb359b81}</Project>
-      <Name>River.ShadowSocks</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8ADF475C-8E47-4B22-85F2-69614AF9144B}</Project>
-      <Name>River.Socks</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -60,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
-      <Project>{508767bb-caf6-42a1-a13f-4e84c2f44c87}</Project>
+      <Project>{65bd5575-d76f-4d36-96ca-45a5611c96cc}</Project>
       <Name>River.SelfService</Name>
     </ProjectReference>
   </ItemGroup>

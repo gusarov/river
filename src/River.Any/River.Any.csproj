@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
-    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
+    <ProjectReference Include="..\River.Core\River.Core.csproj" />
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj" />
   </ItemGroup>
 
 </Project>

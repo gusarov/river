@@ -12,10 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
-    <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj" />
+    <ProjectReference Include="..\River.Core\River.Core.csproj" />
     <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj" />
-    <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />
+    <ProjectReference Include="..\River.Http\River.Http.csproj" />
   </ItemGroup>
 
 </Project>

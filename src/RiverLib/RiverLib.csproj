@@ -22,9 +22,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\River.All\River.All.Std.csproj" />
-    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
-    <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
+    <ProjectReference Include="..\River.All\River.All.csproj" />
+    <ProjectReference Include="..\River.Any\River.Any.csproj" />
+    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj" />
+    <ProjectReference Include="..\River.Core\River.Core.csproj" />
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj" />
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj" />
+    <ProjectReference Include="..\River.Http\River.Http.csproj" />
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj" />
+    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj" />
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj" />
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj" />
   </ItemGroup>
 
 

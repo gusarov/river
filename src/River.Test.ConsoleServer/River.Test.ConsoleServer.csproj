@@ -53,40 +53,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\River.All\River.All.csproj">
-      <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
-      <Name>River.All</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
-      <Project>{DDABA839-27AA-4AE0-BA2E-340C975669BB}</Project>
-      <Name>River.ChaCha</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
-      <Name>River.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Http\River.Http.csproj">
-      <Project>{C69D29FC-CC8D-4205-BFB2-20ABD376177E}</Project>
-      <Name>River.Http</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
-      <Project>{3EC24F81-AC7B-4BCF-A6B1-AAEFF2528387}</Project>
-      <Name>River.Internal</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
-      <Project>{508767BB-CAF6-42A1-A13F-4E84C2F44C87}</Project>
-      <Name>River.SelfService</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
-      <Project>{2F41B438-B726-4FF1-A277-4907CB359B81}</Project>
-      <Name>River.ShadowSocks</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
-      <Name>River.Socks</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>
     </None>
@@ -98,6 +64,52 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\River.All\River.All.csproj">
+      <Project>{ba33dda8-d77a-4285-9142-9940473243c6}</Project>
+      <Name>River.All</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Any\River.Any.csproj">
+      <Project>{dcd9e772-1b65-4c17-9d05-2fbae654ebea}</Project>
+      <Name>River.Any</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
+      <Project>{ce189e3f-0853-423e-9a79-f71369316c0d}</Project>
+      <Name>River.ChaCha</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Core\River.Core.csproj">
+      <Project>{b9c5e0b1-3e98-46dc-abf8-ac18804612e0}</Project>
+      <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
+      <Name>River.HttpUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+      <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
+      <Name>River.HttpWrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{ab45d853-37a2-4926-8822-9be04fd3f225}</Project>
+      <Name>River.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{8f816bba-f955-40f4-8e71-b1fdb2f64760}</Project>
+      <Name>River.Internal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
+      <Project>{65bd5575-d76f-4d36-96ca-45a5611c96cc}</Project>
+      <Name>River.SelfService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
+      <Project>{2452f1bb-58bb-4958-8273-c79367866bbe}</Project>
+      <Name>River.ShadowSocks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
+      <Project>{baa5effb-94cd-4a7a-8cb6-92fb08bdbae3}</Project>
+      <Name>River.Socks</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

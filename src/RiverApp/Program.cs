@@ -14,7 +14,7 @@ namespace RiverApp
 	class Program
 	{
 		static void Main(string[] args)
-		{
+		{ 
 			RiverInit.RegAll();
 
 			var servers = new List<(RiverServer, Uri)>();

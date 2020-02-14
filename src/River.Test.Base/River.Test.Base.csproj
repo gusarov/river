@@ -62,7 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.All\River.All.csproj">
-      <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
+      <Project>{ba33dda8-d77a-4285-9142-9940473243c6}</Project>
       <Name>River.All</Name>
     </ProjectReference>
   </ItemGroup>

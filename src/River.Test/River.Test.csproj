@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
+      <Project>{B9C5E0B1-3E98-46DC-ABF8-AC18804612E0}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
@@ -72,12 +72,8 @@
       <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
       <Name>River.HttpWrap</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.Http\River.Http.csproj">
-      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
-      <Name>River.Http</Name>
-    </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
+      <Project>{baa5effb-94cd-4a7a-8cb6-92fb08bdbae3}</Project>
       <Name>River.Socks</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">

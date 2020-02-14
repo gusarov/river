@@ -48,10 +48,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="ILRepack.targets" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ilmerge">
       <Version>3.0.29</Version>
+    </PackageReference>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task">
+      <Version>2.0.18</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
       <Version>2.9.8</Version>
@@ -61,31 +65,53 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.All\River.All.csproj">
-      <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
+      <Project>{ba33dda8-d77a-4285-9142-9940473243c6}</Project>
       <Name>River.All</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.Any\River.Any.csproj">
+      <Project>{dcd9e772-1b65-4c17-9d05-2fbae654ebea}</Project>
+      <Name>River.Any</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
-      <Project>{ddaba839-27aa-4ae0-ba2e-340c975669bb}</Project>
+      <Project>{ce189e3f-0853-423e-9a79-f71369316c0d}</Project>
       <Name>River.ChaCha</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
+      <Project>{b9c5e0b1-3e98-46dc-abf8-ac18804612e0}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
+      <Name>River.HttpUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+      <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
+      <Name>River.HttpWrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{ab45d853-37a2-4926-8822-9be04fd3f225}</Project>
+      <Name>River.Http</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Internal\River.Internal.csproj">
-      <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
+      <Project>{8f816bba-f955-40f4-8e71-b1fdb2f64760}</Project>
       <Name>River.Internal</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
+      <Project>{65bd5575-d76f-4d36-96ca-45a5611c96cc}</Project>
+      <Name>River.SelfService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
-      <Project>{2f41b438-b726-4ff1-a277-4907cb359b81}</Project>
+      <Project>{2452f1bb-58bb-4958-8273-c79367866bbe}</Project>
       <Name>River.ShadowSocks</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
+      <Project>{baa5effb-94cd-4a7a-8cb6-92fb08bdbae3}</Project>
       <Name>River.Socks</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!--
+  <Import Project="ILRepack.targets" />
   <Target Name="ILMerge" AfterTargets="Build">
     <Message Text="ILMerge" Importance="High" />
     <ItemGroup>
@@ -94,7 +120,6 @@
     <Exec Command="$(ILMergeConsolePath) $(OutDir)\RiverApp.exe @(SrcDll, ' ') /out:$(OutDir)\River.exe" />
     <Copy SourceFiles="$(OutDir)\RiverApp.exe.config" DestinationFiles="$(OutDir)\River.exe.config" />
   </Target>
-  <!--
 	<Target Name="CleanReferenceCopyLocalPaths2" AfterTargets="Build" DependsOnTargets="ILMerge">
 		<Message Text="CleanReferenceCopyLocalPaths2" Importance="High" />
 		<Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
@@ -106,5 +131,5 @@
 		</ItemGroup>
 		<RemoveDir Directories="@(Directories)" Condition="%(Files)=='0'" />
 	</Target>
--->
+	-->
 </Project>
