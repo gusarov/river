@@ -43,9 +43,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CheckSocks.cs" />
+    <Compile Include="CheckTunnelling.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>2.9.8</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
       <Version>2.1.0</Version>
     </PackageReference>
@@ -54,6 +60,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\River.Any\River.Any.csproj">
+      <Project>{DCD9E772-1B65-4C17-9D05-2FBAE654EBEA}</Project>
+      <Name>River.Any</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace River.ShadowSocks.Test
 {
 	[TestClass]
-	public class ShadowSocksTest
+	public class ChaChaTest
 	{
 		/*
 This code been used as a referenece: https://play.golang.org/

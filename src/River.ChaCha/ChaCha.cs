@@ -241,6 +241,11 @@ namespace River.ChaCha
 			return length;
 		}
 
+		public void Inplace(byte[] buffer, int pos, int length)
+		{
+			Crypt(buffer, pos, buffer, pos, length);
+		}
+
 		/// <summary>
 		/// Encrypt or decrypt the buffers (this is bidirectional for chacha due to xor)
 		/// </summary>

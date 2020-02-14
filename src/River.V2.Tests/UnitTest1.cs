@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using River.HttpWrap;
 using River.Socks;
 using River.Test;
 
@@ -79,6 +80,20 @@ namespace River.V2.Tests
 			proxy1.Dispose();
 			proxy2.Dispose();
 			proxy3.Dispose();
+			proxy.Dispose();
+			cli.Dispose();
+		}
+
+		[TestMethod]
+		[Timeout(5000)]
+		public void Should_wrap_http()
+		{
+			var port = GetFreePort();
+			var proxy = new HttpWrapServer("hw://chacha20:123@0.0.0.0:" + port);
+
+			var cli = new HttpWrapClientStream("chacha20", "123", "localhost", port, Host, 80);
+			TestConnction(cli, Host);
+
 			proxy.Dispose();
 			cli.Dispose();
 		}

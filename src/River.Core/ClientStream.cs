@@ -20,6 +20,9 @@ namespace River
 		/// </summary>
 		public abstract void Route(string targetHost, int targetPort, bool? proxyDns = null);
 
+		protected string ProxyHost { get; private set; }
+		protected int ProxyPort { get; private set; }
+
 		/// <summary>
 		/// Plug to a new socket
 		/// </summary>
@@ -30,14 +33,14 @@ namespace River
 				throw new ArgumentNullException(nameof(uri));
 			}
 
-			var proxyHost = uri.Host;
-			var proxyPort = uri.Port;
+			ProxyHost = uri.Host;
+			ProxyPort = uri.Port;
 
 			if (Stream != null)
 			{
 				throw new Exception("Already been plugged");
 			}
-			Client = new TcpClient(proxyHost, proxyPort);
+			Client = new TcpClient(ProxyHost, ProxyPort);
 			Client.Client.NoDelay = true;
 			Stream = Client.GetStream();
 		}
@@ -51,6 +54,12 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
+			if (uri != null)
+			{
+				ProxyHost = uri.Host;
+				ProxyPort = uri.Port;
+			}
+
 			/*
 			if (!(stream is MustFlushStream))
 			{
