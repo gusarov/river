@@ -10,7 +10,7 @@ using River.HttpWrap;
 using River.Socks;
 using River.Test;
 
-namespace River.V2.Tests
+namespace River.Test
 {
 
 	[TestClass]

@@ -42,6 +42,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChainTests.cs" />
     <Compile Include="HappyEyeballsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -62,6 +63,26 @@
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
+      <Name>River.HttpUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+      <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
+      <Name>River.HttpWrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
+      <Name>River.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
+      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
+      <Name>River.Socks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">
+      <Project>{df51d93f-751f-4787-a8ee-33289860f6df}</Project>
+      <Name>River.Test.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
