@@ -10,8 +10,8 @@
     <ProjectGuid>{6B7A2315-41B4-44D7-B682-DBCB50378014}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.ConsoleServer</RootNamespace>
-    <AssemblyName>River.ConsoleServer</AssemblyName>
+    <RootNamespace>River.Test.ConsoleServer</RootNamespace>
+    <AssemblyName>River.Test.ConsoleServer</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>

@@ -14,7 +14,7 @@ using River.SelfService;
 using River.ShadowSocks;
 using River.Socks;
 
-namespace River.ConsoleServer
+namespace River.Test.ConsoleServer
 {
 	class Program
 	{
