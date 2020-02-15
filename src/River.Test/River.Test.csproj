@@ -47,11 +47,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>2.9.8</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
       <Version>2.1.0</Version>
     </PackageReference>
@@ -64,13 +59,13 @@
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.Std.csproj">
       <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
-      <Name>River.HttpUtils</Name>
+      <Name>River.HttpUtils.Std</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.Std.csproj">
       <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
-      <Name>River.HttpWrap</Name>
+      <Name>River.HttpWrap.Std</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Http\River.Http.csproj">
       <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>

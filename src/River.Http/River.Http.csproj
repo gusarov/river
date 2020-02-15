@@ -57,7 +57,7 @@
       <Name>River.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
-      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
+      <Project>{80cfd4c6-78da-4e84-9725-6dcb2a749ea4}</Project>
       <Name>River.HttpUtils</Name>
     </ProjectReference>
   </ItemGroup>
