@@ -47,7 +47,8 @@ namespace River.Common
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return _read(_underlying, buffer, offset, count);
+			var r = _read(_underlying, buffer, offset, count);
+			return r;
 		}
 	}
 

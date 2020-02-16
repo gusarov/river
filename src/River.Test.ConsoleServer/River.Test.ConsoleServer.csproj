@@ -65,6 +65,10 @@
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+      <Project>{021ea1da-1cf3-4d8b-9620-d31bbedbba0e}</Project>
+      <Name>River.HttpWrap</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Http\River.Http.csproj">
       <Project>{C69D29FC-CC8D-4205-BFB2-20ABD376177E}</Project>
       <Name>River.Http</Name>
@@ -84,6 +88,22 @@
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
       <Name>River.Socks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Api\River.Test.Api.csproj">
+      <Project>{3beef048-e8e3-4b5a-a5d8-c83211d41ed6}</Project>
+      <Name>River.Test.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">
+      <Project>{df51d93f-751f-4787-a8ee-33289860f6df}</Project>
+      <Name>River.Test.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Integration\River.Test.Integration.csproj">
+      <Project>{f46caccf-d7d1-4062-8886-b0b30879b390}</Project>
+      <Name>River.Test.Integration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test\River.Test.csproj">
+      <Project>{87472750-b7d5-4496-a7ef-675ccfd58c8a}</Project>
+      <Name>River.Test</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

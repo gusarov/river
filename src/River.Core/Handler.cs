@@ -161,10 +161,10 @@ namespace River
 
 		protected void BeginReadSource()
 		{
-			Stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+			Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
 		}
 
-		void Received(IAsyncResult ar)
+		void SourceReceived(IAsyncResult ar)
 		{
 			if (Disposing)
 			{
@@ -176,7 +176,7 @@ namespace River
 				_upstreamClient.Write(_buffer, 0, c);
 				if (c > 0)
 				{
-					Stream.BeginRead(_buffer, 0, _buffer.Length, Received, null);
+					Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
 				}
 				else
 				{

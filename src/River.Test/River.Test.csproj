@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChainTests.cs" />
+    <Compile Include="WrapHttpTests.cs" />
     <Compile Include="HappyEyeballsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

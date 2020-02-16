@@ -54,5 +54,8 @@ namespace River
 		public sealed override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) =>
 			base.CopyToAsync(destination, bufferSize, cancellationToken);
 		*/
+
+		public override void Close()
+			=> base.Close();
 	}
 }

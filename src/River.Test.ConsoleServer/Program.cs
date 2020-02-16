@@ -339,12 +339,20 @@ Keep-Alive: true
 		}
 
 
-		static void Main()
+		static void Main9()
 		{
 			var ss = new HttpProxyServer();
 			ss.Run("http://0.0.0.0:8080");
-	
+
 			Console.ReadLine();
+		}
+
+		static void Main()
+		{
+			var test = new WrapHttpTests();
+			test.Init();
+			test.Should_wrap_http();
+			test.Clean();
 		}
 	}
 }

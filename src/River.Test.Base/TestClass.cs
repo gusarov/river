@@ -78,7 +78,9 @@ namespace River.Test
 		/// </summary>
 		protected static string TestConnction(Stream client, string host = "www.google.com")
 		{
-			var expected = "onclick=gbar.logger"; // google.com
+			var expected =
+				// "onclick=gbar.logger"; // google.com
+				"Location: http://www.google.com/";
 
 			var readBuf = new byte[1024 * 1024];
 			var readBufPos = 0;
@@ -106,20 +108,32 @@ namespace River.Test
 				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
 			}
 
+			var url = host.Contains("google") ? "ncr" : "";
 
-			var request = Encoding.ASCII.GetBytes($"GET / HTTP/1.1\r\nHost: {host}\r\nConnection: keep-alive\r\n\r\n");
+			var request = Encoding.ASCII.GetBytes($"GET /{url} HTTP/1.1\r\nHost: {host}\r\nConnection: keep-alive\r\n\r\n");
 			client.Write(request, 0, request.Length);
 
 			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);
-			Assert.IsTrue(are.WaitOne(5000));
+
+			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
 			client.Write(request, 0, request.Length);
 
-			Assert.IsTrue(are.WaitOne(5000));
+			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
 			return ""; // Encoding.UTF8.GetString(ms.ToArray());
+		}
+	}
+
+	public static class WaitHandleExt
+	{
+		public static bool WaitOneTest(this WaitHandle handle, int ms)
+		{
+			bool r;
+			while (!(r = handle.WaitOne(ms)) && Debugger.IsAttached) { };
+			return r;
 		}
 	}
 }
