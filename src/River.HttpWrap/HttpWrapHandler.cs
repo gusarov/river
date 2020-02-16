@@ -43,6 +43,7 @@ namespace River.HttpWrap
 					var c = stream.Read(_readBuf, _readTo, _readBuf.Length - _readTo);
 					if (c == 0)
 					{
+						return 0;
 						throw new ConnectionClosingException();
 					}
 					_readTo += c;
