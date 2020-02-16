@@ -44,6 +44,11 @@ namespace RiverApp
 							forwarders.Add(proxy);
 							break;
 						}
+					case "-VERSION":
+						{
+							Console.WriteLine("Version 0.8.9");
+							break;
+						}
 					case "-EVENTLOG":
 						{
 							Console.WriteLine("Generting event log...");
