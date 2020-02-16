@@ -13,7 +13,6 @@ namespace River.Test
 	{
 
 		[TestMethod]
-		// [Timeout(5000)]
 		public void Should_wrap_http()
 		{
 
