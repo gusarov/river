@@ -38,10 +38,24 @@ namespace River.Internal
 
 		List<WeakReference> _list = new List<WeakReference>();
 
+		bool _isEnabled
+#if DEBUG
+			= true
+#endif
+			;
+
+		public void EnableCollection()
+		{
+			_isEnabled = true;
+		}
+
 		// [Conditional("DEBUG")]
 		public void Register<T>(T obj)
 		{
-			_list.Add(new WeakReference(obj));
+			if (_isEnabled)
+			{
+				_list.Add(new WeakReference(obj));
+			}
 		}
 
 

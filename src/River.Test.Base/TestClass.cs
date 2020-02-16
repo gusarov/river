@@ -18,6 +18,7 @@ namespace River.Test
 		static TestClass()
 		{
 			RiverInit.RegAll();
+			ObjectTracker.Default.EnableCollection();
 		}
 
 		object _test;
