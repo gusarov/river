@@ -49,6 +49,11 @@ namespace River.Internal
 			_isEnabled = true;
 		}
 
+		public void ResetCollection()
+		{
+			_list.Clear();
+		}
+
 		// [Conditional("DEBUG")]
 		public void Register<T>(T obj)
 		{

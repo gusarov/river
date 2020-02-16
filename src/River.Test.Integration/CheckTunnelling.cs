@@ -29,11 +29,11 @@ namespace River.Test.Integration
 					"ss://chacha20:123@r.xkip.ru:18338",
 					"ss://chacha20:123@r.xkip.ru:18338",
 				},
-			};
+			}.Track(this);
 			proxy.Run("socks://0.0.0.0:" + port);
 
 
-			var connection = new Socks4ClientStream("127.0.0.1", port, Host, 80);
+			var connection = new Socks4ClientStream("127.0.0.1", port, Host, 80).Track(this);
 			TestConnction(connection, Host);
 		}
 

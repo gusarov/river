@@ -59,12 +59,28 @@ namespace River.Test
 			TestInitialized = true;
 			_test = new object();
 			Explode();
+			ObjectTracker.Default.ResetCollection();
 		}
 
 		protected void Explode()
 		{
 			Tracker.Explode(_test);
 			Tracker.Explode(this);
+
+			/*
+			// DO NOT DO THIS - YOU HAVE TO MAKE SURE THAT DISPOSE IS PROPAGATED FROM TRACKER OBJECTS ONLY
+			foreach (var item in ObjectTracker.Default.Items.ToArray())
+			{
+				if (item is IDisposable disp)
+				{
+					try
+					{
+						disp?.Dispose();
+					}
+					catch { }
+				}
+			}
+			*/
 		}
 
 		protected static int GetFreePort()

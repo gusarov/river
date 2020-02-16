@@ -23,28 +23,28 @@ namespace River.Test.Integration
 		{
 
 			// default null
-			var cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80);
+			var cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80).Track(this);
 			TestConnction(cli, host);
 
 			// v4a force dns
-			cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: true);
+			cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: true).Track(this);
 			TestConnction(cli, host);
 
 			// v4 force ip
-			cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: false);
+			cli = new Socks4ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: false).Track(this);
 			TestConnction(cli, host);
 
 			// IPv4 - native support
 			var ip = Dns.GetHostAddresses(host)
 				.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 
-			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80);
+			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80).Track(this);
 			TestConnction(cli, host);
 
-			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: true);
+			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: true).Track(this);
 			TestConnction(cli, host);
 
-			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: false);
+			cli = new Socks4ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: false).Track(this);
 			TestConnction(cli, host);
 
 			// IPv6 - support via v4a host name
@@ -70,28 +70,28 @@ namespace River.Test.Integration
 		{
 
 			// default null
-			var cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80);
+			var cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80).Track(this);
 			TestConnction(cli, host);
 
 			// v5 force dns
-			cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: true);
+			cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: true).Track(this);
 			TestConnction(cli, host);
 
 			// v5 force ip
-			cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: false);
+			cli = new Socks5ClientStream("r.xkip.ru", 11080, host, 80, proxyDns: false).Track(this);
 			TestConnction(cli, host);
 
 			// IPv4 - native support
 			var ip = Dns.GetHostAddresses(host)
 				.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 
-			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80);
+			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80).Track(this);
 			TestConnction(cli, host);
 
-			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: true);
+			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: true).Track(this);
 			TestConnction(cli, host);
 
-			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: false);
+			cli = new Socks5ClientStream("r.xkip.ru", 11080, ip.ToString(), 80, proxyDns: false).Track(this);
 			TestConnction(cli, host);
 		}
 
@@ -100,15 +100,15 @@ namespace River.Test.Integration
 		{
 
 			// default null
-			var cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80);
+			var cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80).Track(this);
 			TestConnction(cli, host);
 
 			// force dns
-			cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80, proxyDns: true);
+			cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80, proxyDns: true).Track(this);
 			TestConnction(cli, host);
 
 			// force ip
-			cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80, proxyDns: false);
+			cli = new ShadowSocksClientStream("chacha20", "123", "r.xkip.ru", 18338, host, 80, proxyDns: false).Track(this);
 			TestConnction(cli, host);
 		}
 
@@ -116,10 +116,10 @@ namespace River.Test.Integration
 		public void Check_ss()
 		{
 			var port = GetFreePort();
-			var server = new ShadowSocksServer();
+			var server = new ShadowSocksServer().Track(this);
 			server.Run("ss://chacha20:123@0.0.0.0:" + port);
 
-			var cli = new ShadowSocksClientStream("chacha20", "123", "127.0.0.1", port, host, 80);
+			var cli = new ShadowSocksClientStream("chacha20", "123", "127.0.0.1", port, host, 80).Track(this);
 			TestConnction(cli, host);
 
 		}
