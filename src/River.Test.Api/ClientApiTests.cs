@@ -105,8 +105,8 @@ namespace River.Test.Api
 		public void Should_http_have_a_ctor_with_proxy_and_host()
 		{
 			var proxyPort = GetFreePort();
-			var proxy = new HttpProxyServer("http://0.0.0.0:" + proxyPort);
-			var proxyClient = new HttpProxyClientStream("127.0.0.1", proxyPort, Host, 80);
+			var proxy = new HttpProxyServer("http://0.0.0.0:" + proxyPort).Track(this);
+			var proxyClient = new HttpProxyClientStream("127.0.0.1", proxyPort, Host, 80).Track(this);
 
 			TestConnction(proxyClient);
 		}

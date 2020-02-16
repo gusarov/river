@@ -5,19 +5,33 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using River.Common;
+using River.Internal;
 
 namespace River
 {
 
 	public abstract class RiverServer : IDisposable
 	{
+		public RiverServer()
+		{
+			ObjectTracker.Default.Register(this);
+		}
+
 		public IList<ProxyIdentifier> Chain { get; } = new List<ProxyIdentifier>();
 
 		protected DebuggerTracker DebuggerTracker { get; } = new DebuggerTracker();
 
-		protected abstract Handler CreateHandler(TcpClient client);
+		protected abstract Handler CreateHandlerCore(TcpClient client);
 
-		protected bool Disposing { get; private set; }
+		// List<>
+
+		protected Handler CreateHandler(TcpClient client)
+		{
+			var handler = CreateHandlerCore(client);
+			return handler;
+		}
+
+		protected bool IsDisposed { get; private set; }
 
 		public abstract void Run(ServerConfig config);
 
@@ -34,8 +48,13 @@ namespace River
 
 		protected virtual void Dispose(bool managed)
 		{
-			Disposing = true;
+			IsDisposed = true;
 		}
 
+		public override string ToString()
+		{
+			var b = base.ToString();
+			return $"{b} {(IsDisposed ? "Disposed" : "NotDisposed")}";
+		}
 	}
 }

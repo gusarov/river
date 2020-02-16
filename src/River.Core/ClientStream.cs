@@ -1,4 +1,5 @@
 ﻿using River.Common;
+using River.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,8 @@ namespace River
 {
 	public abstract class ClientStream : SimpleNetworkStream
 	{
+
+
 		public TcpClient Client { get; private set; }
 		protected Stream Stream { get; set; }
 
@@ -71,13 +74,29 @@ namespace River
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return Stream.Read(buffer, offset, count);
+			var r = Stream.Read(buffer, offset, count);
+			if (r <= 0) Close();
+			return r;
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			Stream.Write(buffer, offset, count);
 			Stream.Flush();
+		}
+
+		bool _closing;
+
+		public override void Close()
+		{
+			_closing = true;
+			base.Close();
+			try
+			{
+				Client?.Client?.Shutdown(SocketShutdown.Both);
+			}
+			catch { }
+			Stream.Close();
 		}
 
 		public override void Flush()
@@ -87,13 +106,19 @@ namespace River
 			=> Stream.BeginRead(buffer, offset, count, callback, state);
 
 		public override int EndRead(IAsyncResult asyncResult)
-			=> Stream.EndRead(asyncResult);
+		{
+			if (_closing) return 0;
+			return Stream.EndRead(asyncResult);
+		}			
 
 		public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginWrite(buffer, offset, count, callback, state);
 
 		public override void EndWrite(IAsyncResult asyncResult)
-			=> Stream.EndWrite(asyncResult);
+		{
+			if (_closing) return;
+			Stream.EndWrite(asyncResult);
+		}
 
 		public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 			=> Stream.ReadAsync(buffer, offset, count, cancellationToken);

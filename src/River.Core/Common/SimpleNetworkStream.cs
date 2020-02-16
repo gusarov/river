@@ -1,4 +1,5 @@
-﻿using System;
+﻿using River.Internal;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,11 @@ namespace River
 
 	public abstract class SimpleNetworkStream : Stream
 	{
+		public SimpleNetworkStream()
+		{
+			ObjectTracker.Default.Register(this);
+		}
+
 		// protected static readonly Encoding _utf8 = new UTF8Encoding(false, false);
 
 		// optional, so, let's provide empty body
@@ -55,7 +61,18 @@ namespace River
 			base.CopyToAsync(destination, bufferSize, cancellationToken);
 		*/
 
+		public bool IsDisposed { get; private set; }
+
 		public override void Close()
-			=> base.Close();
+		{
+			IsDisposed = true;
+			base.Close();
+		}
+
+		public override string ToString()
+		{
+			var b = base.ToString();
+			return $"{b} {(IsDisposed ? "Disposed" : "NotDisposed")}";
+		}
 	}
 }

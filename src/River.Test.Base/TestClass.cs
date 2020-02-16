@@ -7,6 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using River.Internal;
+using System.Linq;
 
 namespace River.Test
 {
@@ -25,6 +27,29 @@ namespace River.Test
 		public void Clean()
 		{
 			Explode();
+
+			try
+			{
+				Console.WriteLine("Cleaning...");
+				WaitFor(() =>
+				{
+					// Console.WriteLine("GC Collect...");
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					return ObjectTracker.Default.Count == 0;
+				});
+				Console.WriteLine("All objects are clear");
+			}
+			catch
+			{
+				var objs = ObjectTracker.Default.Items.Where(x => x != null).ToArray();
+				Console.WriteLine($"Objects alive: {objs.Length} ======================");
+				foreach (var item in objs)
+				{
+					Console.WriteLine(item);
+				}
+				throw;
+			}
 		}
 
 		[TestInitialize]
@@ -56,7 +81,7 @@ namespace River.Test
 			var sw = Stopwatch.StartNew();
 			while (!condition())
 			{
-				if (sw.Elapsed.TotalSeconds > 3000)
+				if (sw.Elapsed.TotalSeconds > 3)
 				{
 					throw new TimeoutException("WaitFor timed out");
 				}

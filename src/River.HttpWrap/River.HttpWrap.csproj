@@ -63,6 +63,10 @@
       <Project>{80cfd4c6-78da-4e84-9725-6dcb2a749ea4}</Project>
       <Name>River.HttpUtils</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
+      <Name>River.Internal</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

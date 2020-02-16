@@ -28,6 +28,7 @@ namespace River
 		public Handler()
 		{
 			StatService.Instance.HandlerAdd(this);
+			ObjectTracker.Default.Register(this);
 		}
 
 		public Handler(RiverServer server, TcpClient client)
@@ -56,7 +57,7 @@ namespace River
 
 		#region Dispose
 
-		protected bool Disposing { get; private set; }
+		protected bool IsDisposed { get; private set; }
 
 		public void Dispose()
 		{
@@ -69,17 +70,34 @@ namespace River
 			Dispose(false);
 		}
 
+		public override string ToString()
+		{
+			var b = base.ToString();
+			return $"{b} {(IsDisposed ? "Disposed" : "NotDisposed")}";
+		}
+
 		protected virtual void Dispose(bool managed)
 		{
 			lock (this)
 			{
-				if (Disposing) return;
-				Disposing = true;
+				if (IsDisposed) return;
+				IsDisposed = true;
 			}
 
 			StatService.Instance.HandlerRemove(this);
 
 			Trace.WriteLine($"{Client?.GetHashCode():X4} Closing Handler...");
+
+
+			// UPSTREAM
+			try
+			{
+				_upstreamClient?.Close();
+				_upstreamClient = null;
+			}
+			catch { }
+
+			// SOURCE
 			var client = Client;
 			var stream = Stream;
 			try
@@ -100,6 +118,7 @@ namespace River
 				// Stream = null;
 			}
 			catch { }
+
 		}
 
 		#endregion
@@ -166,16 +185,16 @@ namespace River
 
 		void SourceReceived(IAsyncResult ar)
 		{
-			if (Disposing)
+			if (IsDisposed)
 			{
 				return;
 			}
 			try
 			{
 				var c = Stream.EndRead(ar);
-				_upstreamClient.Write(_buffer, 0, c);
 				if (c > 0)
 				{
+					_upstreamClient.Write(_buffer, 0, c);
 					Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
 				}
 				else
@@ -185,7 +204,10 @@ namespace River
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("Streaming - received from client: " + ex);
+				if (!ex.IsConnectionClosing())
+				{
+					Trace.TraceError("Streaming - received from client: " + ex);
+				}
 				Dispose();
 			}
 		}
@@ -237,17 +259,17 @@ namespace River
 
 		private void TargetReceived(IAsyncResult ar)
 		{
-			if (Disposing)
+			if (IsDisposed)
 			{
 				return;
 			}
 			try
 			{
 				var c = _upstreamClient.EndRead(ar);
-				Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
-				Stream.Write(_bufferTarget, 0, c);
 				if (c > 0)
 				{
+					Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
+					Stream.Write(_bufferTarget, 0, c);
 					_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
 				}
 				else
@@ -272,6 +294,8 @@ namespace River
 
 		Stream _upstreamClient;
 		DestinationIdentifier _target;
+
+
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{

@@ -1,5 +1,6 @@
 ﻿using River.ChaCha;
 using River.Common;
+using River.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -133,6 +134,10 @@ Content-Length: {cnt}
 				do
 				{
 					var c = stream.Read(_readBuf, _readTo, _readBuf.Length - _readTo);
+					if (c == 0)
+					{
+						throw new ConnectionClosingException();
+					}
 					_readTo += c;
 					response = HttpUtils.TryParseHttpHeader(_readBuf, 0, _readTo, out eoh);
 				} while (response == null);

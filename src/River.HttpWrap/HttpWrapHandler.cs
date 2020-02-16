@@ -1,5 +1,6 @@
 ﻿using River.ChaCha;
 using River.Common;
+using River.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,6 +41,10 @@ namespace River.HttpWrap
 				do {
 					// TODO detect end of buffer and provide better exception
 					var c = stream.Read(_readBuf, _readTo, _readBuf.Length - _readTo);
+					if (c == 0)
+					{
+						throw new ConnectionClosingException();
+					}
 					_readTo += c;
 
 					request = HttpUtils.TryParseHttpHeader(_readBuf, _headerBegin, _readTo - _headerBegin, out eoh);

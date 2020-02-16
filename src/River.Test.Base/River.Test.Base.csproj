@@ -60,6 +60,10 @@
       <Project>{759cdf6c-bdfd-464c-ad53-bcc17d1326c9}</Project>
       <Name>River.All</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3EC24F81-AC7B-4BCF-A6B1-AAEFF2528387}</Project>
+      <Name>River.Internal</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

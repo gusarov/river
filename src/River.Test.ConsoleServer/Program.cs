@@ -349,10 +349,30 @@ Keep-Alive: true
 
 		static void Main()
 		{
+			/*
+			Console.WriteLine("Take snapshot1");
+			// Console.ReadLine();
+			var test = new ChainTests();
+			test.Init();
+			test.Should_chain_3_socks();
+			try
+			{
+				test.Clean();
+			}
+			catch { }
+			Console.WriteLine("Take snapshot2");
+			// Console.ReadLine();
+			*/
+			
 			var test = new WrapHttpTests();
 			test.Init();
 			test.Should_wrap_http();
-			test.Clean();
+			try
+			{
+				test.Clean();
+			}
+			catch { }
+
 		}
 	}
 }

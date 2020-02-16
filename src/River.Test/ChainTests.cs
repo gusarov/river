@@ -77,11 +77,11 @@ namespace River.Test
 			var cli = new Socks4ClientStream("localhost", port0, "www.google.com", 80);
 			TestConnction(cli, "www.google.com");
 
+			cli.Dispose();
 			proxy1.Dispose();
 			proxy2.Dispose();
 			proxy3.Dispose();
 			proxy.Dispose();
-			cli.Dispose();
 		}
 
 	}

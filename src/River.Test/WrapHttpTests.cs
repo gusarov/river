@@ -16,14 +16,15 @@ namespace River.Test
 		// [Timeout(5000)]
 		public void Should_wrap_http()
 		{
-			var port = 333; //  GetFreePort();
+
+			var port = GetFreePort();
 			var proxy = new HttpWrapServer("hw://chacha20:123test@0.0.0.0:" + port);
 
 			var cli = new HttpWrapClientStream("chacha20", "123test", "localhost", port, Host, 80);
 			TestConnction(cli, Host);
 
-			proxy.Dispose();
 			cli.Dispose();
+			proxy.Dispose();
 		}
 	}
 }
