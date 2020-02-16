@@ -22,7 +22,7 @@ namespace River.Test
 		}
 
 		[TestMethod]
-		[Timeout(5000)]
+		// [Timeout(5000)]
 		public void Should_chain_3_socks()
 		{
 			_ = typeof(Socks4ClientStream); // to load the type
