@@ -55,6 +55,12 @@ namespace River.Common
 			_bufferPos = 0;
 		}
 
+		public override void Close()
+		{
+			base.Close();
+			_underlying.Close();
+		}
+
 	}
 
 }

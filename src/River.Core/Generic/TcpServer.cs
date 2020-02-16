@@ -17,6 +17,7 @@ namespace River.Generic
 			{
 				throw new ArgumentNullException(nameof(config));
 			}
+			Trace.WriteLine($"Running {GetType().Name} :{config.EndPoints.First().Port}...");
 
 			lock (_tcpListeners)
 			{
@@ -44,15 +45,19 @@ namespace River.Generic
 				await DebuggerTracker.EnsureNoDebuggerAsync(); // wait till exit from pause to avoid flooding debugger by threads
 				AcceptCycleAsync(listener);
 			}
+			catch (ObjectDisposedException)
+			{
+				Dispose();
+			}
 			catch (Exception ex)
 			{
 				Console.WriteLine("Stopping due to: " + ex);
 				Dispose();
-				throw;
+				// throw;
 			}
 		}
 
-		protected override Handler CreateHandler(TcpClient client)
+		protected override Handler CreateHandlerCore(TcpClient client)
 		{
 			var handler = new THandler();
 			handler.Init(this, client);

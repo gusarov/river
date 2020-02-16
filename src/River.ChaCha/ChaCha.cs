@@ -89,6 +89,7 @@ namespace River.ChaCha
 
 		static Encoding _utf8 = new UTF8Encoding(false, false);
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
+		// static Lazy<MD5> _lazyMd5 = new Lazy<MD5>(() => MD5.Create());
 		static MD5 _md5 = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
 
@@ -240,6 +241,11 @@ namespace River.ChaCha
 			return length;
 		}
 
+		public void Inplace(byte[] buffer, int pos, int length)
+		{
+			Crypt(buffer, pos, buffer, pos, length);
+		}
+
 		/// <summary>
 		/// Encrypt or decrypt the buffers (this is bidirectional for chacha due to xor)
 		/// </summary>
@@ -253,6 +259,18 @@ namespace River.ChaCha
 			{
 				throw new ArgumentNullException(nameof(destinationArray), $"{nameof(destinationArray)} cannot be null");
 			}
+
+			if (sourceIndex < 0) throw new ArgumentException("index is less than zero", nameof(sourceIndex));
+			if (sourceIndex > sourceArray.Length) throw new ArgumentException("index is more than buf", nameof(sourceIndex));
+
+			if (destinationIndex < 0) throw new ArgumentException("index is less than zero", nameof(destinationIndex));
+			if (destinationIndex > destinationArray.Length) throw new ArgumentException("index is more than buf", nameof(destinationIndex));
+
+			var space = sourceArray.Length - sourceIndex;
+			var data = destinationArray.Length - destinationIndex;
+			if (length < 0) throw new ArgumentException("length is less than zero", nameof(length));
+			if (length > space) throw new ArgumentException("length is more than data available in buf", nameof(length));
+			if (length > data) throw new ArgumentException("length is more than free space available", nameof(length));
 
 			/*
 			if (numBytes < 0 || numBytes > input.Length)

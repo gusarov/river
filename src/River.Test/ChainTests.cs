@@ -6,10 +6,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using River.HttpWrap;
 using River.Socks;
 using River.Test;
 
-namespace River.V2.Tests
+namespace River.Test
 {
 
 	[TestClass]
@@ -21,7 +22,7 @@ namespace River.V2.Tests
 		}
 
 		[TestMethod]
-		[Timeout(5000)]
+		// [Timeout(5000)]
 		public void Should_chain_3_socks()
 		{
 			_ = typeof(Socks4ClientStream); // to load the type
@@ -73,14 +74,15 @@ namespace River.V2.Tests
 				},
 			};
 
-			var cli = new Socks4ClientStream("localhost", port0, "httpbin.org", 80);
-			TestConnction(cli);
+			var cli = new Socks4ClientStream("localhost", port0, "www.google.com", 80);
+			TestConnction(cli, "www.google.com");
 
+			cli.Dispose();
 			proxy1.Dispose();
 			proxy2.Dispose();
 			proxy3.Dispose();
 			proxy.Dispose();
-			cli.Dispose();
 		}
+
 	}
 }

@@ -54,6 +54,8 @@
     <Compile Include="DestinationIdentifier.cs" />
     <Compile Include="Generic\TcpServer.cs" />
     <Compile Include="Handler.cs" />
+    <Compile Include="Internal\HappyEyeballs.cs" />
+    <Compile Include="Internal\StatService.cs" />
     <Compile Include="Properties\AssemblyInfoExtra.cs" />
     <Compile Include="ServerConfig.cs" />
     <Compile Include="RiverServer.cs" />
@@ -78,10 +80,9 @@
     </ProjectReference>
   </ItemGroup>
   <Target Name="Test" BeforeTargets="Build">
-	<Message Importance="High" Text="TEST" />
-	<Message Importance="High" Text="$(MicrosoftCommonPropsHasBeenImported)" />
-	<Message Importance="High" Text="$(MSBuildProjectExtensionsPath)" />
+    <Message Importance="High" Text="TEST" />
+    <Message Importance="High" Text="$(MicrosoftCommonPropsHasBeenImported)" />
+    <Message Importance="High" Text="$(MSBuildProjectExtensionsPath)" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
 </Project>

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using River.Internal;
 
 namespace River.Common
 {
@@ -42,12 +44,43 @@ namespace River.Common
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			_send(_underlying, buffer, offset, count);
+			try
+			{
+				_send(_underlying, buffer, offset, count);
+			}
+			catch (IOException ex) when (ex.IsConnectionClosing())
+			{
+				Close();
+			}
+			catch (SocketException ex) when (ex.IsConnectionClosing())
+			{
+				Close();
+			}
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return _read(_underlying, buffer, offset, count);
+			try
+			{
+				var r = _read(_underlying, buffer, offset, count);
+				return r;
+			}
+			catch (IOException ex) when (ex.IsConnectionClosing())
+			{
+				Close();
+				return 0;
+			}
+			catch (SocketException ex) when (ex.IsConnectionClosing())
+			{
+				Close();
+				return 0;
+			}
+		}
+
+		public override void Close()
+		{
+			_underlying.Close();
+			base.Close();
 		}
 	}
 

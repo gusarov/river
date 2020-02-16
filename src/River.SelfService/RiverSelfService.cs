@@ -53,6 +53,8 @@ namespace River.SelfService
 			}
 		}
 
+		// static string _etag = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+
 		private void HandleRequest(int end)
 		{
 			try
@@ -62,14 +64,42 @@ namespace River.SelfService
 
 				var is1 = str.IndexOf(' ');
 				var is2 = str.IndexOf(' ', is1 + 1);
+				/*
+				var inmh = "\nIF-NONE-MATCH: ";
+				var inm = str.ToUpperInvariant().IndexOf(inmh);
+				if (inm > 0)
+				{
+					inm += inmh.Length;
+				}
+				*/
 				var ie = str.IndexOf('\r');
 				if (is2 < 0) is2 = ie; // HTTP 0.9
+
+/*
+
+				if (inm > 0)
+				{
+					var inme = str.IndexOf('\r', inm);
+					var etag = str.Substring(inm, inme - inm).Trim();
+					if (etag.ToUpperInvariant() == _etag.ToUpperInvariant())
+					{
+						/*
+						header = $@"HTTP/1.0 304 {msg}
+Content-Type: {contentType}
+Connection: keep-alive
+Server: river
+ETag: {_etag}
+
+";
+					}
+				}
+ETag: {_etag}
+*/
 
 				var url = str.Substring(is1 + 1, is2 - is1 - 1).Trim();
 
 				var buf = new byte[16 * 1024];
 				var c = GetResponse(url.Trim(), buf, 0, buf.Length, out var code, out var msg, out var contentType);
-
 				var headerStr = $@"HTTP/1.0 {code} {msg}
 Content-Length: {c}
 Content-Type: {contentType}
@@ -77,6 +107,7 @@ Connection: keep-alive
 Server: river
 
 ";
+
 				Console.WriteLine(url);
 				Console.WriteLine(headerStr);
 				Console.WriteLine(_utf.GetString(buf, 0, Math.Min(128, c)));

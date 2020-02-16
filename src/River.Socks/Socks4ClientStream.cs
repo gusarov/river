@@ -39,11 +39,12 @@ namespace River.Socks
 		}
 
 		// enable write cache
-		public override void Plug(Uri uri, Stream stream) => base.Plug(uri, new MustFlushStream(stream));
+		public override void Plug(Uri uri, Stream stream)
+			=> base.Plug(uri, new MustFlushStream(stream));
 
 		bool _routed;
 
-		public override async void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			if (targetHost is null)
 			{
@@ -114,7 +115,8 @@ namespace River.Socks
 
 			// var response = new byte[8];
 			// first await:
-			var c = await stream.ReadAsync(buffer, 0, 8); // just schecule a 8 bytes read. It will read nothing till actual write-flush happens
+			// just schecule a 8 bytes read. It will read nothing till actual write-flush happens
+			var c = stream.Read(buffer, 0, 8);
 			if (c == 0)
 			{
 				throw new Exception("Disconnected");
@@ -125,11 +127,11 @@ namespace River.Socks
 			}
 			if (buffer[0] != 0x00)
 			{
-				throw new Exception($"First byte of responce expected to be 0x00 actual {buffer[0]:X}");
+				throw new Exception($"First byte of responce expected to be 0x00 actual {buffer[0]:X2}");
 			}
 			if (buffer[1] != 0x5A)
 			{
-				throw new Exception($"First byte of responce expected to be 0x5A actual {buffer[1]:X}");
+				throw new Exception($"2nd byte of responce expected to be 0x5A actual {buffer[1]:X2}");
 			}
 		}
 

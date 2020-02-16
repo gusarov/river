@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 
 namespace River.ChaCha
 {
-	public class ChaChaStream : CustomStream
+	public class ChaCha20Stream : CustomStream
 	{
 		private readonly byte[] _key;
 
 		ChaCha20 _chachaEncrypt;
 		ChaCha20 _chachaDecrypt;
 
-		public ChaChaStream(Stream underlying, string password)
+		public ChaCha20Stream(Stream underlying, string password)
 			: this(underlying, ChaCha20.Kdf(password))
 		{
 
 		}
 
-		public ChaChaStream(Stream underlying, byte[] key)
+		public ChaCha20Stream(Stream underlying, byte[] key)
 			: base(underlying)
 		{
 			_key = key;
@@ -37,7 +37,7 @@ namespace River.ChaCha
 
 		int Read(Stream underlying, byte[] buf, int pos, int cnt)
 		{
-			var r = underlying.Read(_readBuffer, 0, cnt);
+			var r = underlying.Read(_readBuffer, 0, Math.Min(cnt, _readBuffer.Length));
 			if (r == 0) return 0;
 			var ro = 0;
 
@@ -51,22 +51,30 @@ namespace River.ChaCha
 				_chachaDecrypt = new ChaCha20(_key, remoteNonce);
 			}
 			_chachaDecrypt.Crypt(_readBuffer, ro, buf, pos, r);
-			Trace.WriteLine("DEC << " + Utils.Utf8.GetString(buf, pos, Math.Max(r, 40)));
+			// Trace.WriteLine("DEC << " + Utils.Utf8.GetString(buf, pos, Math.Max(r, 40)));
 			return r;
 		}
 
 		void Send(Stream underlying, byte[] buf, int pos, int cnt)
 		{
-			Trace.WriteLine("ENC >> " + Utils.Utf8.GetString(buf, pos, Math.Max(cnt, 40)));
+			// Trace.WriteLine("ENC >> " + Utils.Utf8.GetString(buf, pos, Math.Max(cnt, 40)));
 
-			_chachaEncrypt.Crypt(buf, pos, _encryptBuffer, _icSent ? 0 : _nonceLen, cnt);
+			var total = Math.Min(cnt, _encryptBuffer.Length - (_icSent ? 0 : _nonceLen));
+			_chachaEncrypt.Crypt(buf, pos, _encryptBuffer, _icSent ? 0 : _nonceLen, total);
+			var size = total;
 			if (!_icSent)
 			{
 				_chachaEncrypt.Nonce.CopyTo(_encryptBuffer, 0); // crypt been done with a shift to left this space for nonce
-				cnt += _nonceLen;
+				size += _nonceLen;
 				_icSent = true;
 			}
-			underlying.Write(_encryptBuffer, 0, cnt);
+			underlying.Write(_encryptBuffer, 0, size);
+
+			// write the rest in case if _encryptBuffer is smaller than buf + nonce
+			if (total < cnt)
+			{
+				Send(underlying, buf, pos + total, cnt - total);
+			}
 		}
 
 

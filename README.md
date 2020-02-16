@@ -1,4 +1,5 @@
-[![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
+Master: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=master)](https://dev.azure.com/xkit/River) Develop: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
+
 
 # River - network tunneling
 River is a proxy client & server with cryptography. Everything is pure .Net CLR without external dependancies.

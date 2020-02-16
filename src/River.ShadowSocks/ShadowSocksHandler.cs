@@ -16,65 +16,66 @@ namespace River.ShadowSocks
 		IPAddress _addressRequested;
 		string _dnsNameRequested;
 		int _portRequested;
-		int _bufferProcessedCount;
+		// int _bufferProcessedCount;
 
 		new ShadowSocksServer Server => (ShadowSocksServer)base.Server;
 
 		protected override Stream WrapStream(Stream stream)
 		{
-			return new ChaChaStream(stream, Server.Password);
+			return new ChaCha20Stream(stream, Server.Password);
 		}
 
 		protected override void HandshakeHandler()
 		{
 			// reserved byte 2 skipped
-			var addressType = _buffer[_bufferProcessedCount++];
+			var b = 0;
+			var addressType = _buffer[b++];
 
 			bool addressTypeProcessed = false;
 			switch (addressType)
 			{
 				case 1: // IPv4
-					if (EnsureReaded(_bufferProcessedCount + 4))
+					if (EnsureReaded(b + 4))
 					{
 						var ipv4 = new byte[4];
-						Array.Copy(_buffer, _bufferProcessedCount, ipv4, 0, 4);
+						Array.Copy(_buffer, b, ipv4, 0, 4);
 						_addressRequested = new IPAddress(ipv4);
-						_bufferProcessedCount += 4;
+						b += 4;
 						addressTypeProcessed = true;
 					}
 					break;
 				case 3: // DNS
-					if (EnsureReaded(_bufferProcessedCount + 1))
+					if (EnsureReaded(b + 1))
 					{
-						var len = _buffer[_bufferProcessedCount];
-						if (EnsureReaded(_bufferProcessedCount + 1 + len))
+						var len = _buffer[b++];
+						if (EnsureReaded(b + len))
 						{
-							_dnsNameRequested = _utf.GetString(_buffer, _bufferProcessedCount + 1, len);
+							_dnsNameRequested = _utf.GetString(_buffer, b, len);
 							// 256 max, no need to check for overflow
 						}
-						_bufferProcessedCount += 1 + len;
+						b += len;
 						addressTypeProcessed = true;
 					}
 					break;
 				case 4: // IPv6
-					if (EnsureReaded(_bufferProcessedCount + 16))
+					if (EnsureReaded(b + 16))
 					{
 						var ipv6 = new byte[16];
-						Array.Copy(_buffer, _bufferProcessedCount, ipv6, 0, 16);
+						Array.Copy(_buffer, b, ipv6, 0, 16);
 						_addressRequested = new IPAddress(ipv6);
-						_bufferProcessedCount += 16;
+						b += 16;
 						addressTypeProcessed = true;
 					}
 					break;
 			}
 			if (addressTypeProcessed) // continue
 			{
-				if (EnsureReaded(_bufferProcessedCount + 2))
+				if (EnsureReaded(b + 2))
 				{
-					_portRequested = _buffer[_bufferProcessedCount] * 256 + _buffer[_bufferProcessedCount + 1];
-					_bufferProcessedCount += 2;
+					_portRequested = _buffer[b++] * 256 + _buffer[b++];
 
-					Exception ex = null;
+					Trace.WriteLine($"ShadowSocks Route: A{addressType} {_dnsNameRequested}{_addressRequested}:{_portRequested}");
+
 					try
 					{
 						EstablishUpstream(new DestinationIdentifier
@@ -83,17 +84,19 @@ namespace River.ShadowSocks
 							IPAddress = _addressRequested,
 							Port = _portRequested,
 						});
-						if (_bufferProcessedCount < _bufferReceivedCount)
+						if (b < _bufferReceivedCount)
 						{
 							// forward the rest of the buffer
-							Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
-							SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
+							Trace.WriteLine("Forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
+							SendForward(_buffer, b, _bufferReceivedCount - b);
 						}
 						BeginStreaming();
 					}
-					catch (Exception exx)
+					catch (Exception ex)
 					{
-						ex = exx;
+						Trace.TraceError(ex.GetType().Name + ": " + ex.Message);
+						Dispose();
+						throw;
 					}
 				}
 			}

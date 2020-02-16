@@ -92,6 +92,7 @@
       <SrcDll Include="$(OutDir)\*.dll" />
     </ItemGroup>
     <Exec Command="$(ILMergeConsolePath) $(OutDir)\RiverApp.exe @(SrcDll, ' ') /out:$(OutDir)\River.exe" />
+    <Copy SourceFiles="$(OutDir)\RiverApp.exe.config" DestinationFiles="$(OutDir)\River.exe.config" />
   </Target>
   <!--
 	<Target Name="CleanReferenceCopyLocalPaths2" AfterTargets="Build" DependsOnTargets="ILMerge">

@@ -147,23 +147,18 @@ namespace River.ShadowSocks
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
 			var stream = Stream;
-			var resolved = false;
-			if (!IPAddress.TryParse(targetHost, out var ip)) // if targetHost is IP - just use IP
+			IPAddress ipr4 = null;
+			IPAddress ipr6 = null;
+			var targetIsIp = IPAddress.TryParse(targetHost, out var ip);
+			if (!targetIsIp)
 			{
-				var ipv4 = proxyDns == true
-					? null
-					: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
+				ipr4 = Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 
-				var ipv6 = proxyDns == true
-					? null
-					: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
-
-				ip = ipv6 ?? ipv4; // as usual - give a priority, BUT target proxy might be not IPv6 ready
-
-				resolved = ip != null;
+				ipr6 = Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
+				ip = ipr4 ?? ipr6;
 			}
 
-			if (!resolved && proxyDns != false) // forward the targetHost name
+			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
 			{
 				stream.WriteByte(0x03); // adress type = domain name
 				var targetHostName = Utils.Utf8.GetBytes(targetHost);

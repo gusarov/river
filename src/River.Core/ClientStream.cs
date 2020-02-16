@@ -1,4 +1,5 @@
 ﻿using River.Common;
+using River.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,13 +13,18 @@ namespace River
 {
 	public abstract class ClientStream : SimpleNetworkStream
 	{
-		protected TcpClient Client { get; private set; }
+
+
+		public TcpClient Client { get; private set; }
 		protected Stream Stream { get; set; }
 
 		/// <summary>
 		/// Negotiate to establish stream
 		/// </summary>
 		public abstract void Route(string targetHost, int targetPort, bool? proxyDns = null);
+
+		protected string ProxyHost { get; private set; }
+		protected int ProxyPort { get; private set; }
 
 		/// <summary>
 		/// Plug to a new socket
@@ -30,14 +36,14 @@ namespace River
 				throw new ArgumentNullException(nameof(uri));
 			}
 
-			var proxyHost = uri.Host;
-			var proxyPort = uri.Port;
+			ProxyHost = uri.Host;
+			ProxyPort = uri.Port;
 
 			if (Stream != null)
 			{
 				throw new Exception("Already been plugged");
 			}
-			Client = new TcpClient(proxyHost, proxyPort);
+			Client = new TcpClient(ProxyHost, ProxyPort);
 			Client.Client.NoDelay = true;
 			Stream = Client.GetStream();
 		}
@@ -51,6 +57,12 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
+			if (uri != null)
+			{
+				ProxyHost = uri.Host;
+				ProxyPort = uri.Port;
+			}
+
 			/*
 			if (!(stream is MustFlushStream))
 			{
@@ -62,13 +74,29 @@ namespace River
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return Stream.Read(buffer, offset, count);
+			var r = Stream.Read(buffer, offset, count);
+			if (r <= 0) Close();
+			return r;
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			Stream.Write(buffer, offset, count);
 			Stream.Flush();
+		}
+
+		bool _closing;
+
+		public override void Close()
+		{
+			_closing = true;
+			base.Close();
+			try
+			{
+				Client?.Client?.Shutdown(SocketShutdown.Both);
+			}
+			catch { }
+			Stream.Close();
 		}
 
 		public override void Flush()
@@ -78,13 +106,19 @@ namespace River
 			=> Stream.BeginRead(buffer, offset, count, callback, state);
 
 		public override int EndRead(IAsyncResult asyncResult)
-			=> Stream.EndRead(asyncResult);
+		{
+			if (_closing) return 0;
+			return Stream.EndRead(asyncResult);
+		}			
 
 		public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginWrite(buffer, offset, count, callback, state);
 
 		public override void EndWrite(IAsyncResult asyncResult)
-			=> Stream.EndWrite(asyncResult);
+		{
+			if (_closing) return;
+			Stream.EndWrite(asyncResult);
+		}
 
 		public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 			=> Stream.ReadAsync(buffer, offset, count, cancellationToken);

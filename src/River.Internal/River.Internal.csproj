@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExceptionExt.cs" />
+    <Compile Include="ObjectTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resolver.cs" />
   </ItemGroup>

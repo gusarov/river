@@ -66,15 +66,17 @@ namespace River.Socks
 			stream.WriteByte(0x01); // command = stream
 			stream.WriteByte(0x00); // reserved
 
-			if (proxyDns == false || !IPAddress.TryParse(targetHost, out var ip)) // if targetHost is IP - just use IP
+			var targetIsIp = IPAddress.TryParse(targetHost, out var ip);
+			if (!targetIsIp) // if targetHost is IP - just use IP
 			{
 				var dns = Dns.GetHostAddresses(targetHost);
 				var ipv4 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 				var ipv6 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 
-				ip = ipv4 ?? ipv6; // ipv6 supported but if there is a shorter way - use shorter way
+				ip = ipv4 ?? ipv6; // have to take ipv4 first because ipv6 is not working most of the times and HappyEyeballs is not possible via socks due to single connection
 			}
-			if (proxyDns == true || ip == null) // forward the targetHost name
+
+			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
 			{
 				stream.WriteByte(0x03); // adress type = domain name
 				var targetHostName = Utils.Utf8.GetBytes(targetHost);
@@ -97,7 +99,8 @@ namespace River.Socks
 			{
 				throw new Exception("Host is not resolved: " + targetHost);
 			}
-			stream.Write(Utils.GetPortBytes(targetPort), 0, 2); // target port
+			stream.WriteByte((byte)(targetPort >> 8)); // target port
+			stream.WriteByte((byte)targetPort); // target port
 			stream.Flush();
 
 			// response

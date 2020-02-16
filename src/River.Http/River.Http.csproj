@@ -46,12 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpProxyClientStream.cs" />
+    <Compile Include="HttpProxyHandler.cs" />
+    <Compile Include="HttpProxyServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
+      <Project>{80cfd4c6-78da-4e84-9725-6dcb2a749ea4}</Project>
+      <Name>River.HttpUtils</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
