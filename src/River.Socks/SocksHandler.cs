@@ -331,10 +331,6 @@ namespace River.Socks
 							headers.TryGetValue("_url_host", out var host);
 							headers.TryGetValue("_url_port", out var port);
 
-							var hostHeaderSplitter = hostHeader.IndexOf(':');
-							var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
-							var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
-
 							if (string.IsNullOrEmpty(hostHeader))
 							{
 								_portRequested = string.IsNullOrEmpty(port)
@@ -344,6 +340,10 @@ namespace River.Socks
 							}
 							else
 							{
+								var hostHeaderSplitter = hostHeader.IndexOf(':');
+								var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
+								var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
+
 								_portRequested = int.Parse(hostHeaderPort, CultureInfo.InvariantCulture);
 								_dnsNameRequested = hostHeaderHost;
 							}
@@ -359,7 +359,7 @@ namespace River.Socks
 								if (headers["_verb"] == "CONNECT")
 								{
 									Stream.Write(_utf.GetBytes("HTTP/1.1 200 OK\r\n\r\n")); // ok to CONNECT
-																					// for connect - forward the rest of the buffer
+									// for connect - forward the rest of the buffer
 									if (_bufferReceivedCount - eoh > 0)
 									{
 										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");

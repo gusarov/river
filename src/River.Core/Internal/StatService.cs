@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -34,5 +36,19 @@ namespace River.Internal
 			Console.Title = $"Handlers: {cnt}";
 #endif
 		}
+
+		ConcurrentDictionary<int, (int, string)> _dic = new ConcurrentDictionary<int, (int, string)>();
+
+		[Conditional("DEBUG")]
+		public void MaxBufferUsage(int size, string from)
+		{
+			_dic.AddOrUpdate(size, (size, from), (s, c) =>
+				s > c.Item1
+				 ? (s, from)
+				 : c
+			);
+		}
+
+		
 	}
 }

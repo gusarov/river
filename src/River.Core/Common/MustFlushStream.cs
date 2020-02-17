@@ -1,4 +1,5 @@
-﻿using System;
+﻿using River.Internal;
+using System;
 using System.IO;
 
 namespace River.Common
@@ -30,6 +31,7 @@ namespace River.Common
 				// it perfectly fits to the remained buffer
 				Array.Copy(buffer, offset, _buffer, _bufferPos, count);
 				_bufferPos += count;
+				StatService.Instance.MaxBufferUsage(_bufferPos, GetType().Name);
 			}
 			else
 			{

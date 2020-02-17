@@ -18,7 +18,7 @@ namespace River.Test.ConsoleServer
 {
 	class Program
 	{
-		static void Main0()
+		static void Main()
 		{
 			RiverInit.RegAll();
 
@@ -26,12 +26,12 @@ namespace River.Test.ConsoleServer
 			{
 				Chain =
 				{
-					"ss://chacha20:123@127.0.0.1:8338",
+					// "ss://chacha20:123@127.0.0.1:8338",
 				},
 			};
 			server1.Run("socks://0.0.0.0:1080");
 
-			
+/*			
 			var server2 = new ShadowSocksServer
 			{
 				Chain =
@@ -40,7 +40,7 @@ namespace River.Test.ConsoleServer
 				},
 			};
 			server2.Run("ss://chacha20:123@0.0.0.0:8338");
-			
+*/
 
 			Console.ReadLine();
 		}
@@ -347,7 +347,7 @@ Keep-Alive: true
 			Console.ReadLine();
 		}
 
-		static void Main()
+		static void Main10()
 		{
 			/*
 			Console.WriteLine("Take snapshot1");

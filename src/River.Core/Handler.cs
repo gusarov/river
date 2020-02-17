@@ -196,6 +196,7 @@ namespace River
 				var c = Stream.EndRead(ar);
 				if (c > 0)
 				{
+					StatService.Instance.MaxBufferUsage(c, GetType().Name + " src");
 					_upstreamClient.Write(_buffer, 0, c);
 					Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
 				}
@@ -270,6 +271,8 @@ namespace River
 				var c = _upstreamClient.EndRead(ar);
 				if (c > 0)
 				{
+					StatService.Instance.MaxBufferUsage(c, GetType().Name + " trg");
+
 					Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
 					Stream.Write(_bufferTarget, 0, c);
 					_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
@@ -291,7 +294,12 @@ namespace River
 		private string Preview(byte[] buf, int pos, int cnt)
 		{
 			var lim = Math.Min(cnt, 32);
-			return _utf8.GetString(buf, pos, lim) + (lim < cnt ? "..." : "");
+			var str = _utf8.GetChars(buf, pos, lim);
+			for (int i = 0; i < str.Length; i++)
+			{
+				if (str[i] < 32) str[i] = '?';
+			}
+			return new string(str) + (lim < cnt ? "..." : "");
 		}
 
 		Stream _upstreamClient;
@@ -301,7 +309,6 @@ namespace River
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
-			var list = new List<IDisposable>();
 			try
 			{
 				if (target is null)
@@ -323,7 +330,6 @@ namespace River
 					{
 						var clientType = Resolver.GetClientType(proxy.Uri);
 						var clientStream = (ClientStream)Activator.CreateInstance(clientType);
-						list.Add(clientStream);
 						if (_upstreamClient == null)
 						{
 							// create a first client connection
@@ -348,7 +354,6 @@ namespace River
 					{
 						// dirrect connection
 						_upstreamClient = new NullClientStream();
-						list.Add(_upstreamClient);
 						var host = target.Host ?? target.IPAddress.ToString();
 						var port = target.Port;
 						((ClientStream)_upstreamClient).Plug(host, port);

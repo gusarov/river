@@ -76,6 +76,7 @@ namespace River
 		{
 			var r = Stream.Read(buffer, offset, count);
 			if (r <= 0) Close();
+			StatService.Instance.MaxBufferUsage(offset + r, GetType().Name);
 			return r;
 		}
 

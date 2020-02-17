@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
   </ItemGroup>
 
   <ItemGroup>

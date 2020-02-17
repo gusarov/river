@@ -126,9 +126,41 @@ Server: river
 			}
 		}
 
+		DateTime _lastInfoObjectsTime;
+		string _lastInfoObjectsData;
+
+		string GetInfoObjects()
+		{
+			var now = DateTime.UtcNow;
+			if ((now - _lastInfoObjectsTime).TotalMinutes > 0.9)
+			{
+				_lastInfoObjectsData = GetInfoObjectsCore();
+				_lastInfoObjectsTime = now;
+			}
+			return _lastInfoObjectsData;
+		}
+
+		string GetInfoObjectsCore()
+		{
+			var objs = ObjectTracker.Default.Items.ToArray();
+			var objsGroups = objs.GroupBy(x => x.GetType().Name);
+
+			var sb = new StringBuilder("<table><tr><th>Type</th><th>Count</th></tr>");
+			foreach (var item in objsGroups)
+			{
+				sb.AppendLine($"<tr><td>{item.Key}</td><td>{item.Count()}</td></tr>");
+			}
+			sb.AppendLine($"</table>");
+			return sb.ToString();
+		}
+
 		int GetResponse(string url, byte[] buf, int pos, int cnt, out int code, out string msg, out string contentType)
 		{
 			url = url.ToLowerInvariant();
+			if (url.Contains("://"))
+			{
+				url = new Uri(url).PathAndQuery;
+			}
 			code = 200;
 			msg = "OK";
 			contentType = "text/html";
@@ -138,9 +170,18 @@ Server: river
 				if (url == "/")
 				{
 					var ver = Assembly.GetExecutingAssembly().GetName().Version;
-					var data1 = _utf.GetBytes($@"<b>Hello</b><br/>This is a River server v{ver}<br/><img src='break_firewall_512.png' />");
+					var data1 = _utf.GetBytes($@"<b>Hello</b><br/>
+This is a River server v{ver}<br/>
+<a href=stat>Statistics</a><br/>
+<img src='break_firewall_512.png' /><br/>");
 					data1.CopyTo(buf, pos);
 					return data1.Length;
+				}
+				else if (url == "/stat")
+				{
+					var dataStat = _utf.GetBytes(GetInfoObjects());
+					dataStat.CopyTo(buf, pos);
+					return dataStat.Length;
 				}
 				else if (url.Contains('.')) // file
 				{
