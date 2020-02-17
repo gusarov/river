@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using River.Internal;
 using System.Linq;
 
 namespace River.Test

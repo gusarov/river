@@ -1,4 +1,5 @@
-﻿using System;
+﻿using River.Internal;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,11 @@ namespace River.Http
 			Route(targetHost, targetPort);
 		}
 
+		public HttpProxyClientStream(string proxyHost, int proxyPort)
+		{
+			Plug(proxyHost, proxyPort);
+		}
+
 		public HttpProxyClientStream(Stream stream, string targetHost, int targetPort)
 		{
 			Plug(null, stream);
@@ -31,8 +37,32 @@ namespace River.Http
 			ClientStreamExtensions.Plug(this, host, port);
 		}
 
+		byte[] _readBuf = new byte[16 * 1024];
+
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
+			var request = _utf8.GetBytes($@"CONNECT {targetHost}:{targetPort} HTTP/1.1
+Host: {targetHost}:{targetPort}
+
+");
+			Write(request, 0, request.Length);
+
+			var readed = 0;
+			IDictionary<string, string> response;
+			int eoh;
+			do
+			{
+				var c = Stream.Read(_readBuf, readed, _readBuf.Length - readed);
+				if (c == 0)
+				{
+					Close();
+					throw new ConnectionClosingException();
+				}
+				readed += c;
+				response = HttpUtils.TryParseHttpHeader(_readBuf, 0, readed, out eoh);
+			} while (eoh < 0);
+
+			int q = 5;
 			// HTTP Proxy is transparent, nothing to do here. Header must include full server name
 		}
 

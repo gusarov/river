@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace River.Internal
+namespace River
 {
 	public static class Resolver
 	{

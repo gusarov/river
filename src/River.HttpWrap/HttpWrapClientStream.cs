@@ -34,7 +34,7 @@ namespace River.HttpWrap
 		byte[] _bufRq = new byte[1 * 1024];
 		byte[] _bufOut = new byte[16 * 1024];
 		byte[] _bufIn = new byte[16 * 1024];
-		Encoding _utf8 = new UTF8Encoding(false, false);
+
 		// ChaCha20 _encrypt;
 		// ChaCha20 _decrypt;
 		string _routeToHost;

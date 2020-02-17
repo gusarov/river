@@ -43,7 +43,7 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
-			Client = new TcpClient(ProxyHost, ProxyPort);
+			Client = Utils.WithTimeout(p => new TcpClient(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
 			Client.Client.NoDelay = true;
 			Stream = Client.GetStream();
 		}
@@ -85,29 +85,29 @@ namespace River
 			Stream.Flush();
 		}
 
-		bool _closing;
-
 		public override void Close()
 		{
-			_closing = true;
 			base.Close();
 			try
 			{
 				Client?.Client?.Shutdown(SocketShutdown.Both);
+				Client = null;
 			}
 			catch { }
-			Stream.Close();
+			try
+			{
+				Stream?.Close();
+				Stream = null;
+			}
+			catch { }
 		}
-
-		public override void Flush()
-			=> Stream.Flush();
 
 		public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginRead(buffer, offset, count, callback, state);
 
 		public override int EndRead(IAsyncResult asyncResult)
 		{
-			if (_closing) return 0;
+			if (IsDisposed) return 0;
 			return Stream.EndRead(asyncResult);
 		}			
 
@@ -116,7 +116,7 @@ namespace River
 
 		public override void EndWrite(IAsyncResult asyncResult)
 		{
-			if (_closing) return;
+			if (IsDisposed) return;
 			Stream.EndWrite(asyncResult);
 		}
 

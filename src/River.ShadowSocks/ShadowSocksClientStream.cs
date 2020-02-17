@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using River.ChaCha;
 using River.Common;
+using River.Internal;
 
 namespace River.ShadowSocks
 {
@@ -161,7 +162,7 @@ namespace River.ShadowSocks
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
 			{
 				stream.WriteByte(0x03); // adress type = domain name
-				var targetHostName = Utils.Utf8.GetBytes(targetHost);
+				var targetHostName = _utf8.GetBytes(targetHost);
 				stream.WriteByte(checked((byte)targetHostName.Length)); // len
 				stream.Write(targetHostName, 0, targetHostName.Length); // target host
 			}

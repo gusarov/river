@@ -49,7 +49,7 @@ HTTP/(?'hv'\d\.\d)# http ver
 				{
 					var start = i;
 					i = headerString.IndexOf("\r\n", i + 1) + 2;
-					var sp = headerString.IndexOf(':', start);
+					var colon = headerString.IndexOf(':', start);
 					if (start == 0)
 					{
 						// this is first line
@@ -60,10 +60,10 @@ HTTP/(?'hv'\d\.\d)# http ver
 						headers["_url_port"] = match.Groups["pr"].Value;
 						headers["_http_ver"] = match.Groups["hv"].Value;
 					}
-					if (sp <= i)
+					if (colon <= i && colon >= 0)
 					{
-						var headerKey = headerString.Substring(start, sp - start).Trim();
-						var headerValue = headerString.Substring(sp + 1, i - sp - 1).Trim();
+						var headerKey = headerString.Substring(start, colon - start).Trim();
+						var headerValue = headerString.Substring(colon + 1, i - colon - 1).Trim();
 						headers[headerKey] = headerValue.Trim();
 					}
 				}

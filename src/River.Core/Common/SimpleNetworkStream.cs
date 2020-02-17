@@ -11,6 +11,9 @@ namespace River
 
 	public abstract class SimpleNetworkStream : Stream
 	{
+		protected static Encoding _utf8 = new UTF8Encoding(false, false);
+		protected static Encoding _ascii = new ASCIIEncoding();
+
 		public SimpleNetworkStream()
 		{
 			ObjectTracker.Default.Register(this);

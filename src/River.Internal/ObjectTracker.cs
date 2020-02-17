@@ -7,7 +7,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 
-namespace River.Internal
+namespace River
 {
 	public class ObjectTracker
 	{

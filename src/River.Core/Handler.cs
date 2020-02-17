@@ -1,5 +1,6 @@
 ﻿using River.Internal;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -92,6 +93,7 @@ namespace River
 			// UPSTREAM
 			try
 			{
+				_upstreamClient?.Dispose();
 				_upstreamClient?.Close();
 				_upstreamClient = null;
 			}
@@ -299,6 +301,7 @@ namespace River
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
+			var list = new List<IDisposable>();
 			try
 			{
 				if (target is null)
@@ -320,6 +323,7 @@ namespace River
 					{
 						var clientType = Resolver.GetClientType(proxy.Uri);
 						var clientStream = (ClientStream)Activator.CreateInstance(clientType);
+						list.Add(clientStream);
 						if (_upstreamClient == null)
 						{
 							// create a first client connection
@@ -344,6 +348,7 @@ namespace River
 					{
 						// dirrect connection
 						_upstreamClient = new NullClientStream();
+						list.Add(_upstreamClient);
 						var host = target.Host ?? target.IPAddress.ToString();
 						var port = target.Port;
 						((ClientStream)_upstreamClient).Plug(host, port);

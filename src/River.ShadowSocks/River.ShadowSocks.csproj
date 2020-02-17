@@ -59,6 +59,10 @@
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3EC24F81-AC7B-4BCF-A6B1-AAEFF2528387}</Project>
+      <Name>River.Internal</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
       <Name>River.Socks</Name>
