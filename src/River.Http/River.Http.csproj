@@ -56,10 +56,6 @@
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.csproj">
-      <Project>{80cfd4c6-78da-4e84-9725-6dcb2a749ea4}</Project>
-      <Name>River.HttpUtils</Name>
-    </ProjectReference>
     <ProjectReference Include="..\River.Internal\River.Internal.csproj">
       <Project>{3EC24F81-AC7B-4BCF-A6B1-AAEFF2528387}</Project>
       <Name>River.Internal</Name>

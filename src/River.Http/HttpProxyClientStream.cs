@@ -62,8 +62,8 @@ Host: {targetHost}:{targetPort}
 				response = HttpUtils.TryParseHttpHeader(_readBuf, 0, readed, out eoh);
 			} while (eoh < 0);
 
-			int q = 5;
-			// HTTP Proxy is transparent, nothing to do here. Header must include full server name
+			// the response is not paresed here yet. If there is an error - will be disconnected anyway
+			// but we must forward back everything beyond 
 		}
 
 	}

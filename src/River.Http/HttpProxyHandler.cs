@@ -52,7 +52,7 @@ namespace River.Http
 
 						if (headers["_verb"] == "CONNECT")
 						{
-							Stream.Write(_utf8.GetBytes("200 OK\r\n\r\n")); // ok to CONNECT
+							Stream.Write(_utf8.GetBytes("HTTP/1.1 200 OK\r\n\r\n")); // ok to CONNECT
 							// for connect - forward the rest of the buffer
 							if (_bufferReceivedCount - eoh > 0)
 							{

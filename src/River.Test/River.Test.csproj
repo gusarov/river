@@ -61,10 +61,6 @@
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.Std.csproj">
-      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
-      <Name>River.HttpUtils.Std</Name>
-    </ProjectReference>
     <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.Std.csproj">
       <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
       <Name>River.HttpWrap.Std</Name>

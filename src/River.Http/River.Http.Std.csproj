@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.Std.csproj" />
   </ItemGroup>
 
   <ItemGroup>
