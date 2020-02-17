@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace River.Internal
 {
@@ -31,12 +32,12 @@ namespace River.Internal
 				var newList = _list.Where(x => x.IsAlive).ToList();
 				if (newList.Count != _list.Count)
 				{
-					_list = newList;
+					_list = new ConcurrentBag<WeakReference>(newList);
 				}
 			}
 		}
 
-		List<WeakReference> _list = new List<WeakReference>();
+		ConcurrentBag<WeakReference> _list = new ConcurrentBag<WeakReference>();
 
 		bool _isEnabled
 #if DEBUG
@@ -51,7 +52,7 @@ namespace River.Internal
 
 		public void ResetCollection()
 		{
-			_list.Clear();
+			_list = new ConcurrentBag<WeakReference>();
 		}
 
 		// [Conditional("DEBUG")]
@@ -68,10 +69,7 @@ namespace River.Internal
 		{
 			get
 			{
-				lock (_list)
-				{
-					return _list.Count;
-				}
+				return _list.Count;
 			}
 		}
 
@@ -80,10 +78,7 @@ namespace River.Internal
 		{
 			get
 			{
-				lock (_list)
-				{
-					return _list.Select(x => x.Target).ToArray();
-				}
+				return _list.Select(x => x.Target).ToArray();
 			}
 		}
 	}
