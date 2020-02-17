@@ -38,7 +38,7 @@ namespace River.Socks
 			// get request from client
 			if (EnsureReaded(1))
 			{
-				var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
+				//var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
 				// Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
 
 				switch (_buffer[0]) // 0
@@ -109,11 +109,11 @@ namespace River.Socks
 #if DEBUG
 								if (_addressRequested == null)
 								{
-									Trace.WriteLine($"Socks v4a Route: {_dnsNameRequested}:{_portRequested} {msg}");
+									Trace.WriteLine($"Socks v4a Route: {_dnsNameRequested}:{_portRequested}");
 								}
 								else
 								{
-									Trace.WriteLine($"Socks v4 Route: {_addressRequested}:{_portRequested} {msg}");
+									Trace.WriteLine($"Socks v4 Route: {_addressRequested}:{_portRequested}");
 								}
 #endif
 								EstablishUpstream(new DestinationIdentifier
@@ -260,7 +260,7 @@ namespace River.Socks
 													adrMsg = _addressRequested.ToString();
 													break;
 											}
-											Trace.WriteLine($"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested} {msg}");
+											Trace.WriteLine($"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested}");
 #endif
 
 											Exception ex = null;

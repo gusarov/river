@@ -138,7 +138,7 @@ namespace River
 					return;
 				}
 
-				Trace.TraceError($"{Source} Handshake... {_buffer[0]:X2} {_utf8.GetString(_buffer, 0, 1)}");
+				Trace.TraceError($"{Source} Handshake... {_bufferReceivedCount} bytes, first 0x{_buffer[0]:X2} {_utf8.GetString(_buffer, 0, 1)} {Preview(_buffer, 0, _bufferReceivedCount)}");
 				HandshakeHandler();
 			}
 			catch (Exception ex)
@@ -319,7 +319,7 @@ namespace River
 				_target = target;
 				Trace.WriteLine($"{Source} Route to {Destination}");
 
-				var ov = Resolver.GetStreamOverride(target.Host);
+				var ov = Resolver.GetStreamOverride(target);
 				if (ov != null)
 				{
 					_upstreamClient = ov;

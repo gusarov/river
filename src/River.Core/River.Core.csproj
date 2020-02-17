@@ -57,6 +57,8 @@
     <Compile Include="Internal\HappyEyeballs.cs" />
     <Compile Include="Internal\StatService.cs" />
     <Compile Include="Properties\AssemblyInfoExtra.cs" />
+    <Compile Include="Resolver.cs" />
+    <Compile Include="Dns.cs" />
     <Compile Include="ServerConfig.cs" />
     <Compile Include="RiverServer.cs" />
     <Compile Include="Null\NullClientStream.cs" />

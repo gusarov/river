@@ -10,17 +10,8 @@ using System.Threading.Tasks;
 
 namespace River.SelfService
 {
-	public class RiverSelfService : Stream
+	public class RiverSelfService : SimpleNetworkStream
 	{
-		public override bool CanRead => true;
-		public override bool CanSeek => false;
-		public override bool CanWrite => true;
-		public override long Length => throw new NotSupportedException();
-
-		public override long Position {
-			get => throw new NotSupportedException();
-			set => throw new NotSupportedException();
-		}
 
 		byte[] _request = new byte[16 * 1024];
 		int _requestIndex;
@@ -100,7 +91,7 @@ ETag: {_etag}
 
 				var buf = new byte[16 * 1024];
 				var c = GetResponse(url.Trim(), buf, 0, buf.Length, out var code, out var msg, out var contentType);
-				var headerStr = $@"HTTP/1.0 {code} {msg}
+				var headerStr = $@"HTTP/1.1 {code} {msg}
 Content-Length: {c}
 Content-Type: {contentType}
 Connection: keep-alive
@@ -129,18 +120,18 @@ Server: river
 		DateTime _lastInfoObjectsTime;
 		string _lastInfoObjectsData;
 
-		string GetInfoObjects()
+		string GetStatsPage()
 		{
 			var now = DateTime.UtcNow;
 			if ((now - _lastInfoObjectsTime).TotalMinutes > 0.9)
 			{
-				_lastInfoObjectsData = GetInfoObjectsCore();
+				_lastInfoObjectsData = GetStatsPageCore();
 				_lastInfoObjectsTime = now;
 			}
 			return _lastInfoObjectsData;
 		}
 
-		string GetInfoObjectsCore()
+		string GetStatsPageCore()
 		{
 			var objs = ObjectTracker.Default.Items.ToArray();
 			var objsGroups = objs.GroupBy(x => x.GetType().Name);
@@ -156,7 +147,7 @@ Server: river
 
 		int GetResponse(string url, byte[] buf, int pos, int cnt, out int code, out string msg, out string contentType)
 		{
-			url = url.ToLowerInvariant();
+			url = url.ToUpperInvariant();
 			if (url.Contains("://"))
 			{
 				url = new Uri(url).PathAndQuery;
@@ -177,9 +168,9 @@ This is a River server v{ver}<br/>
 					data1.CopyTo(buf, pos);
 					return data1.Length;
 				}
-				else if (url == "/stat")
+				else if (url == "/STAT" || url == "/STATS")
 				{
-					var dataStat = _utf.GetBytes(GetInfoObjects());
+					var dataStat = _utf.GetBytes(GetStatsPage());
 					dataStat.CopyTo(buf, pos);
 					return dataStat.Length;
 				}
@@ -198,7 +189,7 @@ This is a River server v{ver}<br/>
 					}
 
 					var asm = Assembly.GetExecutingAssembly();
-					var iconName = asm.GetManifestResourceNames().FirstOrDefault(x => x.Contains(fileName));
+					var iconName = asm.GetManifestResourceNames().FirstOrDefault(x => x.ToUpperInvariant().Contains(fileName));
 					if (iconName == null)
 					{
 						var existing = asm.GetManifestResourceNames().ToArray();
@@ -213,7 +204,7 @@ This is a River server v{ver}<br/>
 			L404:
 				code = 404;
 				msg = "Not Found";
-				var data2 = _utf.GetBytes($@"<b>Page not found</b>");
+				var data2 = _utf.GetBytes($@"<b>Page not found: {url}</b>");
 				data2.CopyTo(buf, pos);
 				return data2.Length;
 			}
@@ -221,13 +212,11 @@ This is a River server v{ver}<br/>
 			{
 				code = 500;
 				msg = "Server Error";
-				var data = _utf.GetBytes($@"<b>{ex.GetType().Name}: {ex.Message}</b>");
+				var data = _utf.GetBytes($@"<b>{code} {msg}</b><br/><b>{ex.GetType().Name}: {ex.Message}</b>");
 				data.CopyTo(buf, pos);
 				return data.Length;
 			}
 		}
-
-
 
 		AutoResetEvent _auto = new AutoResetEvent(false);
 		byte[] _readBuf = new byte[16 * 1024];
@@ -266,8 +255,10 @@ This is a River server v{ver}<br/>
 			}
 		}
 
-		public override void Flush() => throw new NotImplementedException();
-		public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
-		public override void SetLength(long value) => throw new NotImplementedException();
+		public override void Close()
+		{
+			base.Close();
+			_auto.Set();
+		}
 	}
 }

@@ -117,11 +117,23 @@ namespace River.Test
 		/// Test current connection to web server
 		/// E.g. you can connect to httpbin.org to do this testing
 		/// </summary>
-		protected static string TestConnction(Stream client, string host = "www.google.com")
+		protected static string TestConnction(Stream client, string host = "www.google.com", string url = "/")
 		{
 			var expected =
 				// "onclick=gbar.logger"; // google.com
 				"Location: http://www.google.com/";
+			
+			switch (host)
+			{
+				case "_river":
+					expected = "Server: river";
+					break;
+				case "www.google.com":
+					url = "/ncr";
+					break;
+				default:
+					break;
+			}
 
 			var readBuf = new byte[1024 * 1024];
 			var readBufPos = 0;
@@ -149,9 +161,7 @@ namespace River.Test
 				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
 			}
 
-			var url = host.Contains("google") ? "ncr" : "";
-
-			var request = Encoding.ASCII.GetBytes($"GET /{url} HTTP/1.1\r\nHost: {host}\r\nConnection: keep-alive\r\n\r\n");
+			var request = Encoding.ASCII.GetBytes($"GET {url} HTTP/1.1\r\nHost: {host}\r\nConnection: keep-alive\r\n\r\n");
 			client.Write(request, 0, request.Length);
 
 			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);

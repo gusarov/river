@@ -26,7 +26,7 @@ namespace River.Internal
 				return candidates[0];
 			}
 
-			var entries = Dns.GetHostAddresses(host);
+			var entries = System.Net.Dns.GetHostAddresses(host);
 			var ipv6a = entries.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 			var ipv4a = entries.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 			var ipv6 = new IPEndPoint(ipv6a, port);

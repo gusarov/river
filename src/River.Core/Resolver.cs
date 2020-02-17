@@ -61,16 +61,31 @@ namespace River
 			return type;
 		}
 
-		public static Stream GetStreamOverride(string hostName)
+		public static Stream GetStreamOverride(DestinationIdentifier target)
 		{
-			
-			if (!string.IsNullOrEmpty(hostName))
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			var host = target.Host;
+			if (string.IsNullOrEmpty(target.Host) && target.IPAddress == null)
+			{
+				host = "_river"; // fallback to internal self-service
+			}
+
+			if (target.Host == "127.127.127.127" || target.IPAddress?.ToString() == "127.127.127.127")
+			{
+				host = "_river"; // FAKE IP
+			}
+
+			if (!string.IsNullOrEmpty(host))
 			{
 				foreach (var ov in _overriders)
 				{
-					if (ov.regex.IsMatch(hostName))
+					if (ov.regex.IsMatch(host))
 					{
-						return ov.fact(hostName);
+						return ov.fact(host);
 					}
 				}
 			}
