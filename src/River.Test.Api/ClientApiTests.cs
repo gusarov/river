@@ -8,9 +8,6 @@ using River.Socks;
 namespace River.Test.Api
 {
 	[TestClass]
-#if !DEBUG
-	[Timeout(5000)]
-#endif
 	public class ClientApiTests : TestClass
 	{
 		[TestMethod]
