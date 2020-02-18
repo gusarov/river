@@ -21,7 +21,7 @@ namespace River
 			{
 				if (ip.AddressFamily == AddressFamily.InterNetworkV6)
 				{
-					proxyServer = $"[{proxyServer}]";
+					proxyServer = $"[{ip.ToString()}]";
 				}
 			}
 

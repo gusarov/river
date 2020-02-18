@@ -15,7 +15,7 @@ namespace River.HttpWrap
 			Run(config);
 		}
 
-		public override void Run(ServerConfig config)
+		public override void RunCore(ServerConfig config)
 		{
 			if (config is null)
 			{

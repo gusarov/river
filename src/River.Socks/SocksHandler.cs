@@ -33,6 +33,11 @@ namespace River.Socks
 		int _bufferProcessedCount;
 		private bool _authenticationNegotiated;
 
+		/// <summary>
+		/// This offset can improve performance of HTTP header reshake / insert
+		/// </summary>
+		// protected override int HandshakeStartPos => 128;
+
 		protected override void HandshakeHandler()
 		{
 			// get request from client
@@ -41,13 +46,13 @@ namespace River.Socks
 				//var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
 				// Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
 
-				switch (_buffer[0]) // 0
+				switch (_buffer[HandshakeStartPos]) // 0
 				{
 					case 4: // SOCKS4
 						#region SOCKS 4
 						if (EnsureReaded(8))
 						{
-							var b = 1;
+							var b = HandshakeStartPos + 1;
 							if (_buffer[b++] != 1) // 1
 							{
 								throw new NotSupportedException("command type not supported");
@@ -62,7 +67,7 @@ namespace River.Socks
 							}
 							b += 4;
 							// read user id, throw it away and look for null
-							Debug.Assert(b == 8);
+							Debug.Assert(b == 8 + HandshakeStartPos);
 							bool nullOk = false;
 							for (int i = 0; i < 255; i++)
 							{
@@ -324,7 +329,7 @@ namespace River.Socks
 
 						// we must wait till entire heder comes
 						int eoh;
-						var headers = HttpUtils.TryParseHttpHeader(_buffer, 0, _bufferReceivedCount, out eoh);
+						var headers = HttpUtils.TryParseHttpHeader(_buffer, HandshakeStartPos, _bufferReceivedCount, out eoh);
 						if (headers != null)
 						{
 							headers.TryGetValue("HOST", out var hostHeader);
@@ -340,7 +345,7 @@ namespace River.Socks
 							}
 							else
 							{
-								var hostHeaderSplitter = hostHeader.IndexOf(':');
+								var hostHeaderSplitter = hostHeader.LastIndexOf(':');
 								var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
 								var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
 
@@ -350,6 +355,12 @@ namespace River.Socks
 
 							try
 							{
+								bool extraHeaderExists = false;
+								if (headers.ContainsKey(_randomHeader.Value))
+								{
+									extraHeaderExists = true;
+									_dnsNameRequested = "_river"; // stop loop, goto self-service
+								}
 								EstablishUpstream(new DestinationIdentifier
 								{
 									Host = _dnsNameRequested,
@@ -359,7 +370,7 @@ namespace River.Socks
 								if (headers["_verb"] == "CONNECT")
 								{
 									Stream.Write(_utf.GetBytes("HTTP/1.1 200 OK\r\n\r\n")); // ok to CONNECT
-									// for connect - forward the rest of the buffer
+																							// for connect - forward the rest of the buffer
 									if (_bufferReceivedCount - eoh > 0)
 									{
 										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
@@ -368,8 +379,30 @@ namespace River.Socks
 								}
 								else
 								{
+									// when buffer equal to EOH we can append extra in no time
+									// otherwise still must try to append in 2% o times
+									if (!extraHeaderExists && (_bufferReceivedCount == eoh || Interlocked.Increment(ref _requestNumber) % 50 == 0))
+									{
+										// let's add a header to handle proxy loop
+										// if there is a loop with body - it will stop after 50 iterations
+										var extraHeader = _randomHeaderLine.Value;
+										var eohp = HandshakeStartPos + eoh;
+
+										if (_bufferReceivedCount > eoh)
+										{
+											// Shift Array
+											Array.Copy(_buffer, eohp, _buffer, eohp + extraHeader.Length, _bufferReceivedCount - eoh);
+										}
+
+										var c = _utf.GetBytes(extraHeader+"\r\n", 0, extraHeader.Length+2, _buffer, eohp - 2);
+										_bufferReceivedCount += c - 2;
+										if (c != extraHeader.Length + 2)
+										{
+											throw new Exception("Encoding - length missmatch");
+										}
+									}
 									// otherwise forward entire buffer without change
-									SendForward(_buffer, 0, _bufferReceivedCount);
+									SendForward(_buffer, HandshakeStartPos, _bufferReceivedCount);
 								}
 								BeginStreaming();
 							}
@@ -386,8 +419,27 @@ namespace River.Socks
 						#endregion
 						break;
 					default:
-						throw new NotSupportedException($"Protocol not supported. First byte is {_buffer[0]:X2} {_utf.GetString(_buffer, 0, 1)}");
+						throw new NotSupportedException($"Protocol not supported. First byte is {_buffer[HandshakeStartPos]:X2} {_utf.GetString(_buffer, HandshakeStartPos, 1)}");
 				}
+			}
+		}
+
+		static Random _rnd = new Random();
+		static int _requestNumber;
+		static Lazy<string> _randomHeader = new Lazy<string>(() => RandomName);
+		static Lazy<string> _randomHeaderLine = new Lazy<string>(()=>$"{_randomHeader.Value}: {RandomName}\r\n");
+
+		static string RandomName
+		{
+			get
+			{
+				var c = _rnd.Next(5) + 5;
+				var s = "";
+				for (var i = 0; i < c; i++)
+				{
+					s += (char)(_rnd.Next('z' - 'a') + 'a');
+				}
+				return s;
 			}
 		}
 

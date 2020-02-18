@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -43,17 +44,22 @@ namespace River
 			return stream;
 		}
 
+		/// <summary>
+		/// This offset can improve performance of HTTP header reshake / insert
+		/// </summary>
+		protected virtual int HandshakeStartPos { get => 0; }
+
 		public void Init(RiverServer server, TcpClient client)
 		{
 			Server = server ?? throw new ArgumentNullException(nameof(server));
 			Client = client ?? throw new ArgumentNullException(nameof(client));
 
 			// disable Nagle, carefully do write operations to prevent extra TCP transfers
-			// efficient write should contain complete packet for corresponding rotocol
+			// efficient write should contain complete packet for corresponding protocol
 			Client.Client.NoDelay = true;
 
 			Stream = WrapStream(Client.GetStream());
-			Stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length, ReceivedHandshake, null);
+			ReadMoreHandshake();
 		}
 
 		#region Dispose
@@ -138,7 +144,7 @@ namespace River
 					return;
 				}
 
-				Trace.TraceError($"{Source} Handshake... {_bufferReceivedCount} bytes, first 0x{_buffer[0]:X2} {_utf8.GetString(_buffer, 0, 1)} {Preview(_buffer, 0, _bufferReceivedCount)}");
+				Trace.TraceError($"{Source} Handshake... {_bufferReceivedCount} bytes, first 0x{_buffer[HandshakeStartPos]:X2} {_utf8.GetString(_buffer, HandshakeStartPos, 1)} {Preview(_buffer, HandshakeStartPos, _bufferReceivedCount)}");
 				HandshakeHandler();
 			}
 			catch (Exception ex)
@@ -171,7 +177,7 @@ namespace River
 
 		protected void ReadMoreHandshake()
 		{
-			Stream.BeginRead(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount, ReceivedHandshake, null);
+			Stream.BeginRead(_buffer, HandshakeStartPos + _bufferReceivedCount, _buffer.Length - _bufferReceivedCount - HandshakeStartPos, ReceivedHandshake, null);
 		}
 
 		protected void BeginStreaming()
@@ -318,6 +324,24 @@ namespace River
 
 				_target = target;
 				Trace.WriteLine($"{Source} Route to {Destination}");
+
+				/*
+				string ep;
+				if (string.IsNullOrEmpty(target.Host)) {
+					ep = target.IPEndPoint.ToString();
+				}
+				else
+				{
+					ep = target.Host + ":" + target.Port;
+				}
+
+				if (Server.Config.EndPoints.Any(x => x.ToString() == ep))
+				{
+					//Add random header for http handler - prevent loop for localhost:1080
+					// redirrect self-loop to _river;
+					ep = "_river" + ":" + target.Port;
+				}
+				*/
 
 				var ov = Resolver.GetStreamOverride(target);
 				if (ov != null)

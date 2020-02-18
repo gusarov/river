@@ -16,7 +16,6 @@ namespace River.SelfService.Test
 	/// Integration suite supposed to be run against real server after deployment
 	/// </summary>
 	[TestClass]
-	[TestCategory("Integration")]
 	public class SelfServiceLiveTest : TestClass
 	{
 		const string _host = "_river";
@@ -31,7 +30,14 @@ namespace River.SelfService.Test
 
 			_proxyPort = GetFreePort();
 			_server = new SocksServer();
-			_server.Run("socks://0.0.0.0:" + _proxyPort);
+			_server.Run(new ServerConfig
+			{
+				EndPoints =
+				{
+					new IPEndPoint(IPAddress.Loopback, _proxyPort),
+					new IPEndPoint(IPAddress.IPv6Loopback, _proxyPort),
+				},
+			});
 
 			// ObjectTracker.Default.ResetCollection();
 		}
@@ -61,28 +67,28 @@ namespace River.SelfService.Test
 		public void Check_30_self_service_http_connect()
 		{
 			var cli = new HttpProxyClientStream(_proxy, _proxyPort, _host, 80).Track(this);
-			TestConnction(cli, _host, "/");
+			TestConnction(cli, _host, url: "/");
 		}
 
 		[TestMethod]
 		public void Check_30_self_service_http_connect_ip()
 		{
 			var cli = new HttpProxyClientStream(_proxy, _proxyPort, "127.127.127.127", 80).Track(this);
-			TestConnction(cli, _host, "/");
+			TestConnction(cli, _host, url: "/");
 		}
 
 		[TestMethod]
 		public void Check_30_self_service_http_get()
 		{
 			var cli = new HttpProxyClientStream(_proxy, _proxyPort).Track(this);
-			TestConnction(cli, _host, "http://_river/");
+			TestConnction(cli, _host, url: "http://_river/");
 		}
 
 		[TestMethod]
 		public void Check_30_self_service_http_get_ip()
 		{
 			var cli = new HttpProxyClientStream(_proxy, _proxyPort).Track(this);
-			TestConnction(cli, _host, "http://127.127.127.127/");
+			TestConnction(cli, _host, url: "http://127.127.127.127/");
 		}
 
 		[TestMethod]
@@ -90,7 +96,39 @@ namespace River.SelfService.Test
 		{
 			var cli = new NullClientStream().Track(this);
 			cli.Plug(_proxy, _proxyPort);
-			TestConnction(cli, _host, "/");
+			TestConnction(cli, _host, url: "/");
+		}
+
+		[TestMethod] //
+		public void Check_40_self_service_localhost_http_direct_ip()
+		{
+			var cli = new NullClientStream().Track(this);
+			cli.Plug(_proxy, _proxyPort);
+			TestConnction(cli, "127.0.0.1", "_river", _proxyPort, "/");
+		}
+
+		[TestMethod]
+		public void Check_40_self_service_localhost_http_direct_ip6()
+		{
+			var cli = new NullClientStream().Track(this);
+			cli.Plug(_proxy, _proxyPort);
+			TestConnction(cli, "::1", "_river", _proxyPort, "/");
+		}
+
+		[TestMethod]
+		public void Check_40_self_service_localhost_http_direct_ip6b()
+		{
+			var cli = new NullClientStream().Track(this);
+			cli.Plug(_proxy, _proxyPort);
+			TestConnction(cli, "[::1]", "_river", _proxyPort, "/");
+		}
+
+		[TestMethod]
+		public void Check_40_self_service_localhost_http_direct_name()
+		{
+			var cli = new NullClientStream().Track(this);
+			cli.Plug(_proxy, _proxyPort);
+			TestConnction(cli, "localhost", "_river", _proxyPort, "/");
 		}
 
 		[TestMethod]
