@@ -20,7 +20,7 @@ namespace River.ShadowSocks
 
 			var algo = config["user"];
 			Password = config["password"];
-			base.Run(config);
+			base.RunCore(config);
 		}
 
 		public string Password { get; set; }
