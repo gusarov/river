@@ -29,7 +29,7 @@ namespace River.Test.ConsoleServer
 					// "ss://chacha20:123@127.0.0.1:8338",
 				},
 			};
-			server1.Run("socks://0.0.0.0:1080");
+			server1.Run("socks://10.0.0.20:1080");
 
 /*			
 			var server2 = new ShadowSocksServer
