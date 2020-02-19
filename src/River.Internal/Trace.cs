@@ -49,7 +49,7 @@ namespace River
 
 		Logger()
 		{
-			LogPath = ConfigurationManager.AppSettings["LogPath"];
+			LogPath = ConfigurationManager.AppSettings["LogPath"] ?? "./Logs";
 			_timer = new Timer(Flusher, null, 2000, 2000);
 		}
 
