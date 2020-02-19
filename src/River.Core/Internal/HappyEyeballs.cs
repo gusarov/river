@@ -26,16 +26,24 @@ namespace River.Internal
 				return candidates[0];
 			}
 
-			var entries = System.Net.Dns.GetHostAddresses(host);
+			var entries = Dns.GetHostAddresses(host);
 			var ipv6a = entries.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
+			if (ipv6a != null)
+			{
+				candidates.Add(new IPEndPoint(ipv6a, port));
+			}
+
 			var ipv4a = entries.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
-			var ipv6 = new IPEndPoint(ipv6a, port);
-			var ipv4 = new IPEndPoint(ipv4a, port);
-
-			candidates.Add(ipv6);
-			candidates.Add(ipv4);
-
-			return ipv6 ?? ipv4;
+			if (ipv4a != null)
+			{
+				candidates.Add(new IPEndPoint(ipv4a, port));
+			}
+			// var ipv6 = new IPEndPoint(ipv6a, port);
+			// var ipv4 = new IPEndPoint(ipv4a, port);
+			// candidates.Add(ipv6);
+			// candidates.Add(ipv4);
+			// return ipv6 ?? ipv4;
+			return candidates.Skip(1).FirstOrDefault();
 		}
 	}
 }
