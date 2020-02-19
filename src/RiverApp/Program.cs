@@ -4,7 +4,6 @@ using River.ShadowSocks;
 using River.Socks;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +14,7 @@ namespace RiverApp
 	{
 		static void Main(string[] args)
 		{
+			Trace.WriteLine("Logger started...");
 			RiverInit.RegAll();
 
 			var servers = new List<(RiverServer, Uri)>();
@@ -54,10 +54,10 @@ namespace RiverApp
 							Console.WriteLine("Generting event log...");
 							if (int.TryParse(args[++i], out var eventId))
 							{
-								using (var eventLog = new EventLog("Application"))
+								using (var eventLog = new System.Diagnostics.EventLog("Application"))
 								{
 									eventLog.Source = "Application";
-									eventLog.WriteEntry("EventLogTriggeer", EventLogEntryType.Information, eventId);
+									eventLog.WriteEntry("EventLogTriggeer", System.Diagnostics.EventLogEntryType.Information, eventId);
 								}
 							}
 							break;
