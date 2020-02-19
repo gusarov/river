@@ -8,6 +8,7 @@ using River.Internal;
 namespace River.Test
 {
 	[TestClass]
+	[Ignore]
 	public class HappyEyeballsTest
 	{
 		HappyEyeballs _sut = new HappyEyeballs();
