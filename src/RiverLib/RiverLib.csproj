@@ -1,18 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-		<NuspecFile>river.nuspec</NuspecFile>
-		<AssemblyName>River</AssemblyName>
-		<RootNamespace>River</RootNamespace>
+    <NuspecFile>river.nuspec</NuspecFile>
+    <AssemblyName>River</AssemblyName>
+    <RootNamespace>River</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="NuGet\**" />
     <EmbeddedResource Remove="NuGet\**" />
     <None Remove="NuGet\**" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
@@ -20,13 +18,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\River.All\River.All.Std.csproj" />
     <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
     <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
-
-
-	
 </Project>
