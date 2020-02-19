@@ -89,7 +89,7 @@ namespace River
 						_stream?.Close();
 						Directory.CreateDirectory(LogPath);
 						_stream = File.Open(Path.Combine(LogPath
-							, now.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log")
+							, now.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + $"_p{Process.GetCurrentProcess().Id}.log") 
 							, FileMode.Append, FileAccess.Write, FileShare.Read);
 						_openedAt = now.Date;
 						_writer = new StreamWriter(_stream);
