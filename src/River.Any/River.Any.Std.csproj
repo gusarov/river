@@ -16,6 +16,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.Std.csproj" />
+    <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />
+    <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
     <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
   <ItemGroup>

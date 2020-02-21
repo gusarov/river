@@ -33,15 +33,22 @@ namespace River
 
 		protected bool IsDisposed { get; private set; }
 
-		public ServerConfig Config;
+		public ServerConfig Config { get; private set; }
+
+		public void ParseConfig(ServerConfig config)
+		{
+			Config = config;
+			ParseConfigCore(config);
+		}
 
 		public void Run(ServerConfig config)
 		{
-			Config = config;
+			ParseConfig(config);
 			RunCore(config);
 		}
 
-		public abstract void RunCore(ServerConfig config);
+		protected virtual void ParseConfigCore(ServerConfig config) { }
+		protected abstract void RunCore(ServerConfig config);
 
 		public void Dispose()
 		{

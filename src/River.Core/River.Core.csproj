@@ -51,6 +51,7 @@
     <Compile Include="Common\CustomStream.cs" />
     <Compile Include="Common\DebuggerTracker.cs" />
     <Compile Include="Common\MustFlushStream.cs" />
+    <Compile Include="Common\ReStream.cs" />
     <Compile Include="DestinationIdentifier.cs" />
     <Compile Include="Generic\TcpServer.cs" />
     <Compile Include="Handler.cs" />

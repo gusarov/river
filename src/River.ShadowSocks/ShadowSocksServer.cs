@@ -11,7 +11,7 @@ namespace River.ShadowSocks
 {
 	public class ShadowSocksServer : TcpServer<ShadowSocksHandler>
 	{
-		public override void RunCore(ServerConfig config)
+		protected override void RunCore(ServerConfig config)
 		{
 			if (config is null)
 			{

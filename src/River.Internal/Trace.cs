@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,8 +50,18 @@ namespace River
 
 		Logger()
 		{
-			LogPath = ConfigurationManager.AppSettings["LogPath"] ?? "./Logs";
+			try
+			{
+				LoadConfing();
+			}
+			catch { }
 			_timer = new Timer(Flusher, null, 2000, 2000);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		void LoadConfing()
+		{
+			LogPath = ConfigurationManager.AppSettings["LogPath"] ?? LogPath;
 		}
 
 		private void Flusher(object state)
@@ -71,7 +82,8 @@ namespace River
 		StreamWriter _writer;
 		DateTime _openedAt;
 
-		public string LogPath { get; set; }
+		const string DefaultLogPath = "./Logs";
+		public string LogPath { get; set; } = DefaultLogPath;
 
 		byte _seed;
 

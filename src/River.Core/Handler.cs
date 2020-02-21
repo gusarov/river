@@ -1,4 +1,5 @@
-﻿using River.Internal;
+﻿using River.Common;
+using River.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,7 +50,47 @@ namespace River
 		/// </summary>
 		protected virtual int HandshakeStartPos { get => 0; }
 
-		public void Init(RiverServer server, TcpClient client)
+		/*
+		public void SwitchFrom(Handler handler, RiverServer server, ReStream stream)
+		{
+			if (handler is null)
+			{
+				throw new ArgumentNullException(nameof(handler));
+			}
+
+			if (server is null)
+			{
+				throw new ArgumentNullException(nameof(server));
+			}
+
+			if (stream is null)
+			{
+				throw new ArgumentNullException(nameof(stream));
+			}
+
+			// you must be sure that previous readers is readed and that is not subscribed yet!!
+			// you must be sure there is no forward connection already established
+			// you must be sure that previous handler did not sent any response to client yet!!
+
+			// init
+			stream.ResetReader();
+			Init(server ?? handler.Server, handler.Client, stream);
+
+
+			// copy fields
+			// _buffer = handler._buffer;
+			// _bufferReceivedCount = handler._bufferReceivedCount;
+
+			// Client = handler.Client;
+			// Server = server ?? handler.Server;
+			// Stream = handler.Stream; // what about stream wrapper? like http wrap
+
+			// re-handshake
+			// HandshakeHandler();
+		}
+		*/
+
+		public void Init(RiverServer server, TcpClient client, Stream stream = null)
 		{
 			Server = server ?? throw new ArgumentNullException(nameof(server));
 			Client = client ?? throw new ArgumentNullException(nameof(client));
@@ -58,13 +99,14 @@ namespace River
 			// efficient write should contain complete packet for corresponding protocol
 			Client.Client.NoDelay = true;
 
-			Stream = WrapStream(Client.GetStream());
+			Stream = WrapStream(stream ?? Client.GetStream());
 			ReadMoreHandshake();
 		}
 
 		#region Dispose
 
 		protected bool IsDisposed { get; private set; }
+		protected bool IsResigned { get; set; }
 
 		public void Dispose()
 		{
@@ -89,6 +131,8 @@ namespace River
 			{
 				if (IsDisposed) return;
 				IsDisposed = true;
+
+				if (IsResigned) return;
 			}
 
 			StatService.Instance.HandlerRemove(this);
@@ -177,7 +221,11 @@ namespace River
 
 		protected void ReadMoreHandshake()
 		{
-			Stream.BeginRead(_buffer, HandshakeStartPos + _bufferReceivedCount, _buffer.Length - _bufferReceivedCount - HandshakeStartPos, ReceivedHandshake, null);
+			Stream.BeginRead(_buffer
+				, HandshakeStartPos + _bufferReceivedCount
+				, _buffer.Length - _bufferReceivedCount - HandshakeStartPos
+				, ReceivedHandshake
+				, null);
 		}
 
 		protected void BeginStreaming()

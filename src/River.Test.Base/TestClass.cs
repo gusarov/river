@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace River.Test
 {
@@ -24,25 +25,31 @@ namespace River.Test
 		protected bool TestInitialized { get; private set; }
 
 		[TestCleanup]
-		public void Clean()
+		public void BaseClean()
 		{
 			Explode();
+
+			// snapshot a list of objects created so far
+			// some of them might be from concurrent tests
+			// var list = new List<WeakReference>(ObjectTracker.Default.Items.Select(x => new WeakReference(x)));
+			var list = ObjectTracker.Default.Weaks;
 
 			try
 			{
 				Console.WriteLine("Cleaning...");
 				WaitFor(() =>
 				{
-					// Console.WriteLine("GC Collect...");
 					GC.Collect();
 					GC.WaitForPendingFinalizers();
-					return ObjectTracker.Default.Count == 0;
+					return list.All(x => x.Target == null);
+					// return ObjectTracker.Default.Count == 0;
 				});
 				Console.WriteLine("All objects are clear");
 			}
 			catch
 			{
-				var objs = ObjectTracker.Default.Items.Where(x => x != null).ToArray();
+				var objs = list.Select(x => x.Target).Where(x => x != null).ToArray();
+				// var objs = ObjectTracker.Default.Items.Where(x => x != null).ToArray();
 				Console.WriteLine($"Objects alive: {objs.Length} ======================");
 				foreach (var item in objs)
 				{
@@ -53,7 +60,7 @@ namespace River.Test
 		}
 
 		[TestInitialize]
-		public void Init()
+		public void BaseInit()
 		{
 			TestInitialized = true;
 			_test = new object();

@@ -15,16 +15,10 @@ namespace River.HttpWrap
 			Run(config);
 		}
 
-		public override void RunCore(ServerConfig config)
+		protected override void ParseConfigCore(ServerConfig config)
 		{
-			if (config is null)
-			{
-				throw new ArgumentNullException(nameof(config));
-			}
-
 			var algo = config["user"];
 			Password = config["password"];
-			base.RunCore(config);
 		}
 
 		public string Password { get; set; }

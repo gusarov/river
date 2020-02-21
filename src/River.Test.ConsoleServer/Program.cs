@@ -365,11 +365,11 @@ Keep-Alive: true
 			*/
 			
 			var test = new WrapHttpTests();
-			test.Init();
+			test.BaseInit();
 			test.Should_wrap_http();
 			try
 			{
-				test.Clean();
+				test.BaseClean();
 			}
 			catch { }
 

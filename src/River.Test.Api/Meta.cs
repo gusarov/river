@@ -16,9 +16,20 @@ namespace River.Test.Api
 		}
 
 		[TestMethod]
+		[Ignore]
 		public void Should_not_have_too_small_timeout_on_agent()
 		{
 			Thread.Sleep(7000);
+		}
+
+		static object _leak;
+
+		[TestMethod]
+		[Ignore]
+		public void Should_fail_because_of_leak()
+		{
+			_leak = new object();
+			ObjectTracker.Default.Register(_leak);
 		}
 	}
 }

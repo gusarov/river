@@ -81,6 +81,14 @@ namespace River
 				return _list.Select(x => x.Target).ToArray();
 			}
 		}
+
+		public IEnumerable<WeakReference> Weaks
+		{
+			get
+			{
+				return _list.ToArray();
+			}
+		}
 	}
 
 }
