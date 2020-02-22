@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ChainTests.cs" />
     <Compile Include="AnyHandlerTest.cs" />
+    <Compile Include="ExceptionalTests.cs" />
     <Compile Include="ReStreamTests.cs" />
     <Compile Include="WrapHttpTests.cs" />
     <Compile Include="HappyEyeballsTest.cs" />

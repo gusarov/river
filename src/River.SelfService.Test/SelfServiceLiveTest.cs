@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -134,52 +135,84 @@ namespace River.SelfService.Test
 		[TestMethod]
 		public void Check_socks_by_river4_client()
 		{
+			Stream cli;
 
-			// default null
-			Stream cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream - default null"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// v4a force dns
-			cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: true).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream - v4a force dns"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: true).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// v4 force ip
-			cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: false).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream - v4 force i"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: false).Track(this);
+				TestConnction(cli, _host);
+			}
 
 			// IPv4 - native support
 			var ip = new IPAddress(new byte[] { 127, 127, 127, 127 });
 
-			cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream 4"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: true).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream 5"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: true).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: false).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream 6"))
+			{
+				cli = new Socks4ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: false).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// default null
-			cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks4ClientStream"))
+			{
+				// default null
+				cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// v5 force dns
-			cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: true).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks5ClientStream proxyDns: true"))
+			{
+				// v5 force dns
+				cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: true).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// v5 force ip
-			cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: false).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks5ClientStream proxyDns: false - v5 force ip"))
+			{
+				cli = new Socks5ClientStream(_proxy, _proxyPort, _host, 80, proxyDns: false).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			// IPv4 - native support
-			cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks5ClientStream - IPv4 - native support"))
+			{
+				cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: true).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks5ClientStream proxyDns true"))
+			{
+				cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: true).Track(this);
+				TestConnction(cli, _host);
+			}
 
-			cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: false).Track(this);
-			TestConnction(cli, _host);
+			using (Scope("Socks5ClientStream proxyDns false"))
+			{
+				cli = new Socks5ClientStream(_proxy, _proxyPort, ip.ToString(), 80, proxyDns: false).Track(this);
+				TestConnction(cli, _host);
+			}
 		}
 
 

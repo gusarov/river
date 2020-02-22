@@ -59,6 +59,8 @@ namespace River.Test
 			}
 		}
 
+		Stopwatch _testTime;
+
 		[TestInitialize]
 		public void BaseInit()
 		{
@@ -66,6 +68,7 @@ namespace River.Test
 			_test = new object();
 			Explode();
 			ObjectTracker.Default.ResetCollection();
+			_testTime = Stopwatch.StartNew();
 		}
 
 		protected void Explode()
@@ -151,6 +154,7 @@ namespace River.Test
 			var readBufPos = 0;
 			var are = new AutoResetEvent(false);
 			var connected = true;
+			var sw = Stopwatch.StartNew();
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
 			// bool found = false;
 			void Read(IAsyncResult ar)
@@ -166,6 +170,7 @@ namespace River.Test
 				{
 					// found = true;
 					are.Set();
+					Console.WriteLine("Wait Done: " + sw.ElapsedMilliseconds);
 				}
 				readBufPos += c;
 				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
@@ -178,15 +183,42 @@ namespace River.Test
 
 			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);
 
+			sw = Stopwatch.StartNew();
 			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
 			client.Write(request, 0, request.Length);
 
+			sw = Stopwatch.StartNew();
 			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
 			return ""; // Encoding.UTF8.GetString(ms.ToArray());
+		}
+
+		class ScopeMon : IDisposable
+		{
+			public ScopeMon(string name, TestClass test)
+			{
+				_scopeTime = Stopwatch.StartNew();
+				_name = name;
+				_test = test;
+			}
+			Stopwatch _scopeTime;
+			private readonly string _name;
+			private readonly TestClass _test;
+
+			public void Dispose()
+			{
+				_scopeTime.Stop();
+				Console.WriteLine($"[{_test._testTime.ElapsedMilliseconds:0000}] {_scopeTime.ElapsedMilliseconds}ms {_name}  ");
+				Console.WriteLine();
+			}
+		}
+
+		protected IDisposable Scope(string name)
+		{
+			return new ScopeMon(name, this);
 		}
 	}
 

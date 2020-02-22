@@ -53,6 +53,7 @@ namespace River
 		}
 
 		public static Encoding Utf8 { get; } = new UTF8Encoding(false, false);
+		public static Encoding Ascii { get; } = new ASCIIEncoding();
 
 		public static int WriteUInt16(byte[] buf, int pos, ushort targetPort)
 		{

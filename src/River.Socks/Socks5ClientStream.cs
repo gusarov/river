@@ -29,12 +29,20 @@ namespace River.Socks
 		public override void Plug(Uri uri, Stream stream)
 		{
 			// Socks5 implementation here is not very efficient here, so, let's just buffer writes
-			Stream = new MustFlushStream(stream);
+			// Stream = new MustFlushStream(stream);
 		}
 
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
 		{
+			if (targetHost is null)
+			{
+				throw new ArgumentNullException(nameof(targetHost));
+			}
+
 			var stream = Stream;
+
+			var buf = new byte[1024];
+			var b = 0;
 
 			// send authentication header
 			stream.Write(new byte[] {
@@ -44,17 +52,16 @@ namespace River.Socks
 			});
 
 			stream.Flush();
-			var authResponse = new byte[2];
-			var count = stream.Read(authResponse, 0, authResponse.Length);
+			var count = stream.Read(buf, 0, 2); // auth response
 			if (count != 2)
 			{
 				throw new Exception("Server must respond with 2 bytes (response 1)");
 			}
-			if (authResponse[0] != 0x05)
+			if (buf[0] != 0x05)
 			{
 				throw new Exception("Server do not support v5 (response 1)");
 			}
-			if (authResponse[1] != 0x00)
+			if (buf[1] != 0x00)
 			{
 				throw new Exception("Server requires authentication");
 			}
@@ -62,9 +69,9 @@ namespace River.Socks
 			// here authentication handshake can be added, but I don't see any reason to add clear text passwords
 
 			// send the actual request
-			stream.WriteByte(0x05); // ver = 5
-			stream.WriteByte(0x01); // command = stream
-			stream.WriteByte(0x00); // reserved
+			buf[b++] = 0x05; // ver = 5
+			buf[b++] = 0x01; // command = stream
+			buf[b++] = 0x00; // reserved
 
 			var targetIsIp = IPAddress.TryParse(targetHost, out var ip);
 			if (!targetIsIp) // if targetHost is IP - just use IP
@@ -78,69 +85,75 @@ namespace River.Socks
 
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
 			{
-				stream.WriteByte(0x03); // adress type = domain name
-				var targetHostName = Utils.Utf8.GetBytes(targetHost);
-				stream.WriteByte(checked((byte)targetHostName.Length)); // len
-				stream.Write(targetHostName, 0, targetHostName.Length); // target host
+				buf[b++] = 0x03; // adress type = domain name
+				buf[b++] = checked((byte)targetHost.Length); // len
+				Utils.Ascii.GetBytes(targetHost, 0, targetHost.Length, buf, b); // target host
+				b += targetHost.Length;
 			}
 			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetworkV6)
 			{
-				stream.WriteByte(0x04); // adress type = IPv6
-				var buf = ip.GetAddressBytes();
-				stream.Write(buf, 0, 16);
+				buf[b++] = 0x04; // adress type = IPv6
+				ip.GetAddressBytes().CopyTo(buf, b);
+				b += 16;
 			}
 			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetwork)
 			{
-				stream.WriteByte(0x01); // adress type = IPv4
-				var buf = ip.GetAddressBytes();
-				stream.Write(buf, 0, 4);
+				buf[b++] = 0x01; // adress type = IPv4
+				var a = ip.Address;
+				buf[b++] = (byte)(a >> 0);
+				buf[b++] = (byte)(a >> 8);
+				buf[b++] = (byte)(a >> 16);
+				buf[b++] = (byte)(a >> 24);
+				// ip.GetAddressBytes().CopyTo(buf, b);
+				// b += 4;
 			}
 			else
 			{
 				throw new Exception("Host is not resolved: " + targetHost);
 			}
-			stream.WriteByte((byte)(targetPort >> 8)); // target port
-			stream.WriteByte((byte)targetPort); // target port
+			buf[b++] = (byte)(targetPort >> 8);
+			buf[b++] = (byte)(targetPort);
+			stream.Write(buf, 0, b);
 			stream.Flush();
 
 			// response
-			var response = new byte[1024];
-			var readed = stream.Read(response, 0, 4);
+			// var response = new byte[1024];
+			var readed = stream.Read(buf, 0, 4);
 			if (readed < 4)
 			{
 				throw new Exception("Server not sent full response");
 			}
-			if (response[0] != 0x05)
+			if (buf[0] != 0x05)
 			{
 				throw new Exception("Server not supports v5 (response 2)");
 			}
-			if (response[1] != 0x00)
+			if (buf[1] != 0x00)
 			{
-				var msg = $"Server response: {response[1]:X}: {GetResponseErrorMessage(response[1])}";
+				var msg = $"Server response: {buf[1]:X}: {GetResponseErrorMessage(buf[1])}";
 				Trace.WriteLine(msg);
 				throw new Exception(msg);
 			}
 			// ignore reserved response[2] byte
 			// read only required number of bytes depending on address type
-			switch (response[3])
+			switch (buf[3])
 			{
 				case 1:
 					// IPv4
-					readed += stream.Read(response, readed, 4);
+					readed += stream.Read(buf, readed, 4);
 					break;
 				case 3:
 					// Name
-					readed += stream.Read(response, readed, 1);
-					readed += stream.Read(response, readed, response[readed - 1]); // 256 max... no reason to protect from owerflow
+					readed += stream.Read(buf, readed, 1);
+					readed += stream.Read(buf, readed, buf[readed - 1]); // 256 max... no reason to protect from owerflow
 					break;
 				case 4:
 					// IPv6
-					readed  += stream.Read(response, readed, 16);
+					readed  += stream.Read(buf, readed, 16);
 					break;
 				default:
 					throw new Exception("Response address type not supported!");
 			}
-			readed += stream.Read(response, readed, 2); // port
+			readed += stream.Read(buf, readed, 2); // port
 			// we don't need those values because it is stream, not bind
 			
 		}

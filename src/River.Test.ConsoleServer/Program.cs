@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using River.Any;
 using River.ChaCha;
 using River.Http;
 using River.Internal;
@@ -22,14 +23,14 @@ namespace River.Test.ConsoleServer
 		{
 			RiverInit.RegAll();
 
-			var server1 = new SocksServer
+			var server1 = new AnyProxyServer
 			{
 				Chain =
 				{
 					// "ss://chacha20:123@127.0.0.1:8338",
 				},
 			};
-			server1.Run("socks://10.0.0.20:1080");
+			server1.Run("socks://0.0.0.0:1080");
 
 /*			
 			var server2 = new ShadowSocksServer

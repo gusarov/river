@@ -51,7 +51,7 @@ namespace River.SelfService
 			try
 			{
 				var str = _utf.GetString(_request, 0, end);
-				Console.WriteLine(str);
+				// Console.WriteLine(str);
 
 				var is1 = str.IndexOf(' ');
 				var is2 = str.IndexOf(' ', is1 + 1);
@@ -99,9 +99,9 @@ Server: river
 
 ";
 
-				Console.WriteLine(url);
-				Console.WriteLine(headerStr);
-				Console.WriteLine(_utf.GetString(buf, 0, Math.Min(128, c)));
+				// Console.WriteLine(url);
+				// Console.WriteLine(headerStr);
+				// Console.WriteLine(_utf.GetString(buf, 0, Math.Min(128, c)));
 				var header = _utf.GetBytes(headerStr);
 				Array.Copy(header, 0, _readBuf, _readTo, header.Length);
 				_readTo += header.Length;
