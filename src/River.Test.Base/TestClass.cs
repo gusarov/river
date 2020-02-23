@@ -182,6 +182,7 @@ namespace River.Test
 			var connected = true;
 			var sw = Stopwatch.StartNew();
 			Profiling.Stamp("Test Read...");
+			string response = "";
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
 			// bool found = false;
 			void Read(IAsyncResult ar)
@@ -194,7 +195,8 @@ namespace River.Test
 					return;
 				}
 				var line = Encoding.UTF8.GetString(readBuf, readBufPos, c);
-				if (line.Contains(expected))
+				response += line;
+				if (response.Contains(expected))
 				{
 					// found = true;
 					are.Set();
@@ -218,6 +220,7 @@ namespace River.Test
 			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
+			response = "";
 			client.Write(request, 0, request.Length);
 
 			sw = Stopwatch.StartNew();
