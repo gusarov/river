@@ -106,7 +106,6 @@ namespace River
 			catch { }
 		}
 
-
 		public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginRead(buffer, offset, count, callback, state);
 

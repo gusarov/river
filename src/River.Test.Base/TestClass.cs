@@ -133,7 +133,7 @@ namespace River.Test
 			var sw = Stopwatch.StartNew();
 			while (!condition())
 			{
-				if (sw.Elapsed.TotalSeconds > 3)
+				if (sw.Elapsed.TotalSeconds > 3 && !Debugger.IsAttached)
 				{
 					throw new TimeoutException("WaitFor timed out");
 				}

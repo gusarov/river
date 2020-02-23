@@ -172,7 +172,7 @@ namespace River
 				// Stream = null;
 			}
 			catch { }
-
+			_sourceReaderThread.JoinAbort();
 		}
 
 		#endregion
@@ -236,9 +236,43 @@ namespace River
 			BeginReadTarget();
 		}
 
+		Thread _sourceReaderThread;
+
+		void SourceReaderThreadWorker()
+		{
+			var marker = new object();
+			ObjectTracker.Default.Register(_targetReaderThread);
+			ObjectTracker.Default.Register(marker);
+			try
+			{
+				while (!IsDisposed)
+				{
+					var c = Stream.Read(_buffer, 0, _buffer.Length);
+					if (!SourceReceived(c))
+					{
+						break;
+					}
+				}
+			}
+			catch (IOException ex) when (ex.IsConnectionClosing())
+			{
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError(ex.ToString());
+			}
+			Trace.WriteLine(marker + "");
+		}
+
 		protected void BeginReadSource()
 		{
-			Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
+			Profiling.Stamp("BeginReadSource...");
+			
+			_sourceReaderThread = new Thread(SourceReaderThreadWorker);
+			_sourceReaderThread.IsBackground = true;
+			_sourceReaderThread.Start();
+			
+			// Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
 		}
 
 		void SourceReceived(IAsyncResult ar)
@@ -252,15 +286,9 @@ namespace River
 			try
 			{
 				var c = Stream.EndRead(ar);
-				if (c > 0)
+				if (SourceReceived(c))
 				{
-					StatService.Instance.MaxBufferUsage(c, GetType().Name + " src");
-					_upstreamClient.Write(_buffer, 0, c);
 					Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
-				}
-				else
-				{
-					Dispose();
 				}
 			}
 			catch (Exception ex)
@@ -273,6 +301,29 @@ namespace River
 			}
 
 			Profiling.Stamp("SourceReceived done");
+		}
+
+		bool SourceReceived(int c)
+		{
+			Profiling.Stamp("SourceReceived...");
+
+			if (IsDisposed)
+			{
+				return false;
+			}
+			if (c > 0)
+			{
+				StatService.Instance.MaxBufferUsage(c, GetType().Name + " src");
+				_upstreamClient.Write(_buffer, 0, c);
+				Profiling.Stamp("SourceReceived done");
+				return true;
+			}
+			else
+			{
+				Dispose();
+			}
+
+			return false;
 		}
 
 		protected void SendForward(byte[] buf, int pos = 0, int cnt = -1)
@@ -300,9 +351,9 @@ namespace River
 			ObjectTracker.Default.Register(marker);
 			try
 			{
-				while (true)
+				while (!IsDisposed)
 				{
-					var c = _upstreamClient.Read(_bufferTarget, 0, _buffer.Length);
+					var c = _upstreamClient.Read(_bufferTarget, 0, _bufferTarget.Length);
 					if (!TargetReceived(c))
 					{
 						break;
@@ -325,7 +376,7 @@ namespace River
 			_targetReaderThread = new Thread(TargetReaderThreadWorker);
 			_targetReaderThread.IsBackground = true;
 			_targetReaderThread.Start();
-			// _upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+			// _upstreamClient.BeginRead(_bufferTarget, 0, _bufferTarget.Length, TargetReceived, null);
 		}
 
 		string Source

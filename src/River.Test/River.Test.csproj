@@ -43,6 +43,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SocksHandlerTest.cs" />
     <Compile Include="ChainTests.cs" />
     <Compile Include="AnyHandlerTest.cs" />
     <Compile Include="ExceptionalTests.cs" />
