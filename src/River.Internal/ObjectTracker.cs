@@ -15,7 +15,7 @@ namespace River
 
 		Timer _timer;
 
-		protected ObjectTracker()
+		internal protected ObjectTracker()
 		{
 			_timer = new Timer(Tick, null, 1000, 1000);
 		}

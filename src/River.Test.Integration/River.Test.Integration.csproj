@@ -43,7 +43,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CheckSocks.cs" />
+    <Compile Include="IntegrationCheckSocks.cs" />
     <Compile Include="CheckTunnelling.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

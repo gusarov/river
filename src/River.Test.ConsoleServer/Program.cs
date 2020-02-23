@@ -50,7 +50,7 @@ namespace River.Test.ConsoleServer
 		{
 			/*
 			var cli = new TcpClient("httpbin.org", 80);
-			var stream = cli.GetStream();
+			var stream = cli.GetStream2();
 			*/
 
 			var step1 = new Socks4ClientStream();

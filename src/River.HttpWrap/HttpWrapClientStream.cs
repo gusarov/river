@@ -73,7 +73,7 @@ namespace River.HttpWrap
 		{
 			ConfigureUri(proxyUri);
 			base.Plug(proxyUri); // base performs regular Tcp connection
-			Plug(Client.GetStream()); // but we are wrapping it here a little bit differently
+			Plug(Client.GetStream2()); // but we are wrapping it here a little bit differently
 		}
 
 		public override void Plug(Uri proxyUri, Stream stream)

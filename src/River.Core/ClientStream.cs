@@ -43,10 +43,12 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
-			// Client = Utils.WithTimeout(p => new TcpClient(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
-			Client = new TcpClient(ProxyHost, ProxyPort);
-			Client.Client.NoDelay = true;
-			Stream = Client.GetStream();
+			Profiling.Stamp("Plug new TcpClient...");
+			Client = Utils.WithTimeout(p => TcpClientFactory.Create(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			// Client = TcpClientFactory.Create(ProxyHost, ProxyPort);
+			Profiling.Stamp("Pluged");
+			Client.Configure();
+			Stream = Client.GetStream2();
 		}
 
 		/// <summary>
@@ -111,7 +113,7 @@ namespace River
 		{
 			if (IsDisposed) return 0;
 			return Stream.EndRead(asyncResult);
-		}			
+		}
 
 		public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginWrite(buffer, offset, count, callback, state);

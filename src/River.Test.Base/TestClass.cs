@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace River.Test
 {
@@ -18,42 +19,60 @@ namespace River.Test
 		static TestClass()
 		{
 			RiverInit.RegAll();
-			ObjectTracker.Default.EnableCollection();
 		}
 
 		object _test;
 		protected bool TestInitialized { get; private set; }
 
+		[TestMethod]
+		public void ZZ_Clean()
+		{
+			WaitForObjects();
+		}
+
+		[TestMethod]
+		public void AA_Clean()
+		{
+			WaitForObjects();
+		}
+
 		[TestCleanup]
 		public void BaseClean()
 		{
+			Profiling.Stamp("BaseClean");
 			Explode();
+		}
+
+		static Dictionary<string, ObjectTracker> _trackers = new Dictionary<string, ObjectTracker>();
+
+		public static void WaitForObjects()
+		{
+			var list = _trackers.SelectMany(kvp => kvp.Value.Weaks.Select(wr => (wr, kvp.Key))).ToArray();
+			_trackers.Clear();
 
 			// snapshot a list of objects created so far
 			// some of them might be from concurrent tests
 			// var list = new List<WeakReference>(ObjectTracker.Default.Items.Select(x => new WeakReference(x)));
-			var list = ObjectTracker.Default.Weaks;
-
 			try
 			{
-				Console.WriteLine("Cleaning...");
+				Console.WriteLine($"Cleaning {list.Count()} objects...");
 				WaitFor(() =>
 				{
 					GC.Collect();
 					GC.WaitForPendingFinalizers();
-					return list.All(x => x.Target == null);
+					return list.All(x => x.wr.Target == null);
 					// return ObjectTracker.Default.Count == 0;
 				});
 				Console.WriteLine("All objects are clear");
 			}
 			catch
 			{
-				var objs = list.Select(x => x.Target).Where(x => x != null).ToArray();
+				var objs = list.Where(x => x.wr.Target != null).ToArray();
 				// var objs = ObjectTracker.Default.Items.Where(x => x != null).ToArray();
 				Console.WriteLine($"Objects alive: {objs.Length} ======================");
 				foreach (var item in objs)
 				{
-					Console.WriteLine(item);
+					Console.WriteLine(item.Key + ": " + item.wr.Target);
 				}
 				throw;
 			}
@@ -61,14 +80,21 @@ namespace River.Test
 
 		Stopwatch _testTime;
 
+		public TestContext TestContext { get; set; }
+
 		[TestInitialize]
 		public void BaseInit()
 		{
 			TestInitialized = true;
 			_test = new object();
-			Explode();
-			ObjectTracker.Default.ResetCollection();
+			// Explode();
+			// ObjectTracker.Default.ResetCollection();
 			_testTime = Stopwatch.StartNew();
+			Profiling.Start();
+
+			ObjectTracker.Default = (ObjectTracker)Activator.CreateInstance(typeof(ObjectTracker), true);
+			ObjectTracker.Default.EnableCollection();
+			_trackers[TestContext.TestName] = ObjectTracker.Default;
 		}
 
 		protected void Explode()
@@ -155,11 +181,13 @@ namespace River.Test
 			var are = new AutoResetEvent(false);
 			var connected = true;
 			var sw = Stopwatch.StartNew();
+			Profiling.Stamp("Test Read...");
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
 			// bool found = false;
 			void Read(IAsyncResult ar)
 			{
 				var c = client.EndRead(ar);
+				Profiling.Stamp("Test Read Done = " + c);
 				if (c == 0)
 				{
 					connected = false;
@@ -175,11 +203,14 @@ namespace River.Test
 				readBufPos += c;
 				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
 				// Console.WriteLine(">>> " + line);
+				Profiling.Stamp("Test Read...");
 				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
 			}
 
 			var request = Encoding.ASCII.GetBytes($"GET {url} HTTP/1.1\r\nHost: {host}{(port==80?"":":"+port)}\r\nConnection: keep-alive\r\n\r\n");
+			Profiling.Stamp("Test Write...");
 			client.Write(request, 0, request.Length);
+			Profiling.Stamp("Test Write Done");
 
 			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);
 

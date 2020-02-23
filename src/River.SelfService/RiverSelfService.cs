@@ -50,6 +50,8 @@ namespace River.SelfService
 		{
 			try
 			{
+				Profiling.Stamp("SS Writer - HandleRequest");
+
 				var str = _utf.GetString(_request, 0, end);
 				// Console.WriteLine(str);
 
@@ -108,6 +110,7 @@ Server: river
 
 				Array.Copy(buf, 0, _readBuf, _readTo, c);
 				_readTo += c;
+				Profiling.Stamp("SS Writer - Handled, unlocking");
 				_auto.Set();
 			}
 			catch
@@ -218,7 +221,7 @@ This is a River server v{ver}<br/>
 			}
 		}
 
-		AutoResetEvent _auto = new AutoResetEvent(false);
+		readonly AutoResetEvent _auto = new AutoResetEvent(false);
 		byte[] _readBuf = new byte[16 * 1024];
 		int _readFrom;
 		int _readTo;
@@ -227,7 +230,10 @@ This is a River server v{ver}<br/>
 		{
 			try
 			{
-				_auto.WaitOne();
+				Profiling.Stamp("SS Reader Wait");
+				var b = _auto.WaitOne();
+				if (!b) return 0;
+				Profiling.Stamp("SS Reader Unlocked");
 				if (_readTo > _readFrom)
 				{
 					var m = Math.Min(count, _readTo - _readFrom);

@@ -22,6 +22,7 @@ namespace River
 			// using (var auto = new AutoResetEvent(false))
 			{
 				TR result = default;
+				Exception exResult = default;
 				var th = new Thread((ThreadStart)delegate
 				{
 					try
@@ -30,7 +31,8 @@ namespace River
 					}
 					catch (Exception ex)
 					{
-						Trace.TraceError(ex.ToString());
+						exResult = ex;
+						// Trace.TraceError(ex.ToString());
 					}
 				});
 				th.IsBackground = true;
@@ -47,6 +49,10 @@ namespace River
 						Trace.TraceError(ex.ToString());
 					}
 					throw new TimeoutException();
+				}
+				if (exResult != null)
+				{
+					throw exResult;
 				}
 				return result;
 			}

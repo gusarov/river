@@ -14,7 +14,7 @@ namespace River.Test.Integration
 	/// </summary>
 	[TestClass]
 	[TestCategory("Integration")]
-	public class CheckSocks : TestClass
+	public class IntegrationCheckSocks : TestClass
 	{
 		const string host = "www.google.com";
 

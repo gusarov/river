@@ -52,6 +52,18 @@ namespace River
 		}
 
 		/*
+		public sealed override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+		{
+			throw new Exception("Deprecated: do not use Tasks, async, BeingRead, ReadAsync due to poor TaskScheduler performance. Use dedicated blocking reading thread");
+		}
+
+		public sealed override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			throw new Exception("Deprecated: do not use Tasks, async, BeingRead, ReadAsync due to poor TaskScheduler performance. Use dedicated blocking reading thread");
+		}
+		*/
+
+		/*
 		public sealed override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state) =>
 			base.BeginWrite(buffer, offset, count, callback, state);
 

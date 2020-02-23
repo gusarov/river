@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace River
 {
@@ -99,7 +100,7 @@ namespace River
 			// efficient write should contain complete packet for corresponding protocol
 			Client.Client.NoDelay = true;
 
-			Stream = WrapStream(stream ?? Client.GetStream());
+			Stream = WrapStream(stream ?? Client.GetStream2());
 			ReadMoreHandshake();
 		}
 
@@ -148,6 +149,7 @@ namespace River
 				_upstreamClient = null;
 			}
 			catch { }
+			_targetReaderThread.JoinAbort();
 
 			// SOURCE
 			var client = Client;
@@ -241,6 +243,8 @@ namespace River
 
 		void SourceReceived(IAsyncResult ar)
 		{
+			Profiling.Stamp("SourceReceived...");
+
 			if (IsDisposed)
 			{
 				return;
@@ -267,6 +271,8 @@ namespace River
 				}
 				Dispose();
 			}
+
+			Profiling.Stamp("SourceReceived done");
 		}
 
 		protected void SendForward(byte[] buf, int pos = 0, int cnt = -1)
@@ -285,9 +291,41 @@ namespace River
 			_upstreamClient.Write(buf, pos, cnt);
 		}
 
+		Thread _targetReaderThread;
+
+		void TargetReaderThreadWorker()
+		{
+			var marker = new object();
+			ObjectTracker.Default.Register(_targetReaderThread);
+			ObjectTracker.Default.Register(marker);
+			try
+			{
+				while (true)
+				{
+					var c = _upstreamClient.Read(_bufferTarget, 0, _buffer.Length);
+					if (!TargetReceived(c))
+					{
+						break;
+					}
+				}
+			}
+			catch (IOException ex) when (ex.IsConnectionClosing())
+			{
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError(ex.ToString());
+			}
+			Trace.WriteLine(marker + "");
+		}
+
 		protected void BeginReadTarget()
 		{
-			_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
+			Profiling.Stamp("BeginReadTarget...");
+			_targetReaderThread = new Thread(TargetReaderThreadWorker);
+			_targetReaderThread.IsBackground = true;
+			_targetReaderThread.Start();
+			// _upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
 		}
 
 		string Source
@@ -316,6 +354,8 @@ namespace River
 
 		private void TargetReceived(IAsyncResult ar)
 		{
+			Profiling.Stamp($"TargetReceived... from {_upstreamClient.GetType().Name}");
+
 			if (IsDisposed)
 			{
 				return;
@@ -323,17 +363,9 @@ namespace River
 			try
 			{
 				var c = _upstreamClient.EndRead(ar);
-				if (c > 0)
+				if (TargetReceived(c))
 				{
-					StatService.Instance.MaxBufferUsage(c, GetType().Name + " trg");
-
-					Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
-					Stream.Write(_bufferTarget, 0, c);
 					_upstreamClient.BeginRead(_bufferTarget, 0, _buffer.Length, TargetReceived, null);
-				}
-				else
-				{
-					Dispose();
 				}
 			}
 			catch (Exception ex)
@@ -341,6 +373,29 @@ namespace River
 				Trace.TraceError("Streaming - received from client: " + ex);
 				Dispose();
 			}
+			Profiling.Stamp("TargetReceived done");
+		}
+
+		private bool TargetReceived(int c)
+		{
+			if (IsDisposed)
+			{
+				return false;
+			}
+
+			if (c > 0)
+			{
+				StatService.Instance.MaxBufferUsage(c, GetType().Name + " trg");
+				Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
+				Stream.Write(_bufferTarget, 0, c);
+				return true;
+			}
+			else
+			{
+				Dispose();
+				return false;
+			}
+
 		}
 
 		static Encoding _utf8 = new UTF8Encoding(false, false);
@@ -363,6 +418,8 @@ namespace River
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
+			Profiling.Stamp("EstablishUpstream...");
+
 			try
 			{
 				if (target is null)
@@ -437,6 +494,7 @@ namespace River
 				Dispose();
 				throw;
 			}
+			Profiling.Stamp("Established");
 		}
 
 	}

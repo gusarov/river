@@ -89,6 +89,7 @@ namespace River.Socks
 		// protected override int HandshakeStartPos => 128;
 		protected override void HandshakeHandler()
 		{
+			Profiling.Stamp("HandshakeHandler...");
 			// get request from client
 			if (EnsureReaded(1))
 			{
@@ -196,11 +197,13 @@ namespace River.Socks
 								ex = exx;
 							}
 
+							Profiling.Stamp("Handshake response...");
 							var response = ex == null
 								? _staticSocsk4Granted
 								: _staticSocsk4Rejected;
 							Stream.Write(_static, response, 8);
 							Stream.Flush();
+							Profiling.Stamp("Handshake streaming...");
 							if (ex != null)
 							{
 								Dispose();

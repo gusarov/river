@@ -27,7 +27,9 @@ namespace River
 
 			var uri = new Uri($"tcp://{proxyServer}:{port}");
 
+			Profiling.Stamp("ClientStreamExtensions Plug...");
 			clientStream.Plug(uri);
+			Profiling.Stamp("ClientStreamExtensions Pluged");
 		}
 	}
 }

@@ -46,7 +46,9 @@ namespace River.Test
 		[TestMethod]
 		public void Should_15_handle_http_get()
 		{
+			Profiling.Stamp("Creating HttpProxyClientStream...");
 			var cli = new Http.HttpProxyClientStream("localhost", _port).Track(this);
+			Profiling.Stamp("Creating HttpProxyClientStream TestConnection...");
 			TestConnction(cli, Host);
 		}
 

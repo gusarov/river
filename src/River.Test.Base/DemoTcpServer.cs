@@ -33,7 +33,7 @@ namespace River.Test
 
 		async void Handler(TcpClient client)
 		{
-			var stream = client.GetStream();
+			var stream = client.GetStream2();
 			var buf = new byte[16 * 1024];
 			while (!_disposed)
 			{

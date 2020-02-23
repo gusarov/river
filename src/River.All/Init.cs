@@ -5,6 +5,7 @@ using River.ShadowSocks;
 using River.Socks;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace River
@@ -13,7 +14,7 @@ namespace River
 	{
 		public static void RegAll()
 		{
-			Resolver.RegisterOverride("_river", x => new RiverSelfService());
+			Resolver.RegisterOverride("_river", x => Stream.Synchronized(new RiverSelfService()));
 
 			Resolver.RegisterSchema<SocksServer, Socks4ClientStream>("socks4");
 			Resolver.RegisterSchema<SocksServer, Socks5ClientStream>("socks5");

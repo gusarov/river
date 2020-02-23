@@ -134,6 +134,7 @@ namespace River.Test.Api
 
 		[TestMethod]
 		[ExpectedException(typeof(ConnectionClosingException))]
+		[Timeout(6000)]
 		public void Should_http_have_a_ctor_with_proxy_and_host_for_bin_protocol_error()
 		{
 			var proxyPort = GetFreePort();
