@@ -136,8 +136,7 @@ namespace River.SelfService.Test
 		public void Check_socks_by_river4_client()
 		{
 			Stream cli;
-			IPAddress ip = default;
-			ip = new IPAddress(new byte[] { 127, 127, 127, 127 });
+			var ip = new IPAddress(new byte[] { 127, 127, 127, 127 });
 
 			
 			using (Scope("Socks4ClientStream - default null"))
@@ -159,7 +158,6 @@ namespace River.SelfService.Test
 			}
 
 			// IPv4 - native support
-			ip = new IPAddress(new byte[] { 127, 127, 127, 127 });
 
 			using (Scope("Socks4ClientStream 4"))
 			{
