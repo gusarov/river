@@ -12,6 +12,56 @@ namespace River.Socks
 	{
 		static readonly Encoding _utf = new UTF8Encoding(false, false);
 
+		#region Preallocated
+
+		const int _staticSocsk4Granted = 0;
+		const int _staticSocsk4Rejected = 8;
+		const int _staticSocsk5Approved = 16;
+		static (int from, int cnt, int resp) _staticSocsk5Rejected = (18, 10, 1);
+		static byte[] _static = new byte[]
+		{
+			// Socks4 Response 1
+			/* 00 */ 0x00, // null
+			/* 01 */ 0x5A, // state = granted
+			/* 02 */ 0x00, // port
+			/* 03 */ 0x00, // port
+			/* 04 */ 0x00, // address
+			/* 05 */ 0x00, // address
+			/* 06 */ 0x00, // address
+			/* 07 */ 0x00, // address
+
+			// Socks4 Response 2
+			/* 08 */ 0x00, // null
+			/* 09 */ 0x5B, // state = rejected
+			/* 10 */ 0x00, // port
+			/* 11 */ 0x00, // port
+			/* 12 */ 0x00, // address
+			/* 13 */ 0x00, // address
+			/* 14 */ 0x00, // address
+			/* 15 */ 0x00, // address
+
+			// Socks5 Approved - No Auth
+			/* 16 */ 0x05, // V5
+			/* 17 */ 0x00, // NoAuth
+
+			// Socks5 Response Rejected
+			/* 18 */ 0x05, // V5
+			/* 19 */ 0x01, // state = granted
+			/* 20 */ 0x00, // reserved
+			/* 21 */ 0x01, // adr_type ipv4
+			/* 22 */ 0x00, // ipv4 1
+			/* 23 */ 0x00, // ipv4 2
+			/* 24 */ 0x00, // ipv4 3
+			/* 25 */ 0x00, // ipv4 4
+			/* 26 */ 0x00, // port H
+			/* 27 */ 0x00, // port L
+		};
+
+		byte[] _preallocated4 = new byte[4];
+		byte[] _preallocated16 = new byte[16];
+
+		#endregion
+
 		/*
 		private new SocksServer _server => (SocksServer)base._server;
 
@@ -37,7 +87,6 @@ namespace River.Socks
 		/// This offset can improve performance of HTTP header reshake / insert
 		/// </summary>
 		// protected override int HandshakeStartPos => 128;
-
 		protected override void HandshakeHandler()
 		{
 			// get request from client
@@ -61,17 +110,22 @@ namespace River.Socks
 							_addressRequested = null;
 							if (_buffer[b] != 0) // #4 - 0 means v4a mode (0.0.0.X)
 							{
-								var bufAddress4 = new byte[4];
-								Array.Copy(_buffer, 4, bufAddress4, 0, 4);
-								_addressRequested = new IPAddress(bufAddress4);
+								// var bufAddress4 = _preallocated4;
+								// Array.Copy(_buffer, 4, bufAddress4, 0, 4);
+								// var a = ((_buffer[b + 3] << 24 | _buffer[b + 2] << 16 | _buffer[b + 1] << 8 | _buffer[b]) & 4294967295u);
+								var a = ((_buffer[b++] | _buffer[b++] << 8 | _buffer[b++] << 16 | _buffer[b++] << 24) & uint.MaxValue);
+								_addressRequested = new IPAddress(a);
 							}
-							b += 4;
+							else
+							{
+								b += 4; // ignore
+							}
 							// read user id, throw it away and look for null
 							Debug.Assert(b == 8 + HandshakeStartPos);
 							bool nullOk = false;
 							for (int i = 0; i < 255; i++)
 							{
-								EnsureReaded(b);
+								// EnsureReaded(b);
 								if (_buffer[b++] == 0)
 								{
 									// _bufferProcessedCount = 8 + i;
@@ -92,7 +146,7 @@ namespace River.Socks
 								int dnsBegin = b;
 								for (int i = 0; i < 255; i++)
 								{
-									EnsureReaded(b);
+									// EnsureReaded(b);
 									if (_buffer[b++] == 0)
 									{
 										dnsName = _utf.GetString(_buffer, dnsBegin, i);
@@ -141,18 +195,11 @@ namespace River.Socks
 								Trace.TraceError(exx.ToString());
 								ex = exx;
 							}
-							var response = new byte[]
-							{
-									0x00, // null
-									(ex == null ? (byte) 0x5A : (byte) 0x5B), // state = granted / rejected
-									0x00, // port
-									0x00, // port
-									0x00, // address
-									0x00, // address
-									0x00, // address
-									0x00, // address
-							};
-							Stream.Write(response, 0, response.Length);
+
+							var response = ex == null
+								? _staticSocsk4Granted
+								: _staticSocsk4Rejected;
+							Stream.Write(_static, response, 8);
 							Stream.Flush();
 							if (ex != null)
 							{
@@ -192,12 +239,12 @@ namespace River.Socks
 									_bufferProcessedCount = 2 + authMethodsCount;
 									_authenticationNegotiated = true;
 									// PROVIDE MY CONCLUSION
-									Stream.Write(0x05, 0x00); // v5, APPROVED - NO AUTH
+									Stream.Write(_static, _staticSocsk5Approved, 2); // v5, APPROVED - NO AUTH
 								}
-								// continue - wait for reques
+								// continue - wait for request
 								if (EnsureReaded(_bufferProcessedCount + 4))
 								{
-									int b = _bufferProcessedCount;
+									var b = _bufferProcessedCount;
 
 									if (_buffer[b++] != 5)
 									{
@@ -217,10 +264,14 @@ namespace River.Socks
 										case 1: // IPv4
 											if (EnsureReaded(b + 4))
 											{
+												var a = ((_buffer[b++] | _buffer[b++] << 8 | _buffer[b++] << 16 | _buffer[b++] << 24) & uint.MaxValue);
+												_addressRequested = new IPAddress(a);
+												/*
 												var ipv4 = new byte[4];
 												Array.Copy(_buffer, b, ipv4, 0, 4);
 												_addressRequested = new IPAddress(ipv4);
 												b += 4;
+												*/
 												addressTypeProcessed = true;
 											}
 											break;
@@ -240,9 +291,9 @@ namespace River.Socks
 										case 4: // IPv6
 											if (EnsureReaded(b + 16))
 											{
-												var ipv6 = new byte[16];
-												Array.Copy(_buffer, b, ipv6, 0, 16);
-												_addressRequested = new IPAddress(ipv6);
+												// var ipv6 = new byte[16];
+												Array.Copy(_buffer, b, _preallocated16, 0, 16);
+												_addressRequested = new IPAddress(_preallocated16);
 												b += 16;
 												addressTypeProcessed = true;
 											}
@@ -292,24 +343,15 @@ namespace River.Socks
 												ex = exx;
 											}
 
-											// it appears, not all clients can handle domain name response... Hello to Telegram & QT platform.
+											// it appears, not all clients can handle domain name response...
+											// Hello to Telegram & QT platform.
 											// Let's go with IPv4
-											var response = new byte[]
-											{
-													0x05, // ver
-													(ex == null ? (byte) 0x00 : (byte) 0x01), // state = granted / rejected
-													0x00, // null rsv
-													0x01, // adr_type ipv4
-													0x00, // ipv4 1
-													0x00, // ipv4 2
-													0x00, // ipv4 3
-													0x00, // ipv4 4
-													0x00, // port H
-													0x00, // port L
-											};
+											Array.Copy(_static, _staticSocsk5Rejected.from
+												, _preallocated16, 0, _staticSocsk5Rejected.cnt);
+											_preallocated16[_staticSocsk5Rejected.resp] = ex != null ? (byte)0x01 : (byte)0x00;
 											if (!IsDisposed)
 											{
-												Stream.Write(response, 0, response.Length);
+												Stream.Write(_preallocated16, 0, _staticSocsk5Rejected.cnt);
 											}
 										}
 									}

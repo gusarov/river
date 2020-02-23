@@ -45,12 +45,10 @@ namespace River.Socks
 			var b = 0;
 
 			// send authentication header
-			stream.Write(new byte[] {
-				0x05, // ver = 5
-				0x01, // count of auth methods supported
-				0x00, // #1 - no auth
-			});
-
+			buf[b++] = 0x05; // Socks ver = 5
+			buf[b++] = 0x01; // count of auth methods supported
+			buf[b++] = 0x00; // #1 - no auth (0x00)
+			stream.Write(buf, 0, b);
 			stream.Flush();
 			var count = stream.Read(buf, 0, 2); // auth response
 			if (count != 2)
@@ -69,18 +67,19 @@ namespace River.Socks
 			// here authentication handshake can be added, but I don't see any reason to add clear text passwords
 
 			// send the actual request
+			b = 0;
 			buf[b++] = 0x05; // ver = 5
 			buf[b++] = 0x01; // command = stream
 			buf[b++] = 0x00; // reserved
 
 			var targetIsIp = IPAddress.TryParse(targetHost, out var ip);
-			if (!targetIsIp) // if targetHost is IP - just use IP
+			if (!targetIsIp) // if targetHost is IP - just use IP, otherwise:
 			{
 				var dns = Dns.GetHostAddresses(targetHost);
 				var ipv4 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 				var ipv6 = dns.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetworkV6);
 
-				ip = ipv4 ?? ipv6; // have to take ipv4 first because ipv6 is not working most of the times and HappyEyeballs is not possible via socks due to single connection
+				ip = ipv4 ?? ipv6; // have to take ipv4 first because ipv6 is not working most of the times and HappyEyeballs is not possible via socks chain due to single connection. Browser will do HappyEyeballs
 			}
 
 			if (!targetIsIp && proxyDns != false || proxyDns == true) // forward the targetHost name
@@ -99,13 +98,13 @@ namespace River.Socks
 			else if (ip != null && ip.AddressFamily == AddressFamily.InterNetwork)
 			{
 				buf[b++] = 0x01; // adress type = IPv4
+				// ip.GetAddressBytes().CopyTo(buf, b);
+				// b += 4;
 				var a = ip.Address;
 				buf[b++] = (byte)(a >> 0);
 				buf[b++] = (byte)(a >> 8);
 				buf[b++] = (byte)(a >> 16);
 				buf[b++] = (byte)(a >> 24);
-				// ip.GetAddressBytes().CopyTo(buf, b);
-				// b += 4;
 			}
 			else
 			{
@@ -117,15 +116,14 @@ namespace River.Socks
 			stream.Flush();
 
 			// response
-			// var response = new byte[1024];
-			var readed = stream.Read(buf, 0, 4);
-			if (readed < 4)
+			var c = stream.Read(buf, 0, 4);
+			if (c < 4)
 			{
-				throw new Exception("Server not sent full response");
+				throw new Exception("Server did not sent full response (response 2)");
 			}
 			if (buf[0] != 0x05)
 			{
-				throw new Exception("Server not supports v5 (response 2)");
+				throw new Exception("Server does not support v5 (response 2)");
 			}
 			if (buf[1] != 0x00)
 			{
@@ -133,27 +131,27 @@ namespace River.Socks
 				Trace.WriteLine(msg);
 				throw new Exception(msg);
 			}
-			// ignore reserved response[2] byte
+			// ignore reserved buf[2] byte
 			// read only required number of bytes depending on address type
 			switch (buf[3])
 			{
 				case 1:
 					// IPv4
-					readed += stream.Read(buf, readed, 4);
+					c += stream.Read(buf, c, 4);
 					break;
 				case 3:
 					// Name
-					readed += stream.Read(buf, readed, 1);
-					readed += stream.Read(buf, readed, buf[readed - 1]); // 256 max... no reason to protect from owerflow
+					c += stream.Read(buf, c, 1);
+					c += stream.Read(buf, c, buf[c - 1]); // 256 max... no reason to protect from owerflow
 					break;
 				case 4:
 					// IPv6
-					readed  += stream.Read(buf, readed, 16);
+					c  += stream.Read(buf, c, 16);
 					break;
 				default:
 					throw new Exception("Response address type not supported!");
 			}
-			readed += stream.Read(buf, readed, 2); // port
+			b += stream.Read(buf, b, 2); // port
 			// we don't need those values because it is stream, not bind
 			
 		}

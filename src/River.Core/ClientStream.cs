@@ -43,7 +43,8 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
-			Client = Utils.WithTimeout(p => new TcpClient(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			// Client = Utils.WithTimeout(p => new TcpClient(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			Client = new TcpClient(ProxyHost, ProxyPort);
 			Client.Client.NoDelay = true;
 			Stream = Client.GetStream();
 		}
