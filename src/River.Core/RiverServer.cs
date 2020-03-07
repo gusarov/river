@@ -19,7 +19,7 @@ namespace River
 
 		public IList<ProxyIdentifier> Chain { get; } = new List<ProxyIdentifier>();
 
-		protected DebuggerTracker DebuggerTracker { get; } = new DebuggerTracker();
+		protected DebuggerTracker DebuggerTracker { get; } = DebuggerTracker.Instance;
 
 		protected abstract Handler CreateHandlerCore(TcpClient client);
 
@@ -56,10 +56,12 @@ namespace River
 			GC.SuppressFinalize(this);
 		}
 
+		/*
 		~RiverServer()
 		{
 			Dispose(false);
 		}
+		*/
 
 		protected virtual void Dispose(bool managed)
 		{

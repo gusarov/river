@@ -19,19 +19,30 @@ namespace River
 	/// </summary>
 	public abstract class Handler : IDisposable
 	{
-		protected Stream Stream { get; private set; }
+		protected static Trace Trace = River.Trace.Default;
 
+#if DEBUG
+		static Encoding _utf8 = new UTF8Encoding(false, false);
+#endif
+
+		protected Stream Stream { get; private set; }
 		protected byte[] _buffer = new byte[16 * 1024];
 		protected int _bufferReceivedCount;
-
 		protected byte[] _bufferTarget = new byte[16 * 1024];
-
 		protected RiverServer Server { get; private set; }
 		protected TcpClient Client { get; private set; }
 
+		private Thread _sourceReaderThread;
+		private Thread _targetReaderThread;
+		private Stream _upstreamClient;
+		private DestinationIdentifier _target;
+		private bool _isResigned;
+		private bool _isReadHandshake = true;
+		private object _disposingSync = new object();
+
 		public Handler()
 		{
-			StatService.Instance.HandlerAdd(this);
+			// StatService.Instance.HandlerAdd(this);
 			ObjectTracker.Default.Register(this);
 		}
 
@@ -101,82 +112,158 @@ namespace River
 			Client.Client.NoDelay = true;
 
 			Stream = WrapStream(stream ?? Client.GetStream2());
+
+			BeginSourceReader();
 			ReadMoreHandshake();
 		}
 
-		#region Dispose
+#region Dispose
 
 		protected bool IsDisposed { get; private set; }
-		protected bool IsResigned { get; set; }
+		string _disposedComment;
+
+		protected bool IsResigned
+		{
+			get => _isResigned;
+			set
+			{
+				if (_targetReaderThread != null)
+				{
+					throw new Exception("Can not Resign Handler");
+				}
+				_isResigned = value;
+			}
+		}
 
 		public void Dispose()
 		{
 			Dispose(true);
-			GC.SuppressFinalize(this);
+			// GC.SuppressFinalize(this);
 		}
 
+		/*
 		~Handler()
 		{
 			Dispose(false);
 		}
+		*/
 
 		public override string ToString()
 		{
 			var b = base.ToString();
-			return $"{b} {(IsDisposed ? "Disposed" : "NotDisposed")}";
+			return $"{b} {Source}<=>{Destination} {(IsDisposed ? "Disposed" + _disposedComment : "NotDisposed")}";
 		}
 
 		protected virtual void Dispose(bool managed)
 		{
-			lock (this)
+			bool isResigned;
+
+			if (IsDisposed)
 			{
-				if (IsDisposed) return;
+				return;
+			}
+
+			lock (_disposingSync)
+			{
+				if (IsDisposed)
+				{
+					return;
+				}
 				IsDisposed = true;
-
-				if (IsResigned) return;
+				isResigned = IsResigned;
 			}
 
-			StatService.Instance.HandlerRemove(this);
-
-			Trace.WriteLine($"{Client?.GetHashCode():X4} Closing Handler...");
-
-
-			// UPSTREAM
 			try
 			{
-				_upstreamClient?.Dispose();
-				_upstreamClient?.Close();
+
+				if (isResigned)
+				{
+					_disposedComment += " Resigned";
+					if (Thread.CurrentThread != _sourceReaderThread)
+					{
+						// Actually should not happen! Only source reader therad should request resignation
+						try
+						{
+							// thread is locked by syncronious read. And I don't want to drop connection!
+							_sourceReaderThread?.Abort();
+							Trace.WriteLine(TraceCategory.ObjectLive, "Resingning - Aborted");
+						}
+						catch (Exception ex)
+						{
+							Trace.TraceError(ex.Message);
+						}
+						try
+						{
+							_sourceReaderThread.JoinDebug();
+							Trace.WriteLine(TraceCategory.ObjectLive, "Resingning - Joined");
+						}
+#pragma warning disable CA1031 // Do not catch general exception types
+						catch (Exception ex)
+						{
+							Trace.TraceError(ex.Message);
+						}
+#pragma warning restore CA1031 // Do not catch general exception types
+					}
+					else
+					{
+						Trace.WriteLine(TraceCategory.ObjectLive, "Resingning - From this thread");
+						// will exit and close the thread
+					}
+					_sourceReaderThread = null;
+					return; // the other resurces are not touched during this process
+				}
+
+				// StatService.Instance.HandlerRemove(this);
+
+				// UPSTREAM
+				try
+				{
+					if (_upstreamClient != null)
+					{
+						_upstreamClient?.Close();
+						_upstreamClient?.Dispose();
+						Trace.WriteLine(TraceCategory.ObjectLive, $"{Client?.GetHashCode():X4} Closing Handler - _upstreamClient closed");
+					}
+				}
+				catch (Exception ex)
+				{
+					Trace.TraceError($"{ex}");
+				}
 				_upstreamClient = null;
-			}
-			catch { }
-			_targetReaderThread.JoinAbort();
+				_targetReaderThread.JoinAbort();
+				Trace.WriteLine(TraceCategory.ObjectLive, $"{Client?.GetHashCode():X4} Closing Handler - upstream joined to {_targetReaderThread?.ManagedThreadId}");
 
-			// SOURCE
-			var client = Client;
-			var stream = Stream;
-			try
-			{
-				// graceful tcp shutdown
-				client?.Client?.Shutdown(SocketShutdown.Both);
+				// SOURCE
+				var client = Client;
+				var stream = Stream;
+				try
+				{
+					// graceful tcp shutdown
+					client?.Client?.Shutdown(SocketShutdown.Both);
+				}
+				catch { }
+				try
+				{
+					client?.Close();
+					// Client = null;
+				}
+				catch { }
+				try
+				{
+					stream?.Close();
+					// Stream = null;
+				}
+				catch { }
+				_sourceReaderThread.JoinAbort();
 			}
-			catch { }
-			try		
+			finally
 			{
-				client?.Close();
-				// Client = null;
+				Trace.WriteLine(TraceCategory.ObjectLive, $"{Client?.GetHashCode():X4} Disposed Handler. {_disposedComment}");
 			}
-			catch { }
-			try
-			{
-				stream?.Close();
-				// Stream = null;
-			}
-			catch { }
-			_sourceReaderThread.JoinAbort();
 		}
 
-		#endregion
-
+#endregion
+		/*
 		void ReceivedHandshake(IAsyncResult ar)
 		{
 			try
@@ -190,7 +277,9 @@ namespace River
 					return;
 				}
 
+#if DEBUG
 				Trace.TraceError($"{Source} Handshake... {_bufferReceivedCount} bytes, first 0x{_buffer[HandshakeStartPos]:X2} {_utf8.GetString(_buffer, HandshakeStartPos, 1)} {Preview(_buffer, HandshakeStartPos, _bufferReceivedCount)}");
+#endif
 				HandshakeHandler();
 			}
 			catch (Exception ex)
@@ -199,6 +288,7 @@ namespace River
 				Dispose();
 			}
 		}
+		*/
 
 		/// <summary>
 		/// Update incomming headers. Can be called mupltiple times.
@@ -221,13 +311,17 @@ namespace River
 			return true;
 		}
 
+		[Obsolete]
 		protected void ReadMoreHandshake()
 		{
+			/*
 			Stream.BeginRead(_buffer
 				, HandshakeStartPos + _bufferReceivedCount
 				, _buffer.Length - _bufferReceivedCount - HandshakeStartPos
 				, ReceivedHandshake
 				, null);
+			*/
+			// already scheduled. Just exit the call and you find yourself in while(true) source.Read();
 		}
 
 		protected void BeginStreaming()
@@ -236,45 +330,61 @@ namespace River
 			BeginReadTarget();
 		}
 
-		Thread _sourceReaderThread;
-
 		void SourceReaderThreadWorker()
 		{
-			var marker = new object();
-			ObjectTracker.Default.Register(_targetReaderThread);
-			ObjectTracker.Default.Register(marker);
+			Trace.WriteLine(TraceCategory.ObjectLive, $"Starting thread {Thread.CurrentThread.Name}");
 			try
 			{
 				while (!IsDisposed)
 				{
-					var c = Stream.Read(_buffer, 0, _buffer.Length);
+					var c = Stream.Read(_buffer, _bufferReceivedCount, _buffer.Length - _bufferReceivedCount);
+					Trace.WriteLine(TraceCategory.ObjectLive, $"Unlocked thread {Thread.CurrentThread.Name}");
 					if (!SourceReceived(c))
 					{
 						break;
 					}
 				}
 			}
-			catch (IOException ex) when (ex.IsConnectionClosing())
+			catch (Exception ex) when (ex.IsConnectionClosing())
 			{
 			}
 			catch (Exception ex)
 			{
 				Trace.TraceError(ex.ToString());
 			}
-			Trace.WriteLine(marker + "");
+			finally
+			{
+				Dispose();
+				Trace.WriteLine(TraceCategory.ObjectLive, $"Closing thread {Thread.CurrentThread.Name}");
+			}
+		}
+
+		void BeginSourceReader()
+		{
+			if (IsDisposed) throw new ObjectDisposedException("");
+			if (_sourceReaderThread != null) throw new Exception("_sourceReaderThread already exists");
+
+			_sourceReaderThread = new Thread(SourceReaderThreadWorker);
+			ObjectTracker.Default.Register(_sourceReaderThread);
+			_sourceReaderThread.IsBackground = true;
+			_sourceReaderThread.Name = $"Source Reader: {GetType().Name} {Source}";
+			_sourceReaderThread.Start();
 		}
 
 		protected void BeginReadSource()
 		{
-			Profiling.Stamp("BeginReadSource...");
-			
-			_sourceReaderThread = new Thread(SourceReaderThreadWorker);
-			_sourceReaderThread.IsBackground = true;
-			_sourceReaderThread.Start();
-			
-			// Stream.BeginRead(_buffer, 0, _buffer.Length, SourceReceived, null);
+			if (IsDisposed) throw new ObjectDisposedException("");
+
+			Profiling.Stamp(TraceCategory.Misc, "BeginReadSource...");
+
+			// lock (_isReaderSync)
+			{
+				_isReadHandshake = false;
+				_bufferReceivedCount = 0;
+			}
 		}
 
+		/*
 		void SourceReceived(IAsyncResult ar)
 		{
 			Profiling.Stamp("SourceReceived...");
@@ -302,20 +412,40 @@ namespace River
 
 			Profiling.Stamp("SourceReceived done");
 		}
+		*/
 
 		bool SourceReceived(int c)
 		{
-			Profiling.Stamp("SourceReceived...");
-
 			if (IsDisposed)
 			{
 				return false;
 			}
 			if (c > 0)
 			{
+				Profiling.Stamp(TraceCategory.Misc, "SourceReceived...");
 				StatService.Instance.MaxBufferUsage(c, GetType().Name + " src");
-				_upstreamClient.Write(_buffer, 0, c);
-				Profiling.Stamp("SourceReceived done");
+
+				if (_isReadHandshake)
+				{
+					_bufferReceivedCount += c;
+
+					// a handshake must forward the rest of buffer in case extra data
+					// TODO automate this
+
+#if DEBUG
+					Trace.TraceError($"{Source} Handshake... {_bufferReceivedCount} bytes, first 0x{_buffer[HandshakeStartPos]:X2} {_utf8.GetString(_buffer, HandshakeStartPos, 1)} {Preview(_buffer, HandshakeStartPos, _bufferReceivedCount)}");
+#endif
+
+
+					HandshakeHandler();
+					return true;
+				}
+				else
+				{
+					_upstreamClient.Write(_buffer, 0, c);
+				}
+
+				Profiling.Stamp(TraceCategory.Misc, "SourceReceived done");
 				return true;
 			}
 			else
@@ -338,17 +468,13 @@ namespace River
 				cnt = buf.Length;
 			}
 
-			Trace.WriteLine($"{Source} >>> send {cnt} bytes >>> {Destination} {Preview(buf, pos, cnt)}");
+			Trace.WriteLine(TraceCategory.NetworkingData, $"{Source} >>> send {cnt} bytes >>> {Destination} {Preview(buf, pos, cnt)}");
 			_upstreamClient.Write(buf, pos, cnt);
 		}
 
-		Thread _targetReaderThread;
-
 		void TargetReaderThreadWorker()
 		{
-			var marker = new object();
-			ObjectTracker.Default.Register(_targetReaderThread);
-			ObjectTracker.Default.Register(marker);
+			Trace.WriteLine(TraceCategory.ObjectLive, $"Starting thread {Thread.CurrentThread.ManagedThreadId} {Thread.CurrentThread.Name}");
 			try
 			{
 				while (!IsDisposed)
@@ -360,22 +486,29 @@ namespace River
 					}
 				}
 			}
-			catch (IOException ex) when (ex.IsConnectionClosing())
+			catch (Exception ex) when (ex.IsConnectionClosing())
 			{
 			}
 			catch (Exception ex)
 			{
 				Trace.TraceError(ex.ToString());
 			}
-			Trace.WriteLine(marker + "");
+			finally
+			{
+				Dispose();
+				Trace.WriteLine(TraceCategory.ObjectLive, $"Closing thread {Thread.CurrentThread.ManagedThreadId} {Thread.CurrentThread.Name}");
+			}
 		}
 
 		protected void BeginReadTarget()
 		{
-			Profiling.Stamp("BeginReadTarget...");
+			Profiling.Stamp(TraceCategory.Misc, "BeginReadTarget...");
 			_targetReaderThread = new Thread(TargetReaderThreadWorker);
 			_targetReaderThread.IsBackground = true;
+			_targetReaderThread.Name = $"Target Reader: {GetType().Name} {Destination}";
 			_targetReaderThread.Start();
+			ObjectTracker.Default.Register(_targetReaderThread);
+
 			// _upstreamClient.BeginRead(_bufferTarget, 0, _bufferTarget.Length, TargetReceived, null);
 		}
 
@@ -383,7 +516,7 @@ namespace River
 		{
 			get
 			{
-				return $"{Client.GetHashCode():X4} {Client.Client.RemoteEndPoint}";
+				return $"{Client?.GetHashCode():X4} {Client?.Client?.RemoteEndPoint}";
 			}
 		}
 
@@ -403,14 +536,15 @@ namespace River
 			}
 		}
 
+		/*
 		private void TargetReceived(IAsyncResult ar)
 		{
-			Profiling.Stamp($"TargetReceived... from {_upstreamClient.GetType().Name}");
-
 			if (IsDisposed)
 			{
 				return;
 			}
+
+			Profiling.Stamp($"TargetReceived... from {_upstreamClient?.GetType()?.Name}");
 			try
 			{
 				var c = _upstreamClient.EndRead(ar);
@@ -426,6 +560,7 @@ namespace River
 			}
 			Profiling.Stamp("TargetReceived done");
 		}
+		*/
 
 		private bool TargetReceived(int c)
 		{
@@ -437,7 +572,7 @@ namespace River
 			if (c > 0)
 			{
 				StatService.Instance.MaxBufferUsage(c, GetType().Name + " trg");
-				Trace.WriteLine($"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
+				Trace.WriteLine(TraceCategory.NetworkingData, $"{Source} <<< {c} bytes <<< {Destination} {Preview(_bufferTarget, 0, c)}");
 				Stream.Write(_bufferTarget, 0, c);
 				return true;
 			}
@@ -449,27 +584,29 @@ namespace River
 
 		}
 
-		static Encoding _utf8 = new UTF8Encoding(false, false);
-
-		private string Preview(byte[] buf, int pos, int cnt)
+		private static string Preview(byte[] buf, int pos, int cnt)
 		{
+			#if DEBUG
 			var lim = Math.Min(cnt, 32);
 			var str = _utf8.GetChars(buf, pos, lim);
-			for (int i = 0; i < str.Length; i++)
+			for (var i = 0; i < str.Length; i++)
 			{
-				if (str[i] < 32) str[i] = '?';
+				if (str[i] < 32)
+				{
+					str[i] = '?';
+				}
 			}
 			return new string(str) + (lim < cnt ? "..." : "");
+			#else
+			return string.Empty;
+			#endif
 		}
-
-		Stream _upstreamClient;
-		DestinationIdentifier _target;
-
-
 
 		protected void EstablishUpstream(DestinationIdentifier target)
 		{
-			Profiling.Stamp("EstablishUpstream...");
+			if (IsDisposed) throw new ObjectDisposedException("");
+
+			Profiling.Stamp(TraceCategory.Networking, "EstablishUpstream...");
 
 			try
 			{
@@ -479,7 +616,7 @@ namespace River
 				}
 
 				_target = target;
-				Trace.WriteLine($"{Source} Route to {Destination}");
+				Trace.WriteLine(TraceCategory.Networking, $"{Source} Route to {Destination}");
 
 				/*
 				string ep;
@@ -545,8 +682,10 @@ namespace River
 				Dispose();
 				throw;
 			}
-			Profiling.Stamp("Established");
+			Profiling.Stamp(TraceCategory.Networking, "Established");
 		}
+
+
 
 	}
 }

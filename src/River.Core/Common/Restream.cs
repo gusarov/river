@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,8 +18,6 @@ namespace River.Common
 		byte[] _buffer = new byte[16 * 1024];
 		int _bufferLeftPos; // basically, the external reader's position (consumer)
 		int _bufferRightPos; // every receive from underlying - puts data on top of it to fill up (producer)
-		bool _connecting;
-		bool _connected;
 
 		ConnectionState _state;
 
@@ -29,9 +28,18 @@ namespace River.Common
 			Connected,
 		}
 
-		public ReStream(Stream underlying)
+		public ReStream(Stream underlying) 
 		{
 			_underlying = underlying;
+		}
+
+		public override string ToString()
+		{
+			if (_underlying is NetworkStream ns)
+			{
+				
+			}
+			return $"{_underlying.ToString()}: {_state}";
 		}
 
 		public void ResetReader()

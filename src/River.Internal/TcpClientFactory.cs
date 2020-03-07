@@ -38,6 +38,7 @@ namespace River
 				}
 			}
 			cli = new TcpClient(host, port); // this constructor
+			// ObjectTracker.Default.Register(cli);
 			var ep = (IPEndPoint)cli.Client.RemoteEndPoint;
 			_dic[host] = (ep.Address, ep.AddressFamily, now);
 			return cli;

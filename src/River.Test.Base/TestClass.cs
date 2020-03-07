@@ -27,6 +27,7 @@ namespace River.Test
 		[TestMethod]
 		public void ZZ_Clean()
 		{
+			_trackers["Class"] = ClassObjectTracker;
 			WaitForObjects();
 		}
 
@@ -39,7 +40,7 @@ namespace River.Test
 		[TestCleanup]
 		public void BaseClean()
 		{
-			Profiling.Stamp("BaseClean");
+			Profiling.Stamp(TraceCategory.Test, "BaseClean");
 			Explode();
 		}
 
@@ -47,7 +48,7 @@ namespace River.Test
 
 		public static void WaitForObjects()
 		{
-			var list = _trackers.SelectMany(kvp => kvp.Value.Weaks.Select(wr => (wr, kvp.Key))).ToArray();
+			var list = _trackers.SelectMany(kvp => kvp.Value.Entries.Select(e => (e, kvp.Key))).ToArray();
 			_trackers.Clear();
 
 			// snapshot a list of objects created so far
@@ -60,19 +61,19 @@ namespace River.Test
 				{
 					GC.Collect();
 					GC.WaitForPendingFinalizers();
-					return list.All(x => x.wr.Target == null);
+					return list.All(x => x.e.WeakReference.Target == null);
 					// return ObjectTracker.Default.Count == 0;
 				});
 				Console.WriteLine("All objects are clear");
 			}
 			catch
 			{
-				var objs = list.Where(x => x.wr.Target != null).ToArray();
+				var objs = list.Where(x => x.e.WeakReference.Target != null).ToArray();
 				// var objs = ObjectTracker.Default.Items.Where(x => x != null).ToArray();
 				Console.WriteLine($"Objects alive: {objs.Length} ======================");
 				foreach (var item in objs)
 				{
-					Console.WriteLine(item.Key + ": " + item.wr.Target);
+					Console.WriteLine($"{item.Key}: {item.e.Type.Name}: {Stringify.ToString(item.e.WeakReference.Target, true)}");
 				}
 				throw;
 			}
@@ -81,6 +82,8 @@ namespace River.Test
 		Stopwatch _testTime;
 
 		public TestContext TestContext { get; set; }
+
+		protected ObjectTracker ClassObjectTracker;
 
 		[TestInitialize]
 		public void BaseInit()
@@ -92,6 +95,10 @@ namespace River.Test
 			_testTime = Stopwatch.StartNew();
 			Profiling.Start();
 
+			if (ClassObjectTracker == null)
+			{
+				ClassObjectTracker = ObjectTracker.Default;
+			}
 			ObjectTracker.Default = (ObjectTracker)Activator.CreateInstance(typeof(ObjectTracker), true);
 			ObjectTracker.Default.EnableCollection();
 			_trackers[TestContext.TestName] = ObjectTracker.Default;
@@ -160,9 +167,7 @@ namespace River.Test
 		/// </summary>
 		protected static string TestConnction(Stream client, string host, string expectedHost, int port, string url)
 		{
-			var expected =
-				// "onclick=gbar.logger"; // google.com
-				"Location: http://www.google.com/";
+			var expected = "</html>";
 			
 			switch (expectedHost)
 			{
@@ -171,6 +176,7 @@ namespace River.Test
 					break;
 				case "www.google.com":
 					url = "/ncr";
+					expected = "Location: http://www.google.com/";
 					break;
 				default:
 					break;
@@ -181,14 +187,14 @@ namespace River.Test
 			var are = new AutoResetEvent(false);
 			var connected = true;
 			var sw = Stopwatch.StartNew();
-			Profiling.Stamp("Test Read...");
+			Profiling.Stamp(TraceCategory.Test, "Test Read...");
 			string response = "";
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
 			// bool found = false;
 			void Read(IAsyncResult ar)
 			{
 				var c = client.EndRead(ar);
-				Profiling.Stamp("Test Read Done = " + c);
+				Profiling.Stamp(TraceCategory.Test, "Test Read Done = " + c);
 				if (c == 0)
 				{
 					connected = false;
@@ -205,14 +211,14 @@ namespace River.Test
 				readBufPos += c;
 				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
 				// Console.WriteLine(">>> " + line);
-				Profiling.Stamp("Test Read...");
+				Profiling.Stamp(TraceCategory.Test, "Test Read...");
 				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
 			}
 
 			var request = Encoding.ASCII.GetBytes($"GET {url} HTTP/1.1\r\nHost: {host}{(port==80?"":":"+port)}\r\nConnection: keep-alive\r\n\r\n");
-			Profiling.Stamp("Test Write...");
+			Profiling.Stamp(TraceCategory.Test, "Test Write...");
 			client.Write(request, 0, request.Length);
-			Profiling.Stamp("Test Write Done");
+			Profiling.Stamp(TraceCategory.Test, "Test Write Done");
 
 			// WaitFor(() => Encoding.UTF8.GetString(ms.ToArray()).Contains(expected) || !connected);
 

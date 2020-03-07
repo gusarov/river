@@ -49,10 +49,12 @@ namespace River.Test
 
 		bool _disposed;
 
+		/*
 		~DemoTcpServer()
 		{
 			Dispose(false);
 		}
+		*/
 
 		protected virtual void Dispose(bool managed)
 		{

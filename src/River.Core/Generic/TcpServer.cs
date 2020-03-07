@@ -2,14 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace River.Generic
 {
 	public class TcpServer<THandler> : RiverServer where THandler : Handler, new()
 	{
-		List<TcpListener> _tcpListeners = new List<TcpListener>();
+		static Trace Trace = River.Trace.Default;
+
+		class ListenerEntry
+		{
+			public Thread Thread { get; set; }
+			public TcpListener TcpListener { get; set; }
+		}
+
+		List<ListenerEntry> _tcpListenerEntries = new List<ListenerEntry>();
+
+		public override string ToString()
+		{
+			return $"{GetType().Name}:{Config?.EndPoints?.FirstOrDefault()?.Port}";
+		}
 
 		protected override void RunCore(ServerConfig config)
 		{
@@ -17,35 +32,62 @@ namespace River.Generic
 			{
 				throw new ArgumentNullException(nameof(config));
 			}
-			Trace.WriteLine($"Running {GetType().Name} :{config.EndPoints.First().Port}...");
+			Trace.WriteLine(TraceCategory.Networking, $"Running {GetType().Name} :{config.EndPoints.First().Port}...");
 
-			lock (_tcpListeners)
+			lock (_tcpListenerEntries)
 			{
 				foreach (var item in config.EndPoints)
 				{
 					var listener = new TcpListener(item);
-					_tcpListeners.Add(listener);
 					listener.Start();
-					AcceptCycleAsync(listener);
+
+					var thread = new Thread(AcceptWorker);
+					ObjectTracker.Default.Register(thread);
+					thread.IsBackground = true;
+					thread.Name = "Listener for " + item;
+
+					var entry = new ListenerEntry
+					{
+						TcpListener = listener,
+						Thread = thread,
+					};
+
+					thread.Start(entry);
+
+					_tcpListenerEntries.Add(entry);
 				}
 			}
 		}
 
-		async Task AcceptAsync(TcpListener listener)
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		void CreateHandlerNoRet(TcpClient client)
 		{
-			var client = await listener.AcceptTcpClientAsync();
-			CreateHandler(client);
+			_ = CreateHandler(client);
 		}
 
-		async void AcceptCycleAsync(TcpListener listener)
+		void AcceptWorker(object entryObject)
 		{
+			var entry = (ListenerEntry)entryObject;
 			try
 			{
-				await AcceptAsync(listener);
-				await DebuggerTracker.EnsureNoDebuggerAsync(); // wait till exit from pause to avoid flooding debugger by threads
-				AcceptCycleAsync(listener);
+				while (!IsDisposed)
+				{
+					var client = entry.TcpListener.AcceptTcpClient();
+					client.Configure();
+					CreateHandlerNoRet(client);
+					// wait till exit from pause to avoid flooding debugger by threads
+					while (!DebuggerTracker.IsNoDebugger())
+					{
+						Console.WriteLine($"Waiting for finishing debugger...");
+						Thread.Sleep(2000);
+					}
+				}
 			}
 			catch (ObjectDisposedException)
+			{
+				Dispose();
+			}
+			catch (SocketException ex) when (ex.IsConnectionClosing())
 			{
 				Dispose();
 			}
@@ -53,7 +95,6 @@ namespace River.Generic
 			{
 				Console.WriteLine("Stopping due to: " + ex);
 				Dispose();
-				// throw;
 			}
 		}
 
@@ -68,29 +109,43 @@ namespace River.Generic
 		{
 			base.Dispose(managed);
 
-			lock (_tcpListeners)
+			ListenerEntry[] entries;
+			lock (_tcpListenerEntries)
 			{
-				foreach (var listener in _tcpListeners)
-				{
-					/*
-					try
-					{
-						listener.Server.Shutdown(SocketShutdown.Both);
-					}
-#pragma warning disable CA1031 // Do not catch general exception types
-					catch { }
-#pragma warning restore CA1031 // Do not catch general exception types
-					*/
-					try
-					{
-						listener.Stop();
-					}
-#pragma warning disable CA1031 // Do not catch general exception types
-					catch { }
-#pragma warning restore CA1031 // Do not catch general exception types
-				}
-				_tcpListeners.Clear();
+				entries = _tcpListenerEntries.ToArray();
+				_tcpListenerEntries.Clear();
 			}
+
+			foreach (var entry in entries)
+			{
+				/*
+				try
+				{
+					listener.Server.Shutdown(SocketShutdown.Both);
+				}
+#pragma warning disable CA1031 // Do not catch general exception types
+				catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+				*/
+#pragma warning restore CA1031 // Do not catch general exception types
+
+				try
+				{
+					entry?.TcpListener?.Stop();
+				}
+#pragma warning disable CA1031 // Do not catch general exception types
+				catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+				try
+				{
+					entry?.Thread.JoinAbort();
+				}
+#pragma warning disable CA1031 // Do not catch general exception types
+				catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+			}
+
 		}
 	}
 }

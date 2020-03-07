@@ -9,6 +9,18 @@ namespace River
 	{
 		private class NetworkStream2 : NetworkStream
 		{
+			public override string ToString()
+			{
+				try
+				{
+					return _socket?.RemoteEndPoint.ToString() + " " +_socket.Connected;
+				}
+				catch (Exception ex)
+				{
+					return ex.GetType().Name;
+				}
+			}
+
 			const SocketFlags MSG_PUSH_IMMEDIATE = (SocketFlags)0x20;
 
 			private readonly Socket _socket;
@@ -49,12 +61,14 @@ namespace River
 						try
 						{
 							// MSG_PUSH_IMMEDIATE HERE!!!
-							Profiling.Stamp("Socket BeginReceive...");
+							Profiling.Stamp(TraceCategory.NetworkingData, "Socket BeginReceive...");
 							return streamSocket.BeginReceive(buffer, offset, size, MSG_PUSH_IMMEDIATE, callback, state);
 						}
 						catch (Exception ex)
 						{
-							if (!(ex is ThreadAbortException) && !(ex is StackOverflowException) && !(ex is OutOfMemoryException))
+							if (!(ex is ThreadAbortException)
+								&& !(ex is StackOverflowException)
+								&& !(ex is OutOfMemoryException))
 							{
 								throw new IOException("net_io_readfailure: " + ex.Message, ex);
 							}
@@ -64,6 +78,19 @@ namespace River
 					throw new ArgumentOutOfRangeException(nameof(size));
 				}
 				throw new ArgumentOutOfRangeException(nameof(offset));
+			}
+
+			public override void Close()
+			{
+				try
+				{
+					if (_socket.Connected)
+					{
+						_socket.Shutdown(SocketShutdown.Both);
+					}
+				}
+				catch { }
+				base.Close();
 			}
 		}
 	}

@@ -12,24 +12,87 @@ using System.Threading.Tasks;
 
 namespace River
 {
+	public class TraceCategory
+	{
+		public static TraceCategory Test = new TraceCategory("test")!;
+		public static TraceCategory Misc = new TraceCategory("misc");
+		public static TraceCategory ObjectLive = new TraceCategory("objectlive");
+		public static TraceCategory Networking = new TraceCategory("networking");
+		public static TraceCategory NetworkingData = new TraceCategory("networking/data");
+		public static TraceCategory Performance = new TraceCategory("performance");
+
+		private readonly string _category;
+
+		TraceCategory(string category)
+		{
+			IDisposable q = default;
+			using var x = q;
+			_category = category;
+		}
+
+		public override string ToString() => _category;
+	}
+
 	public class Trace
 	{
-		// [Conditional("DEBUG")]
-		public static void WriteLine(string str)
+		public static Trace Default { get; } = new Trace();
+
+		HashSet<string> _categoryExcludes = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+		public ISet<string> CategoryExcludes => _categoryExcludes;
+
+		bool Predicate(TraceCategory category)
 		{
+			var code = category.ToString();
+			var i = -1;
+			while (true)
+			{
+				i = code.IndexOf('/', i + 1);
+				if (i < 0)
+				{
+					break;
+				}
+
+				var sub = code.Substring(0, i);
+				if (_categoryExcludes.Contains(sub))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+
+		// [Conditional("DEBUG")]
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="category">Message Category to quickly enable / disable</param>
+		/// <param name="str"></param>
+		public void WriteLine(TraceCategory category, string str)
+		{
+			if (category is null)
+			{
+				throw new ArgumentNullException(nameof(category));
+			}
+
+			if (!Predicate(category))
+			{
+				return;
+			}
+			str = $"[T{Thread.CurrentThread.ManagedThreadId:00}] {category}: {str}";
 #if DEBUG
-			Console.WriteLine(str);
+			Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] " + str);
 #endif
-			Logger.Instance.WriteLine(str);
+			Appender.Instance.WriteLine(str); // this guy will add a time stamp
 		}
 
 		// [Conditional("DEBUG")]
-		public static void TraceError(string str)
+		public void TraceError(string str)
 		{
 #if DEBUG
-			Console.WriteLine(str);
+			Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] " + str);
 #endif
-			Logger.Instance.WriteLine(str);
+			Appender.Instance.WriteLine(str);
 		}
 	}
 
@@ -42,13 +105,13 @@ namespace River
 		}
 	}
 
-	public class Logger
+	class Appender
 	{
-		public static Logger Instance { get; } = new Logger();
+		internal static Appender Instance { get; } = new Appender();
 		
 		Timer _timer; 
 
-		Logger()
+		Appender()
 		{
 			try
 			{

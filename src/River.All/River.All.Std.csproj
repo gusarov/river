@@ -9,6 +9,7 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\River.Any\River.Any.Std.csproj" />
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
     <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />

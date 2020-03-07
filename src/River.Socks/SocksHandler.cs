@@ -89,7 +89,7 @@ namespace River.Socks
 		// protected override int HandshakeStartPos => 128;
 		protected override void HandshakeHandler()
 		{
-			Profiling.Stamp("HandshakeHandler...");
+			Profiling.Stamp(TraceCategory.NetworkingData, "HandshakeHandler...");
 			// get request from client
 			if (EnsureReaded(1))
 			{
@@ -169,11 +169,11 @@ namespace River.Socks
 #if DEBUG
 								if (_addressRequested == null)
 								{
-									Trace.WriteLine($"Socks v4a Route: {_dnsNameRequested}:{_portRequested}");
+									Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v4a Route: {_dnsNameRequested}:{_portRequested}");
 								}
 								else
 								{
-									Trace.WriteLine($"Socks v4 Route: {_addressRequested}:{_portRequested}");
+									Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v4 Route: {_addressRequested}:{_portRequested}");
 								}
 #endif
 								EstablishUpstream(new DestinationIdentifier
@@ -186,7 +186,7 @@ namespace River.Socks
 								{
 									// forward the rest of the buffer
 									// TODO do not do this when proxy chain expected
-									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
+									Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
 									SendForward(_buffer, b, _bufferReceivedCount - b);
 								}
 								// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -197,13 +197,13 @@ namespace River.Socks
 								ex = exx;
 							}
 
-							Profiling.Stamp("Handshake response...");
+							Profiling.Stamp(TraceCategory.NetworkingData, "Handshake response...");
 							var response = ex == null
 								? _staticSocsk4Granted
 								: _staticSocsk4Rejected;
 							Stream.Write(_static, response, 8);
 							Stream.Flush();
-							Profiling.Stamp("Handshake streaming...");
+							Profiling.Stamp(TraceCategory.NetworkingData, "Handshake streaming...");
 							if (ex != null)
 							{
 								Dispose();
@@ -319,7 +319,7 @@ namespace River.Socks
 													adrMsg = _addressRequested.ToString();
 													break;
 											}
-											Trace.WriteLine($"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested}");
+											Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested}");
 #endif
 
 											Exception ex = null;
@@ -334,7 +334,7 @@ namespace River.Socks
 												if (b < _bufferReceivedCount)
 												{
 													// forward the rest of the buffer
-													Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
+													Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 													SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 												}
 												// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -418,7 +418,7 @@ namespace River.Socks
 																							// for connect - forward the rest of the buffer
 									if (_bufferReceivedCount - eoh > 0)
 									{
-										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
+										Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
 										SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
 									}
 								}
@@ -471,21 +471,23 @@ namespace River.Socks
 
 		static Random _rnd = new Random();
 		static int _requestNumber;
-		static Lazy<string> _randomHeader = new Lazy<string>(() => RandomName);
-		static Lazy<string> _randomHeaderLine = new Lazy<string>(()=>$"{_randomHeader.Value}: {RandomName}\r\n");
+		static Lazy<string> _randomHeader = new Lazy<string>(GetRandomName);
+		static Lazy<string> _randomHeaderLine = new Lazy<string>(GetRandomHeader);
 
-		static string RandomName
+		static string GetRandomHeader()
 		{
-			get
+			return $"{_randomHeader.Value}: {GetRandomName()}\r\n";
+		}
+
+		static string GetRandomName()
+		{
+			var c = _rnd.Next(5) + 5;
+			var s = "";
+			for (var i = 0; i < c; i++)
 			{
-				var c = _rnd.Next(5) + 5;
-				var s = "";
-				for (var i = 0; i < c; i++)
-				{
-					s += (char)(_rnd.Next('z' - 'a') + 'a');
-				}
-				return s;
+				s += (char)(_rnd.Next('z' - 'a') + 'a');
 			}
+			return s;
 		}
 
 	}

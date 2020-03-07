@@ -17,7 +17,7 @@ namespace River
 			{
 				throw new ArgumentNullException(nameof(client));
 			}
-
+			ObjectTracker.Default.Register(client);
 			client.Client.NoDelay = true;
 		}
 

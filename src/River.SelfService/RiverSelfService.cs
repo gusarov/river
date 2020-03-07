@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace River.SelfService
 {
-	public class RiverSelfService : SimpleNetworkStream
+	public partial class RiverSelfService : SimpleNetworkStream
 	{
 
 		byte[] _request = new byte[16 * 1024];
@@ -50,7 +50,7 @@ namespace River.SelfService
 		{
 			try
 			{
-				Profiling.Stamp("SS Writer - HandleRequest");
+				Profiling.Stamp(TraceCategory.Performance, "SS Writer - HandleRequest");
 
 				var str = _utf.GetString(_request, 0, end);
 				// Console.WriteLine(str);
@@ -91,27 +91,62 @@ ETag: {_etag}
 
 				var url = str.Substring(is1 + 1, is2 - is1 - 1).Trim();
 
-				var buf = new byte[16 * 1024];
-				var c = GetResponse(url.Trim(), buf, 0, buf.Length, out var code, out var msg, out var contentType);
+				var resp = GetResponse(url.Trim(), out var code, out var msg, out var contentType);
+
 				var headerStr = $@"HTTP/1.1 {code} {msg}
-Content-Length: {c}
+Content-Length: {resp.Length}
 Content-Type: {contentType}
 Connection: keep-alive
 Server: river
 
 ";
-
 				// Console.WriteLine(url);
 				// Console.WriteLine(headerStr);
 				// Console.WriteLine(_utf.GetString(buf, 0, Math.Min(128, c)));
-				var header = _utf.GetBytes(headerStr);
-				Array.Copy(header, 0, _readBuf, _readTo, header.Length);
-				_readTo += header.Length;
 
-				Array.Copy(buf, 0, _readBuf, _readTo, c);
-				_readTo += c;
-				Profiling.Stamp("SS Writer - Handled, unlocking");
-				_auto.Set();
+				// var buf = new byte[16 * 1024];
+				// ASCII bytes count match to buffer
+				// var buf = new byte[headerStr.Length + resp.Length];
+
+				if (_readFrom != 0)
+				{
+					throw new Exception("_readFrom != 0");
+				}
+
+				if (_readTo != 0)
+				{
+					throw new Exception("_readTo != 0");
+				}
+
+				if (_readBuf.Length < headerStr.Length + resp.Length)
+				{
+					// entire byte blobs are already there anyway - just resize a transfer buffer
+					// there is no streaming done anyway
+					_readBuf = new byte[headerStr.Length + resp.Length];
+				}
+
+				// header
+				var hc = _ascii.GetBytes(headerStr, 0, headerStr.Length, _readBuf, _readTo);
+				_readTo += hc;
+
+				// resp
+				Array.Copy(resp, 0, _readBuf, _readTo, resp.Length);
+				_readTo += resp.Length;
+
+				_readerUnlock.Set();
+				// _readerFinished.WaitOne();
+
+				/*
+				int transferred = 0;
+				do
+				{
+					Array.Copy(buf, 0, _readBuf, _readTo, c);
+					_readTo += c;
+					transferred += code;
+					Profiling.Stamp("SS Writer - Handled, unlocking");
+					_auto.Set();
+				} while (transferred < resp.Length);
+				*/
 			}
 			catch
 			{
@@ -126,7 +161,7 @@ Server: river
 		string GetStatsPage()
 		{
 			var now = DateTime.UtcNow;
-			if ((now - _lastInfoObjectsTime).TotalMinutes > 0.9)
+			if ((now - _lastInfoObjectsTime).TotalSeconds > 6)
 			{
 				_lastInfoObjectsData = GetStatsPageCore();
 				_lastInfoObjectsTime = now;
@@ -134,21 +169,33 @@ Server: river
 			return _lastInfoObjectsData;
 		}
 
-		string GetStatsPageCore()
+		string GetHomePage()
 		{
-			var objs = ObjectTracker.Default.Items.ToArray();
-			var objsGroups = objs.GroupBy(x => x.GetType().Name);
-
-			var sb = new StringBuilder("<table><tr><th>Type</th><th>Count</th></tr>");
-			foreach (var item in objsGroups)
-			{
-				sb.AppendLine($"<tr><td>{item.Key}</td><td>{item.Count()}</td></tr>");
-			}
-			sb.AppendLine($"</table>");
-			return sb.ToString();
+			var ver = Assembly.GetExecutingAssembly().GetName().Version;
+			return $@"<b>Hello</b><br/>
+This is a River server v{ver}<br/>
+<a href=stat>Statistics</a><br/>
+<img src='break_firewall_512.png' /><br/>";
 		}
 
-		int GetResponse(string url, byte[] buf, int pos, int cnt, out int code, out string msg, out string contentType)
+		const string _header = @"
+<nav>
+  <a href='/'>Home</a> |
+  <a href='/stat'>Statistics</a> |
+  <a href='/admin'>Admin</a> |
+</nav>
+<p>
+";
+		const string _footer = @"";
+
+		byte[] GetPage(Func<string> getter)
+		{
+			var page = _header + getter() + _footer;
+			var data = _utf.GetBytes(page);
+			return data;
+		}
+
+		byte[] GetResponse(string url, out int code, out string msg, out string contentType)
 		{
 			url = url.ToUpperInvariant();
 			if (url.Contains("://"))
@@ -163,19 +210,15 @@ Server: river
 			{
 				if (url == "/")
 				{
-					var ver = Assembly.GetExecutingAssembly().GetName().Version;
-					var data1 = _utf.GetBytes($@"<b>Hello</b><br/>
-This is a River server v{ver}<br/>
-<a href=stat>Statistics</a><br/>
-<img src='break_firewall_512.png' /><br/>");
-					data1.CopyTo(buf, pos);
-					return data1.Length;
+					return GetPage(GetHomePage);
 				}
 				else if (url == "/STAT" || url == "/STATS")
 				{
-					var dataStat = _utf.GetBytes(GetStatsPage());
-					dataStat.CopyTo(buf, pos);
-					return dataStat.Length;
+					return GetPage(GetStatsPage);
+				}
+				else if (url == "/ADMIN")
+				{
+					return GetPage(GetAdminPage);
 				}
 				else if (url.Contains('.')) // file
 				{
@@ -200,29 +243,30 @@ This is a River server v{ver}<br/>
 					}
 					using (var stream = asm.GetManifestResourceStream(iconName))
 					{
-						var c = stream.Read(buf, pos, cnt);
-						return c;
+						var buf = new byte[stream.Length];
+						var c = stream.Read(buf, 0, buf.Length);
+						return buf;
 					}
 				}
 			L404:
 				code = 404;
 				msg = "Not Found";
 				var data2 = _utf.GetBytes($@"<b>Page not found: {url}</b>");
-				data2.CopyTo(buf, pos);
-				return data2.Length;
+				return data2;
 			}
 			catch (Exception ex)
 			{
 				code = 500;
 				msg = "Server Error";
 				var data = _utf.GetBytes($@"<b>{code} {msg}</b><br/><b>{ex.GetType().Name}: {ex.Message}</b>");
-				data.CopyTo(buf, pos);
-				return data.Length;
+				return data;
 			}
 		}
 
-		readonly AutoResetEvent _auto = new AutoResetEvent(false);
-		byte[] _readBuf = new byte[16 * 1024];
+		readonly ManualResetEvent _readerUnlock = new ManualResetEvent(false);
+		readonly AutoResetEvent _readerFinished = new AutoResetEvent(false);
+
+		byte[] _readBuf = new byte[1 * 1024];
 		int _readFrom;
 		int _readTo;
 
@@ -231,24 +275,27 @@ This is a River server v{ver}<br/>
 			try
 			{
 				Profiling.Stamp("SS Reader Wait");
-				var b = _auto.WaitOne();
+				var b = _readerUnlock.WaitOne();
 				if (!b) return 0;
 				Profiling.Stamp("SS Reader Unlocked");
 				if (_readTo > _readFrom)
 				{
 					var m = Math.Min(count, _readTo - _readFrom);
 					Array.Copy(_readBuf, _readFrom, buffer, offset, m);
-					if (_readFrom + m < _readTo)
+					_readFrom += m;
+					if (_readFrom < _readTo)
 					{
-						var rem = _readTo - _readFrom + m;
-						Array.Copy(_readBuf, _readFrom + m, _readBuf, 0, _readTo - _readFrom + m);
-						_readFrom = 0;
-						_readTo = rem;
+						// var rem = _readTo - _readFrom;
+						// Array.Copy(_readBuf, _readFrom, _readBuf, 0, _readTo - _readFrom);
+						// _readFrom = 0;
+						// _readTo = rem;
 					}
 					else
 					{
 						_readFrom = 0;
 						_readTo = 0;
+						_readerUnlock.Reset();
+						_readerFinished.Set();
 					}
 					return m;
 				}
@@ -256,15 +303,25 @@ This is a River server v{ver}<br/>
 			}
 			catch
 			{
+				// reset
+				_readFrom = 0;
+				_readTo = 0;
+				_readerUnlock.Reset();
+				_readerFinished.Set();
+
 				Dispose();
 				throw;
+			}
+			finally
+			{
 			}
 		}
 
 		public override void Close()
 		{
 			base.Close();
-			_auto.Set();
+			_readerUnlock.Set();
+			_readerFinished.Set();
 		}
 	}
 }

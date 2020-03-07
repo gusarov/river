@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,11 +20,59 @@ namespace River.Test.ConsoleServer
 {
 	class Program
 	{
-		static void Main()
-		{
-			RiverInit.RegAll();
+		static Timer _timer;
 
-			var server1 = new AnyProxyServer
+		static void MainClient()
+		{
+			var client = new Socks4ClientStream("127.0.0.1", 1080, "www.google.com", 80);
+			var readBuf = new byte[16 * 1024];
+			int readBufPos = 0;
+
+			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
+			// bool found = false;
+			void Read(IAsyncResult ar)
+			{
+				var c = client.EndRead(ar);
+				Profiling.Stamp(TraceCategory.Test, "Test Read Done = " + c);
+				if (c == 0)
+				{
+					Console.WriteLine("Disconnected");
+					return;
+				}
+				var line = Encoding.UTF8.GetString(readBuf, readBufPos, c);
+				Console.Write(line);
+				// readBufPos += c;
+				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
+				// Console.WriteLine(">>> " + line);
+				// Profiling.Stamp(TraceCategory.Test, "Test Read...");
+				client.BeginRead(readBuf, readBufPos, readBuf.Length - readBufPos, Read, null);
+			}
+
+			string q = null;
+
+			while (q != "q")
+			{
+				var request = Encoding.ASCII.GetBytes($"GET /ncr HTTP/1.1\r\nHost: www.google.com\r\nConnection: keep-alive\r\n\r\n");
+				client.Write(request, 0, request.Length);
+
+				q = Console.ReadLine();
+			}
+		}
+
+		static void Main(string[] args)
+		{
+			if (!args.Any())
+			{
+				MainClient();
+				return;
+			}
+
+			RiverInit.RegAll();
+			_timer = new Timer(Tick, null, 1000, 1000);
+
+			// ObjectTracker.TypesToPrint.Add(typeof(Handler));
+
+			var server1 = new SocksServer
 			{
 				Chain =
 				{
@@ -32,18 +81,43 @@ namespace River.Test.ConsoleServer
 			};
 			server1.Run("socks://0.0.0.0:1080");
 
-/*			
-			var server2 = new ShadowSocksServer
-			{
-				Chain =
-				{
-					// "ss://chacha20:123@127.0.0.1:8338",
-				},
-			};
-			server2.Run("ss://chacha20:123@0.0.0.0:8338");
-*/
+			/*			
+						var server2 = new ShadowSocksServer
+						{
+							Chain =
+							{
+								// "ss://chacha20:123@127.0.0.1:8338",
+							},
+						};
+						server2.Run("ss://chacha20:123@0.0.0.0:8338");
+			*/
 
-			Console.ReadLine();
+			string q;
+			do
+			{
+				q = Console.ReadLine();
+
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.WaitForFullGCApproach();
+
+				foreach (var item in ObjectTracker.Default.Get<Thread>())
+				{
+					Console.WriteLine(Stringify.ToString(item, true));
+				}
+			} while (q != "q");
+		}
+
+		private static void Tick(object state)
+		{
+			var extra = "";
+			var ot = ObjectTracker.Default;
+			foreach (var type in new[] { typeof(Handler) })
+			{
+				extra += $", { ot.CountOf(type)} {type.Name}s";
+			}
+
+			Console.Title = $"{ot.CountOf<TcpClient>()} TcpClients, {ot.CountOf<Stream>()} Streams{extra}, {ot.CountOf<Thread>()} Threads Obj, {Process.GetCurrentProcess().Threads.Count} Threads in proc, {DateTime.Now: HH:mm:ss}";
 		}
 
 		static void Main2()

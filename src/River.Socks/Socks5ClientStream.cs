@@ -10,6 +10,8 @@ namespace River.Socks
 {
 	public class Socks5ClientStream : SocksClientStream
 	{
+		static Trace Trace = River.Trace.Default;
+
 		public Socks5ClientStream()
 		{
 
@@ -24,12 +26,6 @@ namespace River.Socks
 		public void Plug(string proxyHost, int proxyPort)
 		{
 			ClientStreamExtensions.Plug(this, proxyHost, proxyPort);
-		}
-
-		public override void Plug(Uri uri, Stream stream)
-		{
-			// Socks5 implementation here is not very efficient here, so, let's just buffer writes
-			// Stream = new MustFlushStream(stream);
 		}
 
 		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
@@ -130,7 +126,7 @@ namespace River.Socks
 				if (buf[1] != 0x00)
 				{
 					var msg = $"Server response: {buf[1]:X}: {GetResponseErrorMessage(buf[1])}";
-					Trace.WriteLine(msg);
+					Trace.WriteLine(TraceCategory.NetworkingData, msg);
 					throw new Exception(msg);
 				}
 				// ignore reserved buf[2] byte

@@ -10,8 +10,15 @@ namespace River
 {
 	public static class ThreadExt
 	{
-		public static bool JoinDebug(this Thread th, int ms)
+		public static bool JoinDebug(this Thread th, int ms = -1)
 		{
+			if (th == null) return true;
+			if (th == Thread.CurrentThread)
+			{
+				// wait yourself??
+				return true;
+			}
+
 			bool success;
 			do
 			{
@@ -24,6 +31,11 @@ namespace River
 		{
 			if (th is null)
 			{
+				return;
+			}
+			if (th == Thread.CurrentThread)
+			{
+				// abort yourself??
 				return;
 			}
 			if (!th.IsAlive)

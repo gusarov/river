@@ -62,13 +62,14 @@ namespace River.Any
 				default:
 					throw new Exception("Not supported");
 			}
-
-			IsResigned = true;
 			return;
 		}
 
 		void SwitchToHandler<T>(RiverServer server) where T : Handler, new()
 		{
+			IsResigned = true;
+			Dispose();
+
 			var handler = new T();
 			_restream.ResetReader();
 			handler.Init(server, Client, _restream);

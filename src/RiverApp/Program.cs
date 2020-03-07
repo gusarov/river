@@ -12,9 +12,11 @@ namespace RiverApp
 {
 	class Program
 	{
+		static Trace Trace = River.Trace.Default;
+
 		static void Main(string[] args)
 		{
-			Trace.WriteLine("Logger started...");
+			Trace.WriteLine(TraceCategory.Misc, "Logger started...");
 			RiverInit.RegAll();
 
 			var servers = new List<(RiverServer, Uri)>();

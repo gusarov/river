@@ -18,6 +18,8 @@ namespace River
 		public TcpClient Client { get; private set; }
 		protected Stream Stream { get; set; }
 
+		public override string ToString() => $"{GetType().Name} {Client?.Client?.RemoteEndPoint} {Stream}";
+
 		/// <summary>
 		/// Negotiate to establish stream
 		/// </summary>
@@ -44,11 +46,17 @@ namespace River
 				throw new Exception("Already been plugged");
 			}
 			// Profiling.Stamp("Plug new TcpClient...");
-			Client = Utils.WithTimeout(p => TcpClientFactory.Create(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			// Client = Utils.WithTimeout(p => TcpClientFactory.Create(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			Client = Utils.WithTimeout(ClientFactory, (ProxyHost, ProxyPort), 4000);
 			// Client = TcpClientFactory.Create(ProxyHost, ProxyPort);
 			// Profiling.Stamp("Pluged");
 			Client.Configure();
 			Stream = Client.GetStream2();
+		}
+
+		static TcpClient ClientFactory((string ProxyHost, int ProxyPort) p)
+		{
+			return TcpClientFactory.Create(p.ProxyHost, p.ProxyPort);
 		}
 
 		/// <summary>
@@ -85,8 +93,12 @@ namespace River
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			Stream.Write(buffer, offset, count);
-			Stream.Flush();
+			var stream = Stream;
+			if (stream != null)
+			{
+				stream.Write(buffer, offset, count);
+				stream.Flush();
+			}
 		}
 
 		public override void Close()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,6 +10,8 @@ namespace River
 {
 	public static class Utils
 	{
+		static Trace Trace = River.Trace.Default;
+
 		public static void WithTimeout(Action action, int msTimeout)
 		{
 			WithTimeout<object, object>(x => {
@@ -37,9 +40,14 @@ namespace River
 				});
 				th.IsBackground = true;
 				th.Start();
-				
-				if (!th.Join(msTimeout))
+
+				retry:
+				if (!th.JoinDebug(msTimeout))
 				{
+					if (Debugger.IsAttached)
+					{
+						goto retry;
+					}
 					try
 					{
 						th.Abort();

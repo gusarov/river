@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="RiverSelfService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RiverSelfService_Admin.cs" />
+    <Compile Include="RiverSelfService_Stats.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\doc\break_firewall_512.png">
