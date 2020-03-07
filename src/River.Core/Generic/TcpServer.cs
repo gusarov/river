@@ -87,7 +87,7 @@ namespace River.Generic
 			{
 				Dispose();
 			}
-			catch (SocketException ex) when (ex.IsConnectionClosing())
+			catch (Exception ex) when (ex.IsConnectionClosing())
 			{
 				Dispose();
 			}

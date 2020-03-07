@@ -129,7 +129,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="PreBuildEventXX" BeforeTargets="PreBuildEvent">
+  <Target Name="PreBuildEventXX" BeforeTargets="PreBuildEvent" Condition="$(ServerPipeline) != True">
     <Exec Command="taskkill -im River.Test.ConsoleServer.exe -f" IgnoreExitCode="true" />
   </Target>
 </Project>

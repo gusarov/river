@@ -63,7 +63,7 @@ namespace River.Test.ConsoleServer
 			}
 		}
 
-		static void Main0(string[] args)
+		static void Main(string[] args)
 		{
 			if (!args.Any())
 			{
@@ -426,7 +426,7 @@ Keep-Alive: true
 			Console.ReadLine();
 		}
 
-		static void Main() // 10
+		static void Main10() // 10
 		{
 			/*
 			Console.WriteLine("Take snapshot1");

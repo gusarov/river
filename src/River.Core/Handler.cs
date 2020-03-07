@@ -311,7 +311,7 @@ namespace River
 			return true;
 		}
 
-		[Obsolete]
+		// [Obsolete]
 		protected void ReadMoreHandshake()
 		{
 			/*

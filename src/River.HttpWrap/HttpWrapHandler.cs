@@ -44,7 +44,6 @@ namespace River.HttpWrap
 					if (c == 0)
 					{
 						return 0;
-						throw new ConnectionClosingException();
 					}
 					_readTo += c;
 

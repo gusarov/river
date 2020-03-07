@@ -137,7 +137,6 @@ Content-Length: {cnt}
 					if (c == 0)
 					{
 						return 0;
-						throw new ConnectionClosingException();
 					}
 					_readTo += c;
 					response = HttpUtils.TryParseHttpHeader(_readBuf, 0, _readTo, out eoh);
