@@ -1,4 +1,6 @@
-Master: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=master)](https://dev.azure.com/xkit/River) Develop: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River) NuGet: [![NuGet status](https://img.shields.io/nuget/dt/river?label=NuGet)](https://www.nuget.org/packages/river)
+Master: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=master)](https://dev.azure.com/xkit/River)
+Develop: [![Build status](https://dev.azure.com/xkit/River/_apis/build/status/River%20CI?branchName=develop)](https://dev.azure.com/xkit/River)
+NuGet: [![NuGet status](https://img.shields.io/nuget/dt/river?label=NuGet)](https://www.nuget.org/packages/river)
 
 
 # River - network tunneling
