@@ -200,11 +200,14 @@ namespace River.Test
 
 			var readBuf = new byte[1024 * 1024];
 			var readBufPos = 0;
+			var readBufSkip = 0;
 			var are = new AutoResetEvent(false);
 			var connected = true;
 			var sw = Stopwatch.StartNew();
 			Profiling.Stamp(TraceCategory.Test, "Test Read...");
-			string response = "";
+
+			var response = "";
+
 			client.BeginRead(readBuf, 0, readBuf.Length, Read, null);
 			// bool found = false;
 			void Read(IAsyncResult ar)
@@ -216,15 +219,14 @@ namespace River.Test
 					connected = false;
 					return;
 				}
-				var line = Encoding.UTF8.GetString(readBuf, readBufPos, c);
-				response += line;
+				readBufPos += c;
+				response = Encoding.UTF8.GetString(readBuf, readBufSkip, readBufPos);
 				if (response.Contains(expected))
 				{
 					// found = true;
 					are.Set();
 					Console.WriteLine("Wait Done: " + sw.ElapsedMilliseconds);
 				}
-				readBufPos += c;
 				// var line = Encoding.UTF8.GetString(readBuf, 0, c);
 				// Console.WriteLine(">>> " + line);
 				Profiling.Stamp(TraceCategory.Test, "Test Read...");
@@ -242,14 +244,13 @@ namespace River.Test
 			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
-			response = "";
+			readBufSkip = readBufPos;
 			client.Write(request, 0, request.Length);
-
 			sw = Stopwatch.StartNew();
 			Assert.IsTrue(are.WaitOneTest(5000));
 			Assert.IsTrue(connected);
 
-			return ""; // Encoding.UTF8.GetString(ms.ToArray());
+			return response; // Encoding.UTF8.GetString(ms.ToArray());
 		}
 
 		class ScopeMon : IDisposable
