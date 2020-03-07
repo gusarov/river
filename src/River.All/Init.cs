@@ -1,10 +1,12 @@
-﻿using River.Http;
+﻿using River.Any;
+using River.Http;
 using River.Internal;
 using River.SelfService;
 using River.ShadowSocks;
 using River.Socks;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace River
@@ -20,7 +22,7 @@ namespace River
 			Resolver.RegisterSchema<ShadowSocksServer, ShadowSocksClientStream>("ss");
 			Resolver.RegisterSchema<HttpProxyServer, HttpProxyClientStream>("http");
 			Resolver.RegisterSchemaServer<SocksServer>("socks");
-			Resolver.RegisterSchemaServer<SocksServer>("any");
+			Resolver.RegisterSchemaServer<AnyProxyServer>("any");
 		}
 	}
 }

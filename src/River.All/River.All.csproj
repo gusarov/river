@@ -16,6 +16,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,6 +50,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\River.Any\River.Any.csproj">
+      <Project>{AD8CDABB-14DD-4E6F-9156-854F221FF617}</Project>
+      <Name>River.Any</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
       <Project>{ddaba839-27aa-4ae0-ba2e-340c975669bb}</Project>
       <Name>River.ChaCha</Name>

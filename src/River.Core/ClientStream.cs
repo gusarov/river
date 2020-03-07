@@ -18,6 +18,8 @@ namespace River
 		public TcpClient Client { get; private set; }
 		protected Stream Stream { get; set; }
 
+		public override string ToString() => $"{GetType().Name} {Client?.Client?.RemoteEndPoint} {Stream}";
+
 		/// <summary>
 		/// Negotiate to establish stream
 		/// </summary>
@@ -43,9 +45,18 @@ namespace River
 			{
 				throw new Exception("Already been plugged");
 			}
-			Client = new TcpClient(ProxyHost, ProxyPort);
-			Client.Client.NoDelay = true;
-			Stream = Client.GetStream();
+			// Profiling.Stamp("Plug new TcpClient...");
+			// Client = Utils.WithTimeout(p => TcpClientFactory.Create(p.ProxyHost, p.ProxyPort), (ProxyHost, ProxyPort), 4000);
+			Client = Utils.WithTimeout(ClientFactory, (ProxyHost, ProxyPort), 4000);
+			// Client = TcpClientFactory.Create(ProxyHost, ProxyPort);
+			// Profiling.Stamp("Pluged");
+			Client.Configure();
+			Stream = Client.GetStream2();
+		}
+
+		static TcpClient ClientFactory((string ProxyHost, int ProxyPort) p)
+		{
+			return TcpClientFactory.Create(p.ProxyHost, p.ProxyPort);
 		}
 
 		/// <summary>
@@ -76,47 +87,52 @@ namespace River
 		{
 			var r = Stream.Read(buffer, offset, count);
 			if (r <= 0) Close();
+			StatService.Instance.MaxBufferUsage(offset + r, GetType().Name);
 			return r;
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			Stream.Write(buffer, offset, count);
-			Stream.Flush();
+			var stream = Stream;
+			if (stream != null)
+			{
+				stream.Write(buffer, offset, count);
+				stream.Flush();
+			}
 		}
-
-		bool _closing;
 
 		public override void Close()
 		{
-			_closing = true;
 			base.Close();
 			try
 			{
 				Client?.Client?.Shutdown(SocketShutdown.Both);
+				Client = null;
 			}
 			catch { }
-			Stream.Close();
+			try
+			{
+				Stream?.Close();
+				Stream = null;
+			}
+			catch { }
 		}
-
-		public override void Flush()
-			=> Stream.Flush();
 
 		public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginRead(buffer, offset, count, callback, state);
 
 		public override int EndRead(IAsyncResult asyncResult)
 		{
-			if (_closing) return 0;
+			if (IsDisposed) return 0;
 			return Stream.EndRead(asyncResult);
-		}			
+		}
 
 		public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 			=> Stream.BeginWrite(buffer, offset, count, callback, state);
 
 		public override void EndWrite(IAsyncResult asyncResult)
 		{
-			if (_closing) return;
+			if (IsDisposed) return;
 			Stream.EndWrite(asyncResult);
 		}
 

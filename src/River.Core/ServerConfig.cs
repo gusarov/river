@@ -77,6 +77,12 @@ namespace River
 			return new ServerConfig(uri);
 		}
 
+
 		public IList<IPEndPoint> EndPoints { get; } = new List<IPEndPoint>();
+	}
+
+	public class UserCredentials
+	{
+
 	}
 }

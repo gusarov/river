@@ -74,7 +74,7 @@ namespace River.ShadowSocks
 				{
 					_portRequested = _buffer[b++] * 256 + _buffer[b++];
 
-					Trace.WriteLine($"ShadowSocks Route: A{addressType} {_dnsNameRequested}{_addressRequested}:{_portRequested}");
+					Trace.WriteLine(TraceCategory.NetworkingData, $"ShadowSocks Route: A{addressType} {_dnsNameRequested}{_addressRequested}:{_portRequested}");
 
 					try
 					{
@@ -87,7 +87,7 @@ namespace River.ShadowSocks
 						if (b < _bufferReceivedCount)
 						{
 							// forward the rest of the buffer
-							Trace.WriteLine("Forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
+							Trace.WriteLine(TraceCategory.NetworkingData, "Forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
 							SendForward(_buffer, b, _bufferReceivedCount - b);
 						}
 						BeginStreaming();

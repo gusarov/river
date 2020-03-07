@@ -33,7 +33,7 @@ namespace River.Test
 
 		async void Handler(TcpClient client)
 		{
-			var stream = client.GetStream();
+			var stream = client.GetStream2();
 			var buf = new byte[16 * 1024];
 			while (!_disposed)
 			{
@@ -49,10 +49,12 @@ namespace River.Test
 
 		bool _disposed;
 
+		/*
 		~DemoTcpServer()
 		{
 			Dispose(false);
 		}
+		*/
 
 		protected virtual void Dispose(bool managed)
 		{

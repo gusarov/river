@@ -1,16 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>River.All</AssemblyName>
     <RootNamespace>River.All</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
   <ItemGroup>
+    <ProjectReference Include="..\River.Any\River.Any.Std.csproj" />
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
     <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />
@@ -19,16 +18,13 @@
     <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.Std.csproj" />
     <ProjectReference Include="..\River.Socks\River.Socks.Std.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
 </Project>

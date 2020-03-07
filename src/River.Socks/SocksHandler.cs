@@ -12,6 +12,56 @@ namespace River.Socks
 	{
 		static readonly Encoding _utf = new UTF8Encoding(false, false);
 
+		#region Preallocated
+
+		const int _staticSocsk4Granted = 0;
+		const int _staticSocsk4Rejected = 8;
+		const int _staticSocsk5Approved = 16;
+		static (int from, int cnt, int resp) _staticSocsk5Rejected = (18, 10, 1);
+		static byte[] _static = new byte[]
+		{
+			// Socks4 Response 1
+			/* 00 */ 0x00, // null
+			/* 01 */ 0x5A, // state = granted
+			/* 02 */ 0x00, // port
+			/* 03 */ 0x00, // port
+			/* 04 */ 0x00, // address
+			/* 05 */ 0x00, // address
+			/* 06 */ 0x00, // address
+			/* 07 */ 0x00, // address
+
+			// Socks4 Response 2
+			/* 08 */ 0x00, // null
+			/* 09 */ 0x5B, // state = rejected
+			/* 10 */ 0x00, // port
+			/* 11 */ 0x00, // port
+			/* 12 */ 0x00, // address
+			/* 13 */ 0x00, // address
+			/* 14 */ 0x00, // address
+			/* 15 */ 0x00, // address
+
+			// Socks5 Approved - No Auth
+			/* 16 */ 0x05, // V5
+			/* 17 */ 0x00, // NoAuth
+
+			// Socks5 Response Rejected
+			/* 18 */ 0x05, // V5
+			/* 19 */ 0x01, // state = granted
+			/* 20 */ 0x00, // reserved
+			/* 21 */ 0x01, // adr_type ipv4
+			/* 22 */ 0x00, // ipv4 1
+			/* 23 */ 0x00, // ipv4 2
+			/* 24 */ 0x00, // ipv4 3
+			/* 25 */ 0x00, // ipv4 4
+			/* 26 */ 0x00, // port H
+			/* 27 */ 0x00, // port L
+		};
+
+		byte[] _preallocated4 = new byte[4];
+		byte[] _preallocated16 = new byte[16];
+
+		#endregion
+
 		/*
 		private new SocksServer _server => (SocksServer)base._server;
 
@@ -33,21 +83,26 @@ namespace River.Socks
 		int _bufferProcessedCount;
 		private bool _authenticationNegotiated;
 
+		/// <summary>
+		/// This offset can improve performance of HTTP header reshake / insert
+		/// </summary>
+		// protected override int HandshakeStartPos => 128;
 		protected override void HandshakeHandler()
 		{
+			Profiling.Stamp(TraceCategory.NetworkingData, "HandshakeHandler...");
 			// get request from client
 			if (EnsureReaded(1))
 			{
-				var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
+				//var msg = $"{_bufferReceivedCount} bytes received on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}";
 				// Trace.WriteLine($"Negotiating - v{_buffer[0]} received from client {_bufferReceivedCount} bytes on thread #{Thread.CurrentThread.ManagedThreadId} port {Client.Client.RemoteEndPoint}");
 
-				switch (_buffer[0]) // 0
+				switch (_buffer[HandshakeStartPos]) // 0
 				{
 					case 4: // SOCKS4
 						#region SOCKS 4
 						if (EnsureReaded(8))
 						{
-							var b = 1;
+							var b = HandshakeStartPos + 1;
 							if (_buffer[b++] != 1) // 1
 							{
 								throw new NotSupportedException("command type not supported");
@@ -56,17 +111,22 @@ namespace River.Socks
 							_addressRequested = null;
 							if (_buffer[b] != 0) // #4 - 0 means v4a mode (0.0.0.X)
 							{
-								var bufAddress4 = new byte[4];
-								Array.Copy(_buffer, 4, bufAddress4, 0, 4);
-								_addressRequested = new IPAddress(bufAddress4);
+								// var bufAddress4 = _preallocated4;
+								// Array.Copy(_buffer, 4, bufAddress4, 0, 4);
+								// var a = ((_buffer[b + 3] << 24 | _buffer[b + 2] << 16 | _buffer[b + 1] << 8 | _buffer[b]) & 4294967295u);
+								var a = ((_buffer[b++] | _buffer[b++] << 8 | _buffer[b++] << 16 | _buffer[b++] << 24) & uint.MaxValue);
+								_addressRequested = new IPAddress(a);
 							}
-							b += 4;
+							else
+							{
+								b += 4; // ignore
+							}
 							// read user id, throw it away and look for null
-							Debug.Assert(b == 8);
+							Debug.Assert(b == 8 + HandshakeStartPos);
 							bool nullOk = false;
 							for (int i = 0; i < 255; i++)
 							{
-								EnsureReaded(b);
+								// EnsureReaded(b);
 								if (_buffer[b++] == 0)
 								{
 									// _bufferProcessedCount = 8 + i;
@@ -87,7 +147,7 @@ namespace River.Socks
 								int dnsBegin = b;
 								for (int i = 0; i < 255; i++)
 								{
-									EnsureReaded(b);
+									// EnsureReaded(b);
 									if (_buffer[b++] == 0)
 									{
 										dnsName = _utf.GetString(_buffer, dnsBegin, i);
@@ -109,11 +169,11 @@ namespace River.Socks
 #if DEBUG
 								if (_addressRequested == null)
 								{
-									Trace.WriteLine($"Socks v4a Route: {_dnsNameRequested}:{_portRequested} {msg}");
+									Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v4a Route: {_dnsNameRequested}:{_portRequested}");
 								}
 								else
 								{
-									Trace.WriteLine($"Socks v4 Route: {_addressRequested}:{_portRequested} {msg}");
+									Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v4 Route: {_addressRequested}:{_portRequested}");
 								}
 #endif
 								EstablishUpstream(new DestinationIdentifier
@@ -126,7 +186,7 @@ namespace River.Socks
 								{
 									// forward the rest of the buffer
 									// TODO do not do this when proxy chain expected
-									Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
+									Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - b) + " bytes");
 									SendForward(_buffer, b, _bufferReceivedCount - b);
 								}
 								// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -136,19 +196,14 @@ namespace River.Socks
 								Trace.TraceError(exx.ToString());
 								ex = exx;
 							}
-							var response = new byte[]
-							{
-									0x00, // null
-									(ex == null ? (byte) 0x5A : (byte) 0x5B), // state = granted / rejected
-									0x00, // port
-									0x00, // port
-									0x00, // address
-									0x00, // address
-									0x00, // address
-									0x00, // address
-							};
-							Stream.Write(response, 0, response.Length);
+
+							Profiling.Stamp(TraceCategory.NetworkingData, "Handshake response...");
+							var response = ex == null
+								? _staticSocsk4Granted
+								: _staticSocsk4Rejected;
+							Stream.Write(_static, response, 8);
 							Stream.Flush();
+							Profiling.Stamp(TraceCategory.NetworkingData, "Handshake streaming...");
 							if (ex != null)
 							{
 								Dispose();
@@ -187,12 +242,12 @@ namespace River.Socks
 									_bufferProcessedCount = 2 + authMethodsCount;
 									_authenticationNegotiated = true;
 									// PROVIDE MY CONCLUSION
-									Stream.Write(0x05, 0x00); // v5, APPROVED - NO AUTH
+									Stream.Write(_static, _staticSocsk5Approved, 2); // v5, APPROVED - NO AUTH
 								}
-								// continue - wait for reques
+								// continue - wait for request
 								if (EnsureReaded(_bufferProcessedCount + 4))
 								{
-									int b = _bufferProcessedCount;
+									var b = _bufferProcessedCount;
 
 									if (_buffer[b++] != 5)
 									{
@@ -212,10 +267,14 @@ namespace River.Socks
 										case 1: // IPv4
 											if (EnsureReaded(b + 4))
 											{
+												var a = ((_buffer[b++] | _buffer[b++] << 8 | _buffer[b++] << 16 | _buffer[b++] << 24) & uint.MaxValue);
+												_addressRequested = new IPAddress(a);
+												/*
 												var ipv4 = new byte[4];
 												Array.Copy(_buffer, b, ipv4, 0, 4);
 												_addressRequested = new IPAddress(ipv4);
 												b += 4;
+												*/
 												addressTypeProcessed = true;
 											}
 											break;
@@ -235,9 +294,9 @@ namespace River.Socks
 										case 4: // IPv6
 											if (EnsureReaded(b + 16))
 											{
-												var ipv6 = new byte[16];
-												Array.Copy(_buffer, b, ipv6, 0, 16);
-												_addressRequested = new IPAddress(ipv6);
+												// var ipv6 = new byte[16];
+												Array.Copy(_buffer, b, _preallocated16, 0, 16);
+												_addressRequested = new IPAddress(_preallocated16);
 												b += 16;
 												addressTypeProcessed = true;
 											}
@@ -260,7 +319,7 @@ namespace River.Socks
 													adrMsg = _addressRequested.ToString();
 													break;
 											}
-											Trace.WriteLine($"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested} {msg}");
+											Trace.WriteLine(TraceCategory.NetworkingData, $"Socks v5 Route: A{addressType} {adrMsg}:{_portRequested}");
 #endif
 
 											Exception ex = null;
@@ -275,7 +334,7 @@ namespace River.Socks
 												if (b < _bufferReceivedCount)
 												{
 													// forward the rest of the buffer
-													Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
+													Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - _bufferProcessedCount) + " bytes");
 													SendForward(_buffer, _bufferProcessedCount, _bufferReceivedCount - _bufferProcessedCount);
 												}
 												// _stream.BeginRead(_buffer, 0, _buffer.Length, ReceivedStreaming, null);
@@ -287,24 +346,15 @@ namespace River.Socks
 												ex = exx;
 											}
 
-											// it appears, not all clients can handle domain name response... Hello to Telegram & QT platform.
+											// it appears, not all clients can handle domain name response...
+											// Hello to Telegram & QT platform.
 											// Let's go with IPv4
-											var response = new byte[]
-											{
-													0x05, // ver
-													(ex == null ? (byte) 0x00 : (byte) 0x01), // state = granted / rejected
-													0x00, // null rsv
-													0x01, // adr_type ipv4
-													0x00, // ipv4 1
-													0x00, // ipv4 2
-													0x00, // ipv4 3
-													0x00, // ipv4 4
-													0x00, // port H
-													0x00, // port L
-											};
+											Array.Copy(_static, _staticSocsk5Rejected.from
+												, _preallocated16, 0, _staticSocsk5Rejected.cnt);
+											_preallocated16[_staticSocsk5Rejected.resp] = ex != null ? (byte)0x01 : (byte)0x00;
 											if (!IsDisposed)
 											{
-												Stream.Write(response, 0, response.Length);
+												Stream.Write(_preallocated16, 0, _staticSocsk5Rejected.cnt);
 											}
 										}
 									}
@@ -324,16 +374,12 @@ namespace River.Socks
 
 						// we must wait till entire heder comes
 						int eoh;
-						var headers = HttpUtils.TryParseHttpHeader(_buffer, 0, _bufferReceivedCount, out eoh);
+						var headers = HttpUtils.TryParseHttpHeader(_buffer, HandshakeStartPos, _bufferReceivedCount, out eoh);
 						if (headers != null)
 						{
 							headers.TryGetValue("HOST", out var hostHeader);
 							headers.TryGetValue("_url_host", out var host);
 							headers.TryGetValue("_url_port", out var port);
-
-							var hostHeaderSplitter = hostHeader.IndexOf(':');
-							var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
-							var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
 
 							if (string.IsNullOrEmpty(hostHeader))
 							{
@@ -344,12 +390,22 @@ namespace River.Socks
 							}
 							else
 							{
+								var hostHeaderSplitter = hostHeader.LastIndexOf(':');
+								var hostHeaderHost = hostHeaderSplitter > 0 ? hostHeader.Substring(0, hostHeaderSplitter) : hostHeader;
+								var hostHeaderPort = hostHeaderSplitter > 0 ? hostHeader.Substring(hostHeaderSplitter + 1) : "80";
+
 								_portRequested = int.Parse(hostHeaderPort, CultureInfo.InvariantCulture);
 								_dnsNameRequested = hostHeaderHost;
 							}
 
 							try
 							{
+								bool extraHeaderExists = false;
+								if (headers.ContainsKey(_randomHeader.Value))
+								{
+									extraHeaderExists = true;
+									_dnsNameRequested = "_river"; // stop loop, goto self-service
+								}
 								EstablishUpstream(new DestinationIdentifier
 								{
 									Host = _dnsNameRequested,
@@ -358,18 +414,40 @@ namespace River.Socks
 
 								if (headers["_verb"] == "CONNECT")
 								{
-									Stream.Write(_utf.GetBytes("200 OK\r\n\r\n")); // ok to CONNECT
-																					// for connect - forward the rest of the buffer
+									Stream.Write(_utf.GetBytes("HTTP/1.1 200 OK\r\n\r\n")); // ok to CONNECT
+																							// for connect - forward the rest of the buffer
 									if (_bufferReceivedCount - eoh > 0)
 									{
-										Trace.WriteLine("Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
+										Trace.WriteLine(TraceCategory.NetworkingData, "Streaming - forward the rest >> " + (_bufferReceivedCount - eoh) + " bytes");
 										SendForward(_buffer, eoh, _bufferReceivedCount - eoh);
 									}
 								}
 								else
 								{
+									// when buffer equal to EOH we can append extra in no time
+									// otherwise still must try to append in 2% o times
+									if (!extraHeaderExists && (_bufferReceivedCount == eoh || Interlocked.Increment(ref _requestNumber) % 50 == 0))
+									{
+										// let's add a header to handle proxy loop
+										// if there is a loop with body - it will stop after 50 iterations
+										var extraHeader = _randomHeaderLine.Value;
+										var eohp = HandshakeStartPos + eoh;
+
+										if (_bufferReceivedCount > eoh)
+										{
+											// Shift Array
+											Array.Copy(_buffer, eohp, _buffer, eohp + extraHeader.Length, _bufferReceivedCount - eoh);
+										}
+
+										var c = _utf.GetBytes(extraHeader+"\r\n", 0, extraHeader.Length+2, _buffer, eohp - 2);
+										_bufferReceivedCount += c - 2;
+										if (c != extraHeader.Length + 2)
+										{
+											throw new Exception("Encoding - length missmatch");
+										}
+									}
 									// otherwise forward entire buffer without change
-									SendForward(_buffer, 0, _bufferReceivedCount);
+									SendForward(_buffer, HandshakeStartPos, _bufferReceivedCount);
 								}
 								BeginStreaming();
 							}
@@ -386,9 +464,30 @@ namespace River.Socks
 						#endregion
 						break;
 					default:
-						throw new NotSupportedException($"Protocol not supported. First byte is {_buffer[0]:X2} {_utf.GetString(_buffer, 0, 1)}");
+						throw new NotSupportedException($"Protocol not supported. First byte is {_buffer[HandshakeStartPos]:X2} {_utf.GetString(_buffer, HandshakeStartPos, 1)}");
 				}
 			}
+		}
+
+		static Random _rnd = new Random();
+		static int _requestNumber;
+		static Lazy<string> _randomHeader = new Lazy<string>(GetRandomName);
+		static Lazy<string> _randomHeaderLine = new Lazy<string>(GetRandomHeader);
+
+		static string GetRandomHeader()
+		{
+			return $"{_randomHeader.Value}: {GetRandomName()}\r\n";
+		}
+
+		static string GetRandomName()
+		{
+			var c = _rnd.Next(5) + 5;
+			var s = "";
+			for (var i = 0; i < c; i++)
+			{
+				s += (char)(_rnd.Next('z' - 'a') + 'a');
+			}
+			return s;
 		}
 
 	}

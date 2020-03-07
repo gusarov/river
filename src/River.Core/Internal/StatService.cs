@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -19,20 +21,13 @@ namespace River.Internal
 		int _handlersCount;
 		public int HandlersCount { get => _handlersCount; set => _handlersCount = value; }
 
-		internal void HandlerAdd(Handler handler)
+		// Dictionary<int, (int, string)> _dicn = new Dictionary<int, (int, string)>();
+
+		[Conditional("DEBUG")]
+		public void MaxBufferUsage(int size, string from)
 		{
-			var cnt = Interlocked.Increment(ref _handlersCount);
-#if DEBUG
-			Console.Title = $"Handlers: {cnt}";
-#endif
 		}
 
-		internal void HandlerRemove(Handler handler)
-		{
-			var cnt = Interlocked.Decrement(ref _handlersCount);
-#if DEBUG
-			Console.Title = $"Handlers: {cnt}";
-#endif
-		}
+		
 	}
 }

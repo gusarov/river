@@ -34,7 +34,7 @@ namespace River.HttpWrap
 		byte[] _bufRq = new byte[1 * 1024];
 		byte[] _bufOut = new byte[16 * 1024];
 		byte[] _bufIn = new byte[16 * 1024];
-		Encoding _utf8 = new UTF8Encoding(false, false);
+
 		// ChaCha20 _encrypt;
 		// ChaCha20 _decrypt;
 		string _routeToHost;
@@ -73,7 +73,7 @@ namespace River.HttpWrap
 		{
 			ConfigureUri(proxyUri);
 			base.Plug(proxyUri); // base performs regular Tcp connection
-			Plug(Client.GetStream()); // but we are wrapping it here a little bit differently
+			Plug(Client.GetStream2()); // but we are wrapping it here a little bit differently
 		}
 
 		public override void Plug(Uri proxyUri, Stream stream)
@@ -137,7 +137,6 @@ Content-Length: {cnt}
 					if (c == 0)
 					{
 						return 0;
-						throw new ConnectionClosingException();
 					}
 					_readTo += c;
 					response = HttpUtils.TryParseHttpHeader(_readBuf, 0, _readTo, out eoh);

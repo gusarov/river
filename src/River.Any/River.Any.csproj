@@ -16,6 +16,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,6 +54,18 @@
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
       <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.csproj">
+      <Project>{021ea1da-1cf3-4d8b-9620-d31bbedbba0e}</Project>
+      <Name>River.HttpWrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
+      <Name>River.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
+      <Name>River.Internal</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>

@@ -13,6 +13,8 @@ namespace River.Common
 	/// </summary>
 	public class DebuggerTracker
 	{
+		public static DebuggerTracker Instance { get; } = new DebuggerTracker();
+
 		const int _max = 5;
 		const double _maxSum = 15.5;
 
@@ -29,7 +31,7 @@ namespace River.Common
 
 		Timer _timer;
 
-		public DebuggerTracker()
+		private DebuggerTracker()
 		{
 			// initialize a _lastCallbacks window
 			var now = DateTime.UtcNow;
@@ -41,6 +43,7 @@ namespace River.Common
 			_timer = new Timer(Callback, null, 0, 1000);
 		}
 
+		/*
 		~DebuggerTracker()
 		{
 			try
@@ -49,6 +52,7 @@ namespace River.Common
 			}
 			catch { }
 		}
+		*/
 
 		DateTime[] _lastCallbacks = new DateTime[_max];
 		int _lastCallbacksIndex;

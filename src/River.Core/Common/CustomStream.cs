@@ -63,6 +63,7 @@ namespace River.Common
 			try
 			{
 				var r = _read(_underlying, buffer, offset, count);
+				StatService.Instance.MaxBufferUsage(offset + r, GetType().Name);
 				return r;
 			}
 			catch (IOException ex) when (ex.IsConnectionClosing())

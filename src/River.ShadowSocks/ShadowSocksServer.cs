@@ -11,7 +11,7 @@ namespace River.ShadowSocks
 {
 	public class ShadowSocksServer : TcpServer<ShadowSocksHandler>
 	{
-		public override void Run(ServerConfig config)
+		protected override void RunCore(ServerConfig config)
 		{
 			if (config is null)
 			{
@@ -20,7 +20,7 @@ namespace River.ShadowSocks
 
 			var algo = config["user"];
 			Password = config["password"];
-			base.Run(config);
+			base.RunCore(config);
 		}
 
 		public string Password { get; set; }

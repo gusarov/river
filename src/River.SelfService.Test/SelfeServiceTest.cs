@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using River.SelfService;
 
 namespace River.SelfService.Test
 {

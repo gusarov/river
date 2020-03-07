@@ -24,10 +24,10 @@ namespace River.Test.Integration
 			{
 				Chain =
 				{
-					"ss://chacha20:123@r.xkip.ru:18338",
-					"ss://chacha20:123@r.xkip.ru:18338",
-					"ss://chacha20:123@r.xkip.ru:18338",
-					"ss://chacha20:123@r.xkip.ru:18338",
+					"ss://chacha20:123@rt.xkip.ru:18338",
+					"ss://chacha20:123@rt.xkip.ru:18338",
+					"ss://chacha20:123@rt.xkip.ru:18338",
+					"ss://chacha20:123@rt.xkip.ru:18338",
 				},
 			}.Track(this);
 			proxy.Run("socks://0.0.0.0:" + port);

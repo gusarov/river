@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>River.HttpWrap</AssemblyName>
     <RootNamespace>River.HttpWrap</RootNamespace>
-  </PropertyGroup>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
@@ -20,7 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\River.ChaCha\River.ChaCha.Std.csproj" />
     <ProjectReference Include="..\River.Core\River.Core.Std.csproj" />
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.Std.csproj" />
     <ProjectReference Include="..\River.Http\River.Http.Std.csproj" />
     <ProjectReference Include="..\River.Internal\River.Internal.Std.csproj" />
   </ItemGroup>

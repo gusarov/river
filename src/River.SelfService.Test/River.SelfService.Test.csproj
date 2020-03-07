@@ -7,8 +7,8 @@
     <ProjectGuid>{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.RiverSelfService.Test</RootNamespace>
-    <AssemblyName>River.RiverSelfService.Test</AssemblyName>
+    <RootNamespace>River.SelfService.Test</RootNamespace>
+    <AssemblyName>River.SelfService.Test</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -19,6 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,6 +45,7 @@
   <ItemGroup>
     <Compile Include="SelfeServiceTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelfServiceLiveTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter">
@@ -54,9 +56,29 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\River.Core\River.Core.csproj">
+      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
+      <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Http\River.Http.csproj">
+      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
+      <Name>River.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
+      <Name>River.Internal</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
       <Project>{508767bb-caf6-42a1-a13f-4e84c2f44c87}</Project>
       <Name>River.SelfService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
+      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
+      <Name>River.Socks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Test.Base\River.Test.Base.csproj">
+      <Project>{df51d93f-751f-4787-a8ee-33289860f6df}</Project>
+      <Name>River.Test.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

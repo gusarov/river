@@ -65,16 +65,19 @@ namespace River.Socks
 			buffer[b++] = (byte)(targetPort >> 8); // port high
 			buffer[b++] = (byte)(targetPort); // port low
 
-			var ipv4 = proxyDns == true
-				? null
-				: Dns.GetHostAddresses(targetHost).FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
-
-			if (ipv4 == null && IPAddress.TryParse(targetHost, out var ipv4g))
+			IPAddress ipv4 = null;
+			if (IPAddress.TryParse(targetHost, out var ipParsed))
 			{
-				if (ipv4g.AddressFamily == AddressFamily.InterNetwork)
+				if (ipParsed.AddressFamily == AddressFamily.InterNetwork)
 				{
-					ipv4 = ipv4g;
+					ipv4 = ipParsed;
 				}
+			}
+
+			if (ipv4 == null && proxyDns == false)
+			{
+				ipv4 = Dns.GetHostAddresses(targetHost)
+					.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
 			}
 
 			bool dnsMode = false;

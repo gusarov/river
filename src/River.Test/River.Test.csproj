@@ -43,7 +43,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\AuthHashTests.cs" />
+    <Compile Include="SocksHandlerTest.cs" />
     <Compile Include="ChainTests.cs" />
+    <Compile Include="AnyHandlerTest.cs" />
+    <Compile Include="ExceptionalTests.cs" />
+    <Compile Include="ReStreamTests.cs" />
     <Compile Include="WrapHttpTests.cs" />
     <Compile Include="HappyEyeballsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -57,13 +62,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\River.Any\River.Any.csproj">
+      <Project>{AD8CDABB-14DD-4E6F-9156-854F221FF617}</Project>
+      <Name>River.Any</Name>
+    </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
       <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.HttpUtils\River.HttpUtils.Std.csproj">
-      <Project>{f30348d4-c721-483f-bb28-93538c501e0b}</Project>
-      <Name>River.HttpUtils.Std</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.HttpWrap\River.HttpWrap.Std.csproj">
       <Project>{e794cf50-663a-42e7-ad46-300c0bcc4137}</Project>
@@ -72,6 +77,10 @@
     <ProjectReference Include="..\River.Http\River.Http.csproj">
       <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
       <Name>River.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Internal\River.Internal.csproj">
+      <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
+      <Name>River.Internal</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>

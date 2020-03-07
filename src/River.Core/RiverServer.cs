@@ -19,7 +19,7 @@ namespace River
 
 		public IList<ProxyIdentifier> Chain { get; } = new List<ProxyIdentifier>();
 
-		protected DebuggerTracker DebuggerTracker { get; } = new DebuggerTracker();
+		protected DebuggerTracker DebuggerTracker { get; } = DebuggerTracker.Instance;
 
 		protected abstract Handler CreateHandlerCore(TcpClient client);
 
@@ -33,7 +33,22 @@ namespace River
 
 		protected bool IsDisposed { get; private set; }
 
-		public abstract void Run(ServerConfig config);
+		public ServerConfig Config { get; private set; }
+
+		public void ParseConfig(ServerConfig config)
+		{
+			Config = config;
+			ParseConfigCore(config);
+		}
+
+		public void Run(ServerConfig config)
+		{
+			ParseConfig(config);
+			RunCore(config);
+		}
+
+		protected virtual void ParseConfigCore(ServerConfig config) { }
+		protected abstract void RunCore(ServerConfig config);
 
 		public void Dispose()
 		{
@@ -41,10 +56,12 @@ namespace River
 			GC.SuppressFinalize(this);
 		}
 
+		/*
 		~RiverServer()
 		{
 			Dispose(false);
 		}
+		*/
 
 		protected virtual void Dispose(bool managed)
 		{

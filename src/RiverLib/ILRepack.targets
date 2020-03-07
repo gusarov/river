@@ -15,6 +15,7 @@
 		<ItemGroup>
 			<DoNotInternalizeAssemblies Include="@(DoNotInternalizeAssembliesFiles->'%(FileName)')" />
 			<DoNotInternalizeAssemblies Remove="River.Internal" />
+			<DoNotInternalizeAssemblies Remove="River.SelfService" />
 		</ItemGroup>
 		
 		<Message Importance="high" Text="OutDir = $(OutDir)" />

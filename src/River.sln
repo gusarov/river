@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29728.190
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Core", "River.Core\River.Core.csproj", "{13257360-183C-4B42-A00E-293FF7358A97}"
 EndProject
@@ -56,8 +56,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test.Integration", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.Http.Std", "River.Http\River.Http.Std.csproj", "{AB45D853-37A2-4926-8822-9BE04FD3F225}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.HttpUtils.Std", "River.HttpUtils\River.HttpUtils.Std.csproj", "{F30348D4-C721-483F-BB28-93538C501E0B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.Any.Std", "River.Any\River.Any.Std.csproj", "{DCD9E772-1B65-4C17-9D05-2FBAE654EBEA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.HttpWrap.Std", "River.HttpWrap\River.HttpWrap.Std.csproj", "{E794CF50-663A-42E7-AD46-300C0BCC4137}"
@@ -68,11 +66,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.SelfService.Test", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.ChaCha.Test", "River.ChaCha.Test\River.ChaCha.Test.csproj", "{8D361075-47C4-4AFD-8220-31D79194D810}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.HttpUtils", "River.HttpUtils\River.HttpUtils.csproj", "{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Any", "River.Any\River.Any.csproj", "{AD8CDABB-14DD-4E6F-9156-854F221FF617}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.HttpWrap", "River.HttpWrap\River.HttpWrap.csproj", "{021EA1DA-1CF3-4D8B-9620-D31BBEDBBA0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test.PatchProject", "River.Test.PatchProject\River.Test.PatchProject.csproj", "{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -168,10 +166,6 @@ Global
 		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB45D853-37A2-4926-8822-9BE04FD3F225}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F30348D4-C721-483F-BB28-93538C501E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F30348D4-C721-483F-BB28-93538C501E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F30348D4-C721-483F-BB28-93538C501E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F30348D4-C721-483F-BB28-93538C501E0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DCD9E772-1B65-4C17-9D05-2FBAE654EBEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DCD9E772-1B65-4C17-9D05-2FBAE654EBEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCD9E772-1B65-4C17-9D05-2FBAE654EBEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -192,10 +186,6 @@ Global
 		{8D361075-47C4-4AFD-8220-31D79194D810}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D361075-47C4-4AFD-8220-31D79194D810}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D361075-47C4-4AFD-8220-31D79194D810}.Release|Any CPU.Build.0 = Release|Any CPU
-		{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AD8CDABB-14DD-4E6F-9156-854F221FF617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AD8CDABB-14DD-4E6F-9156-854F221FF617}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD8CDABB-14DD-4E6F-9156-854F221FF617}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -204,6 +194,10 @@ Global
 		{021EA1DA-1CF3-4D8B-9620-D31BBEDBBA0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{021EA1DA-1CF3-4D8B-9620-D31BBEDBBA0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{021EA1DA-1CF3-4D8B-9620-D31BBEDBBA0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +212,7 @@ Global
 		{6B7A2315-41B4-44D7-B682-DBCB50378014} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 		{0FE43AB3-9A9F-4FFC-B618-A5709A8C3B7F} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 		{8D361075-47C4-4AFD-8220-31D79194D810} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
+		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F} = {1BCEF205-580C-483D-B452-F82F2831B1CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5977966-1CCA-49B1-8512-C57AC4A77656}

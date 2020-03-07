@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace River.Test
 {
@@ -38,6 +39,15 @@ namespace River.Test
 				}
 			}
 			_dic.TryRemove(state, out var _);
+		}
+
+		public static void Explode()
+		{
+			var states = _dic.Keys.ToArray();
+			foreach (var state in states)
+			{
+				Explode(state);
+			}
 		}
 	}
 }

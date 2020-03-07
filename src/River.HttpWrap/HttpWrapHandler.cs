@@ -44,7 +44,6 @@ namespace River.HttpWrap
 					if (c == 0)
 					{
 						return 0;
-						throw new ConnectionClosingException();
 					}
 					_readTo += c;
 
@@ -56,7 +55,7 @@ namespace River.HttpWrap
 				_readBody = true;
 				if (!int.TryParse(request["Content-Length"], out _readContentLength))
 				{
-					Trace.WriteLine("Content-Length is mandatory for HTTP/1.1 & Keep-Alive");
+					Trace.WriteLine(TraceCategory.NetworkingData, "Content-Length is mandatory for HTTP/1.1 & Keep-Alive");
 					Dispose();
 				}
 			}

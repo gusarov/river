@@ -8,14 +8,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{80CFD4C6-78DA-4E84-9725-6DCB2A749EA4}</ProjectGuid>
+    <ProjectGuid>{AD8CDABB-14DD-4E6F-9156-854F221FF617}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>River.HttpUtils</RootNamespace>
-    <AssemblyName>River.HttpUtils</AssemblyName>
+    <RootNamespace>River.Any</RootNamespace>
+    <AssemblyName>River.Any</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,8 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HttpUtils.cs" />
+    <Compile Include="AnyHandler.cs" />
+    <Compile Include="AnyProxyServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\River.Core\River.Core.csproj">
+      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
+      <Name>River.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
+      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
+      <Name>River.Socks</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
