@@ -24,11 +24,13 @@ namespace River
 			const SocketFlags MSG_PUSH_IMMEDIATE = (SocketFlags)0x20;
 
 			private readonly Socket _socket;
+			private readonly TcpClient _tcpClient;
 
-			internal NetworkStream2(Socket socket, bool ownSocket) : base(socket, ownSocket)
+			internal NetworkStream2(TcpClient client, bool ownSocket) : base(client.Client, ownSocket)
 			{
 				ObjectTracker.Default.Register(this);
-				_socket = socket;
+				_tcpClient = client;
+				_socket = client.Client;
 			}
 
 			public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
@@ -88,6 +90,11 @@ namespace River
 					{
 						_socket.Shutdown(SocketShutdown.Both);
 					}
+				}
+				catch { }
+				try
+				{
+					_tcpClient?.Close();
 				}
 				catch { }
 				base.Close();

@@ -60,8 +60,10 @@ namespace River.Generic
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		void CreateHandlerNoRet(TcpClient client)
+		void CreateHandlerNoRet(TcpListener listener)
 		{
+			var client = listener.AcceptTcpClient();
+			client.Configure();
 			_ = CreateHandler(client);
 		}
 
@@ -72,9 +74,7 @@ namespace River.Generic
 			{
 				while (!IsDisposed)
 				{
-					var client = entry.TcpListener.AcceptTcpClient();
-					client.Configure();
-					CreateHandlerNoRet(client);
+					CreateHandlerNoRet(entry.TcpListener);
 					// wait till exit from pause to avoid flooding debugger by threads
 					while (!DebuggerTracker.IsNoDebugger())
 					{

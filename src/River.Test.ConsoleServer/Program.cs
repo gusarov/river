@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using River.Any;
 using River.ChaCha;
 using River.Http;
@@ -59,7 +63,7 @@ namespace River.Test.ConsoleServer
 			}
 		}
 
-		static void Main(string[] args)
+		static void Main0(string[] args)
 		{
 			if (!args.Any())
 			{
@@ -422,7 +426,7 @@ Keep-Alive: true
 			Console.ReadLine();
 		}
 
-		static void Main10()
+		static void Main() // 10
 		{
 			/*
 			Console.WriteLine("Take snapshot1");
@@ -438,16 +442,48 @@ Keep-Alive: true
 			Console.WriteLine("Take snapshot2");
 			// Console.ReadLine();
 			*/
-			
-			var test = new WrapHttpTests();
+
+			var ctx = new MyTestContext(nameof(SocksHandlerTest.Should_10_handle_socks5));
+			SocksHandlerTest.ClassInit(ctx);
+
+			var test = new SocksHandlerTest();
+			test.TestContext = ctx;
 			test.BaseInit();
-			test.Should_wrap_http();
+			test.Should_10_handle_socks5();
 			try
 			{
 				test.BaseClean();
-			}
-			catch { }
 
+				SocksHandlerTest.BaseClassClean();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+			Console.ReadLine();
 		}
+	}
+
+	public class MyTestContext : TestContext
+	{
+		public MyTestContext(string name)
+		{
+			_testName = name;
+		}
+
+		readonly string _testName;
+		public override string TestName => _testName;
+
+		public override IDictionary Properties => throw new NotImplementedException();
+
+		public override DataRow DataRow => throw new NotImplementedException();
+
+		public override DbConnection DataConnection => throw new NotImplementedException();
+
+		public override void AddResultFile(string fileName) => throw new NotImplementedException();
+		public override void BeginTimer(string timerName) => throw new NotImplementedException();
+		public override void EndTimer(string timerName) => throw new NotImplementedException();
+		public override void WriteLine(string message) => throw new NotImplementedException();
+		public override void WriteLine(string format, params object[] args) => throw new NotImplementedException();
 	}
 }

@@ -22,12 +22,62 @@ namespace River.Test
 		}
 
 		object _test;
+		protected static object _testStaticScope = new object();
 		protected bool TestInitialized { get; private set; }
+
+		static Dictionary<string, ObjectTracker> _trackers = new Dictionary<string, ObjectTracker>();
+
+		Stopwatch _testTime;
+
+		public TestContext TestContext { get; set; }
+
+		static protected ObjectTracker ClassObjectTracker;
+
+		[ClassCleanup]
+		public static void BaseClassClean()
+		{
+			Console.WriteLine("BaseClassClean...");
+			Tracker.Explode(_testStaticScope);
+			_trackers["Before Tests (either class init or from concurrent tests)"] = ClassObjectTracker;
+			WaitForObjects();
+		}
+
+		[TestInitialize]
+		public void BaseInit()
+		{
+			TestInitialized = true;
+			_test = new object();
+			// Explode();
+			// ObjectTracker.Default.ResetCollection();
+			_testTime = Stopwatch.StartNew();
+			Profiling.Start();
+
+			if (ClassObjectTracker == null)
+			{
+				ClassObjectTracker = ObjectTracker.Default;
+			}
+			ObjectTracker.Default = (ObjectTracker)Activator.CreateInstance(typeof(ObjectTracker), true);
+			ObjectTracker.Default.EnableCollection();
+			_trackers[TestContext.TestName] = ObjectTracker.Default;
+		}
+
+		[TestCleanup]
+		public void BaseClean()
+		{
+			Console.WriteLine("BaseTestCleanup...");
+
+			Profiling.Stamp(TraceCategory.Test, "BaseClean");
+			Explode();
+
+			// You can disable this in general and enable during fine object lifecycle profiling
+			// this is safe, because ZZ_Clean test will wait for all tests at unce
+			// WaitForObjects();
+		}
 
 		[TestMethod]
 		public void ZZ_Clean()
 		{
-			_trackers["Class"] = ClassObjectTracker;
+			// _trackers["Class"] = ClassObjectTracker;
 			WaitForObjects();
 		}
 
@@ -36,15 +86,6 @@ namespace River.Test
 		{
 			WaitForObjects();
 		}
-
-		[TestCleanup]
-		public void BaseClean()
-		{
-			Profiling.Stamp(TraceCategory.Test, "BaseClean");
-			Explode();
-		}
-
-		static Dictionary<string, ObjectTracker> _trackers = new Dictionary<string, ObjectTracker>();
 
 		public static void WaitForObjects()
 		{
@@ -77,31 +118,6 @@ namespace River.Test
 				}
 				throw;
 			}
-		}
-
-		Stopwatch _testTime;
-
-		public TestContext TestContext { get; set; }
-
-		protected ObjectTracker ClassObjectTracker;
-
-		[TestInitialize]
-		public void BaseInit()
-		{
-			TestInitialized = true;
-			_test = new object();
-			// Explode();
-			// ObjectTracker.Default.ResetCollection();
-			_testTime = Stopwatch.StartNew();
-			Profiling.Start();
-
-			if (ClassObjectTracker == null)
-			{
-				ClassObjectTracker = ObjectTracker.Default;
-			}
-			ObjectTracker.Default = (ObjectTracker)Activator.CreateInstance(typeof(ObjectTracker), true);
-			ObjectTracker.Default.EnableCollection();
-			_trackers[TestContext.TestName] = ObjectTracker.Default;
 		}
 
 		protected void Explode()

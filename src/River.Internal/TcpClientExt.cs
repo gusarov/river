@@ -31,7 +31,7 @@ namespace River
 				throw new ArgumentNullException(nameof(client));
 			}
 
-			return new NetworkStream2(client.Client, true);
+			return new NetworkStream2(client, true);
 		}
 	}
 
