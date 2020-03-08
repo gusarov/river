@@ -26,7 +26,7 @@ namespace River.ChaCha
 	/// <summary>
 	/// Class that can be used for ChaCha20 encryption / decryption
 	/// </summary>
-	public sealed class ChaCha20
+	public class ChaCha20
 	{
 		/// <summary>
 		/// Key lenght in bytes
@@ -89,10 +89,14 @@ namespace River.ChaCha
 
 		static Encoding _utf8 = new UTF8Encoding(false, false);
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-		// static Lazy<MD5> _lazyMd5 = new Lazy<MD5>(() => MD5.Create());
 		static MD5 _md5 = MD5.Create();
 #pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
 
+		/// <summary>
+		/// Key Derivation Function
+		/// </summary>
+		/// <param name="password"></param>
+		/// <returns></returns>
 		public static byte[] Kdf(string password)
 		{
 			if (password is null)
@@ -137,23 +141,23 @@ namespace River.ChaCha
 				throw new ArgumentException($"Key length must be {KeyLength}. Actual: {key.Length}");
 			}
 
-			_state[4] = Util.U8To32Little(key, 0);
-			_state[5] = Util.U8To32Little(key, 4);
-			_state[6] = Util.U8To32Little(key, 8);
-			_state[7] = Util.U8To32Little(key, 12);
+			_state[4] = U8To32Little(key, 0);
+			_state[5] = U8To32Little(key, 4);
+			_state[6] = U8To32Little(key, 8);
+			_state[7] = U8To32Little(key, 12);
 
 			var constants = (key.Length == KeyLength) ? _sigma : _tau;
 			var keyIndex = key.Length - 16;
 
-			_state[8] = Util.U8To32Little(key, keyIndex + 0);
-			_state[9] = Util.U8To32Little(key, keyIndex + 4);
-			_state[10] = Util.U8To32Little(key, keyIndex + 8);
-			_state[11] = Util.U8To32Little(key, keyIndex + 12);
+			_state[8] = U8To32Little(key, keyIndex + 0);
+			_state[9] = U8To32Little(key, keyIndex + 4);
+			_state[10] = U8To32Little(key, keyIndex + 8);
+			_state[11] = U8To32Little(key, keyIndex + 12);
 
-			_state[0] = Util.U8To32Little(constants, 0);
-			_state[1] = Util.U8To32Little(constants, 4);
-			_state[2] = Util.U8To32Little(constants, 8);
-			_state[3] = Util.U8To32Little(constants, 12);
+			_state[0] = U8To32Little(constants, 0);
+			_state[1] = U8To32Little(constants, 4);
+			_state[2] = U8To32Little(constants, 8);
+			_state[3] = U8To32Little(constants, 12);
 		}
 
 		// extra copy of nonce
@@ -187,14 +191,14 @@ namespace River.ChaCha
 			if (nonce.Length == 8)
 			{
 				_state[13] = 0;
-				_state[14] = Util.U8To32Little(nonce, 0);
-				_state[15] = Util.U8To32Little(nonce, 4);
+				_state[14] = U8To32Little(nonce, 0);
+				_state[15] = U8To32Little(nonce, 4);
 			}
 			else if (nonce.Length == 12)
 			{
-				_state[13] = Util.U8To32Little(nonce, 0);
-				_state[14] = Util.U8To32Little(nonce, 4);
-				_state[15] = Util.U8To32Little(nonce, 8);
+				_state[13] = U8To32Little(nonce, 0);
+				_state[14] = U8To32Little(nonce, 4);
+				_state[15] = U8To32Little(nonce, 8);
 			}
 		}
 
@@ -307,7 +311,7 @@ namespace River.ChaCha
 
 				for (var i = 0; i < _stateLength; i++)
 				{
-					Util.ToBytes(tmp, Util.Add(x[i], _state[i]), 4 * i);
+					ToBytes(tmp, Add(x[i], _state[i]), 4 * i);
 				}
 
 				var remainedInCurrent = BlockSize - _currentBlockBytes;
@@ -324,13 +328,13 @@ namespace River.ChaCha
 				if (_currentBlockBytes == BlockSize)
 				{
 					_currentBlockBytes = 0;
-					_state[12] = Util.AddOne(_state[12]);
+					_state[12] = AddOne(_state[12]);
 
 					// TODO Need prove of this from spec:
 					if (_state[12] <= 0) // less is extra prove here. Actually counter is uint [0...]
 					{
 						// Stopping at 2^70 bytes per nonce is the user's responsibility
-						_state[13] = Util.AddOne(_state[13]);
+						_state[13] = AddOne(_state[13]);
 					}
 				}
 			}
@@ -350,116 +354,114 @@ namespace River.ChaCha
 		/// <param name="d">Index of the fourth number</param>
 		private static void QuarterRound(uint[] x, uint a, uint b, uint c, uint d)
 		{
-			x[a] = Util.Add(x[a], x[b]);
-			x[d] = Util.Rotate(Util.XOr(x[d], x[a]), 16);
+			x[a] = Add(x[a], x[b]);
+			x[d] = Rotate(XOr(x[d], x[a]), 16);
 
-			x[c] = Util.Add(x[c], x[d]);
-			x[b] = Util.Rotate(Util.XOr(x[b], x[c]), 12);
+			x[c] = Add(x[c], x[d]);
+			x[b] = Rotate(XOr(x[b], x[c]), 12);
 
-			x[a] = Util.Add(x[a], x[b]);
-			x[d] = Util.Rotate(Util.XOr(x[d], x[a]), 8);
+			x[a] = Add(x[a], x[b]);
+			x[d] = Rotate(XOr(x[d], x[a]), 8);
 
-			x[c] = Util.Add(x[c], x[d]);
-			x[b] = Util.Rotate(Util.XOr(x[b], x[c]), 7);
+			x[c] = Add(x[c], x[d]);
+			x[b] = Rotate(XOr(x[b], x[c]), 7);
+		}
+
+		#region Utils
+
+		/// <summary>
+		/// n-bit left rotation operation (towards the high bits) for 32-bit integers.
+		/// </summary>
+		/// <param name="v"></param>
+		/// <param name="c"></param>
+		/// <returns>The result of (v LEFTSHIFT c)</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Rotate(uint v, int c)
+		{
+			unchecked
+			{
+				return (v << c) | (v >> (32 - c));
+			}
 		}
 
 		/// <summary>
-		/// Utilities that are used during compression
+		/// Unchecked integer exclusive or (XOR) operation.
 		/// </summary>
-		static class Util
+		/// <param name="v"></param>
+		/// <param name="w"></param>
+		/// <returns>The result of (v XOR w)</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint XOr(uint v, uint w)
 		{
-			/// <summary>
-			/// n-bit left rotation operation (towards the high bits) for 32-bit integers.
-			/// </summary>
-			/// <param name="v"></param>
-			/// <param name="c"></param>
-			/// <returns>The result of (v LEFTSHIFT c)</returns>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static uint Rotate(uint v, int c)
-			{
-				unchecked
-				{
-					return (v << c) | (v >> (32 - c));
-				}
-			}
+			return unchecked(v ^ w);
+		}
 
-			/// <summary>
-			/// Unchecked integer exclusive or (XOR) operation.
-			/// </summary>
-			/// <param name="v"></param>
-			/// <param name="w"></param>
-			/// <returns>The result of (v XOR w)</returns>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static uint XOr(uint v, uint w)
-			{
-				return unchecked(v ^ w);
-			}
+		/// <summary>
+		/// Unchecked integer addition. The ChaCha spec defines certain operations to use 32-bit unsigned integer addition modulo 2^32.
+		/// </summary>
+		/// <remarks>
+		/// See <a href="https://tools.ietf.org/html/rfc7539#page-4">ChaCha20 Spec Section 2.1</a>.
+		/// </remarks>
+		/// <param name="v"></param>
+		/// <param name="w"></param>
+		/// <returns>The result of (v + w) modulo 2^32</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Add(uint v, uint w)
+		{
+			return unchecked(v + w);
+		}
 
-			/// <summary>
-			/// Unchecked integer addition. The ChaCha spec defines certain operations to use 32-bit unsigned integer addition modulo 2^32.
-			/// </summary>
-			/// <remarks>
-			/// See <a href="https://tools.ietf.org/html/rfc7539#page-4">ChaCha20 Spec Section 2.1</a>.
-			/// </remarks>
-			/// <param name="v"></param>
-			/// <param name="w"></param>
-			/// <returns>The result of (v + w) modulo 2^32</returns>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static uint Add(uint v, uint w)
-			{
-				return unchecked(v + w);
-			}
+		/// <summary>
+		/// Add 1 to the input parameter using unchecked integer addition. The ChaCha spec defines certain operations to use 32-bit unsigned integer addition modulo 2^32.
+		/// </summary>
+		/// <remarks>
+		/// See <a href="https://tools.ietf.org/html/rfc7539#page-4">ChaCha20 Spec Section 2.1</a>.
+		/// </remarks>
+		/// <param name="v"></param>
+		/// <returns>The result of (v + 1) modulo 2^32</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint AddOne(uint v)
+		{
+			return unchecked(v + 1);
+		}
 
-			/// <summary>
-			/// Add 1 to the input parameter using unchecked integer addition. The ChaCha spec defines certain operations to use 32-bit unsigned integer addition modulo 2^32.
-			/// </summary>
-			/// <remarks>
-			/// See <a href="https://tools.ietf.org/html/rfc7539#page-4">ChaCha20 Spec Section 2.1</a>.
-			/// </remarks>
-			/// <param name="v"></param>
-			/// <returns>The result of (v + 1) modulo 2^32</returns>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static uint AddOne(uint v)
+		/// <summary>
+		/// Convert four bytes of the input buffer into an unsigned 32-bit integer, beginning at the inputOffset.
+		/// </summary>
+		/// <param name="p"></param>
+		/// <param name="inputOffset"></param>
+		/// <returns>An unsigned 32-bit integer</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint U8To32Little(byte[] p, int inputOffset)
+		{
+			unchecked
 			{
-				return unchecked(v + 1);
-			}
-
-			/// <summary>
-			/// Convert four bytes of the input buffer into an unsigned 32-bit integer, beginning at the inputOffset.
-			/// </summary>
-			/// <param name="p"></param>
-			/// <param name="inputOffset"></param>
-			/// <returns>An unsigned 32-bit integer</returns>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static uint U8To32Little(byte[] p, int inputOffset)
-			{
-				unchecked
-				{
-					return ((uint)p[inputOffset]
-						| ((uint)p[inputOffset + 1] << 8)
-						| ((uint)p[inputOffset + 2] << 16)
-						| ((uint)p[inputOffset + 3] << 24));
-				}
-			}
-
-			/// <summary>
-			/// Serialize the input integer into the output buffer. The input integer will be split into 4 bytes and put into four sequential places in the output buffer, starting at the outputOffset.
-			/// </summary>
-			/// <param name="output"></param>
-			/// <param name="input"></param>
-			/// <param name="outputOffset"></param>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static void ToBytes(byte[] output, uint input, int outputOffset)
-			{
-				unchecked
-				{
-					output[outputOffset] = (byte)input;
-					output[outputOffset + 1] = (byte)(input >> 8);
-					output[outputOffset + 2] = (byte)(input >> 16);
-					output[outputOffset + 3] = (byte)(input >> 24);
-				}
+				return ((uint)p[inputOffset]
+					| ((uint)p[inputOffset + 1] << 8)
+					| ((uint)p[inputOffset + 2] << 16)
+					| ((uint)p[inputOffset + 3] << 24));
 			}
 		}
+
+		/// <summary>
+		/// Serialize the input integer into the output buffer. The input integer will be split into 4 bytes and put into four sequential places in the output buffer, starting at the outputOffset.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <param name="input"></param>
+		/// <param name="outputOffset"></param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ToBytes(byte[] output, uint input, int outputOffset)
+		{
+			unchecked
+			{
+				output[outputOffset] = (byte)input;
+				output[outputOffset + 1] = (byte)(input >> 8);
+				output[outputOffset + 2] = (byte)(input >> 16);
+				output[outputOffset + 3] = (byte)(input >> 24);
+			}
+		}
+
+		#endregion
 	}
 
 
