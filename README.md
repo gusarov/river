@@ -10,7 +10,7 @@ Shipped in 2 ways:
 
 1) [River.dll in NuGet](https://www.nuget.org/packages/River/) - is a .Net Standard 2.0 library for any cross platform project
 
-2) [River.exe for Windows](https://github.com/gusarov/river/releases) - is a .Net Framwork 4.8 application for Windows
+2) [River.exe for Windows](https://github.com/gusarov/river/releases/latest) - is a .Net Framwork 4.8 application for Windows
 
 # Application Usage
 
