@@ -15,43 +15,19 @@ namespace River.Test
 		[TestMethod]
 		public void Should_wrap_http()
 		{
-
 			var port = GetFreePort();
-			var proxy = new HttpWrapServer("hw://chacha20:123test@0.0.0.0:" + port);
+			new HttpWrapServer("hw://chacha20:123test@0.0.0.0:" + port).Track();
 
-			var cli = new HttpWrapClientStream("chacha20", "123test", "localhost", port, Host, 80);
+			var cli = new HttpWrapClientStream("chacha20", "123test", "localhost", port, Host, 80).Track();
 			TestConnction(cli, Host);
-
-			cli.Dispose();
-			proxy.Dispose();
 		}
 
 		[TestMethod]
-		public void Should_wrap_http_mult_dispose()
+		public void Should_wrap_http_stress()
 		{
 			for (var i = 0; i < 10; i++)
 			{
-				var port = GetFreePort();
-				var proxy = new HttpWrapServer("hw://chacha20:123test@0.0.0.0:" + port);
-
-				var cli = new HttpWrapClientStream("chacha20", "123test", "localhost", port, Host, 80);
-				TestConnction(cli, Host);
-
-				cli.Dispose();
-				proxy.Dispose();
-			}
-		}
-
-		[TestMethod]
-		public void Should_wrap_http_mult_track()
-		{
-			for (var i = 0; i < 10; i++)
-			{
-				var port = GetFreePort();
-				var proxy = new HttpWrapServer("hw://chacha20:123test@0.0.0.0:" + port).Track();
-
-				var cli = new HttpWrapClientStream("chacha20", "123test", "localhost", port, Host, 80).Track();
-				TestConnction(cli, Host);
+				Should_wrap_http();
 			}
 		}
 	}

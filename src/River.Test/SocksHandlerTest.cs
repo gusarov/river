@@ -26,14 +26,14 @@ namespace River.Test
 		[TestMethod]
 		public void Should_10_handle_socks4()
 		{
-			var cli = new Socks.Socks4ClientStream("localhost", _port, Host, 80).Track(this);
+			var cli = new Socks.Socks4ClientStream("localhost", _port, Host, 80).Track();
 			TestConnction(cli, Host);
 		}
 
 		[TestMethod]
 		public void Should_10_handle_socks5()
 		{
-			var cli = new Socks.Socks5ClientStream("localhost", _port, Host, 80).Track(this);
+			var cli = new Socks.Socks5ClientStream("localhost", _port, Host, 80).Track();
 			TestConnction(cli, Host);
 			Console.WriteLine("ProcessName: " + Process.GetCurrentProcess().ProcessName);
 		}
