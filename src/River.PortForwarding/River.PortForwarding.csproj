@@ -8,11 +8,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{759CDF6C-BDFD-464C-AD53-BCC17D1326C9}</ProjectGuid>
+    <ProjectGuid>{ABED95CB-ED73-4086-B062-44AF5925D8E0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RiverLib.All</RootNamespace>
-    <AssemblyName>RiverLib.All</AssemblyName>
+    <RootNamespace>River.PortForwarding</RootNamespace>
+    <AssemblyName>River.PortForwarding</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -46,53 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Init.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PortForwardingHandler.cs" />
+    <Compile Include="PortForwardingServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\River.Any\River.Any.csproj">
-      <Project>{AD8CDABB-14DD-4E6F-9156-854F221FF617}</Project>
-      <Name>River.Any</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.ChaCha\River.ChaCha.csproj">
-      <Project>{ddaba839-27aa-4ae0-ba2e-340c975669bb}</Project>
-      <Name>River.ChaCha</Name>
-    </ProjectReference>
     <ProjectReference Include="..\River.Core\River.Core.csproj">
-      <Project>{13257360-183c-4b42-a00e-293ff7358a97}</Project>
+      <Project>{13257360-183C-4B42-A00E-293FF7358A97}</Project>
       <Name>River.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Http\River.Http.csproj">
-      <Project>{c69d29fc-cc8d-4205-bfb2-20abd376177e}</Project>
-      <Name>River.Http</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Internal\River.Internal.csproj">
       <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
       <Name>River.Internal</Name>
     </ProjectReference>
-    <ProjectReference Include="..\River.PortForwarding\River.PortForwarding.csproj">
-      <Project>{abed95cb-ed73-4086-b062-44af5925d8e0}</Project>
-      <Name>River.PortForwarding</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.SelfService\River.SelfService.csproj">
-      <Project>{508767BB-CAF6-42A1-A13F-4E84C2F44C87}</Project>
-      <Name>River.SelfService</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.ShadowSocks\River.ShadowSocks.csproj">
-      <Project>{2f41b438-b726-4ff1-a277-4907cb359b81}</Project>
-      <Name>River.ShadowSocks</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\River.Socks\River.Socks.csproj">
-      <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>
-      <Name>River.Socks</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>2.9.8</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

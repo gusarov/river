@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace River.Test
 {
 	[TestClass]
-	public class ExceptionalTests : TestClass
+	public class ExceptionalTest : TestClass
 	{
 		[TestMethod]
 		[ExpectedException(typeof(SocketException))]

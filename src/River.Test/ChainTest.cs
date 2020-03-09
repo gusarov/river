@@ -14,9 +14,9 @@ namespace River.Test
 {
 
 	[TestClass]
-	public class ChainTests : TestClass
+	public class ChainTest : TestClass
 	{
-		public ChainTests()
+		public ChainTest()
 		{
 			
 		}

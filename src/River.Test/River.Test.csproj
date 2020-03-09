@@ -47,10 +47,11 @@
     <Compile Include="EnumDecoratorTest.cs" />
     <Compile Include="SocksCodesTest.cs" />
     <Compile Include="SocksHandlerTest.cs" />
-    <Compile Include="ChainTests.cs" />
+    <Compile Include="ChainTest.cs" />
     <Compile Include="AnyHandlerTest.cs" />
-    <Compile Include="ExceptionalTests.cs" />
+    <Compile Include="ExceptionalTest.cs" />
     <Compile Include="ReStreamTests.cs" />
+    <Compile Include="PortForwardingTest.cs" />
     <Compile Include="WrapHttpTests.cs" />
     <Compile Include="HappyEyeballsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,6 +84,10 @@
     <ProjectReference Include="..\River.Internal\River.Internal.csproj">
       <Project>{3ec24f81-ac7b-4bcf-a6b1-aaeff2528387}</Project>
       <Name>River.Internal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\River.PortForwarding\River.PortForwarding.csproj">
+      <Project>{ABED95CB-ED73-4086-B062-44AF5925D8E0}</Project>
+      <Name>River.PortForwarding</Name>
     </ProjectReference>
     <ProjectReference Include="..\River.Socks\River.Socks.csproj">
       <Project>{8adf475c-8e47-4b22-85f2-69614af9144b}</Project>

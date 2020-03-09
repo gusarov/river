@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Core", "River.Core\River.Core.csproj", "{13257360-183C-4B42-A00E-293FF7358A97}"
 EndProject
@@ -70,7 +70,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Any", "River.Any\Rive
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.HttpWrap", "River.HttpWrap\River.HttpWrap.csproj", "{021EA1DA-1CF3-4D8B-9620-D31BBEDBBA0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.Test.PatchProject", "River.Test.PatchProject\River.Test.PatchProject.csproj", "{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.Test.PatchProject", "River.Test.PatchProject\River.Test.PatchProject.csproj", "{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "River.PortForwarding", "River.PortForwarding\River.PortForwarding.csproj", "{ABED95CB-ED73-4086-B062-44AF5925D8E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "River.PortForwarding.Std", "River.PortForwarding\River.PortForwarding.Std.csproj", "{7E28D6C2-2335-4738-9627-CA2D299FC8DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -198,6 +202,14 @@ Global
 		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B91B174-BA7B-4EE8-9E5B-5CD9EF574B4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABED95CB-ED73-4086-B062-44AF5925D8E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABED95CB-ED73-4086-B062-44AF5925D8E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABED95CB-ED73-4086-B062-44AF5925D8E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABED95CB-ED73-4086-B062-44AF5925D8E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E28D6C2-2335-4738-9627-CA2D299FC8DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E28D6C2-2335-4738-9627-CA2D299FC8DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E28D6C2-2335-4738-9627-CA2D299FC8DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E28D6C2-2335-4738-9627-CA2D299FC8DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

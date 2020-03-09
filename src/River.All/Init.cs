@@ -23,6 +23,7 @@ namespace River
 			Resolver.RegisterSchema<HttpProxyServer, HttpProxyClientStream>("http");
 			Resolver.RegisterSchemaServer<SocksServer>("socks");
 			Resolver.RegisterSchemaServer<AnyProxyServer>("any");
+			Resolver.RegisterSchemaServer<PortForwardingServer>("tcp");
 		}
 	}
 }
