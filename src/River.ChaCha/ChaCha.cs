@@ -88,9 +88,6 @@ namespace River.ChaCha
 		}
 
 		static Encoding _utf8 = new UTF8Encoding(false, false);
-#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
-		static MD5 _md5 = MD5.Create();
-#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
 
 		/// <summary>
 		/// Key Derivation Function
@@ -104,12 +101,16 @@ namespace River.ChaCha
 				throw new ArgumentNullException(nameof(password));
 			}
 
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
+			using var md5 = MD5.Create();
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
+
 			var pwd = _utf8.GetBytes(password);
-			var hash1 = _md5.ComputeHash(pwd);
+			var hash1 = md5.ComputeHash(pwd);
 			var buf = new byte[hash1.Length + pwd.Length];
 			hash1.CopyTo(buf, 0);
 			pwd.CopyTo(buf, hash1.Length);
-			var hash2 = _md5.ComputeHash(buf);
+			var hash2 = md5.ComputeHash(buf);
 
 			buf = new byte[hash1.Length + hash2.Length];
 			hash1.CopyTo(buf, 0);
