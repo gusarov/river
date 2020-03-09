@@ -14,7 +14,7 @@ namespace River
 	{
 		public RiverServer()
 		{
-			ObjectTracker.Default.Register(this);
+			ObjectTracker.Default.Register(this, 10, true);
 		}
 
 		public IList<ProxyIdentifier> Chain { get; } = new List<ProxyIdentifier>();

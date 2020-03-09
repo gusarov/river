@@ -43,7 +43,7 @@ namespace River
 		public Handler()
 		{
 			// StatService.Instance.HandlerAdd(this);
-			ObjectTracker.Default.Register(this);
+			ObjectTracker.Default.Register(this, 10, true);
 		}
 
 		public Handler(RiverServer server, TcpClient client)

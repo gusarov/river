@@ -5,6 +5,7 @@ using River.Socks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,16 +17,36 @@ namespace RiverApp
 
 		static void Main(string[] args)
 		{
+			if (MainHandler(args))
+			{
+				Console.WriteLine("Press any key to stop . . .");
+				Console.ReadLine();
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static bool MainHandler(string[] args)
+		{
 			Trace.WriteLine(TraceCategory.Misc, "Logger started...");
 			RiverInit.RegAll();
 
-			var servers = new List<(RiverServer, Uri)>();
+			var servers = new List<(RiverServer server, Uri uri)>();
 			var forwarders = new List<string>();
 
 			for (var i = 0; i < args.Length; i++)
 			{
 				switch (args[i].ToUpperInvariant())
 				{
+					case "-NAME":
+						{
+							ShutdownRequestTracker.Instance.AddTracker(args[++i]);
+							break;
+						}
+					case "STOP":
+						{
+							ShutdownRequestTracker.Instance.RequestStop(args[++i]);
+							return false;
+						}
 					case "-L":
 						{
 							// Listen
@@ -79,8 +100,7 @@ namespace RiverApp
 				server.Run(uri);
 			}
 
-			Console.WriteLine("Press any key to stop . . .");
-			Console.ReadLine();
+			return servers.Any();
 		}
 	}
 }
