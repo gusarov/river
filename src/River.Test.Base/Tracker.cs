@@ -15,8 +15,13 @@ namespace River.Test
 		/// <summary>
 		/// Remember IDisposable object
 		/// </summary>
-		public static T Track<T>(this T item, object state) where T : IDisposable
+		public static T Track<T>(this T item, object state = null) where T : IDisposable
 		{
+			if (state == null)
+			{
+				state = TestClass.TrackReference.Value;
+			}
+
 			var list = _dic.GetOrAdd(state, _ => new List<IDisposable>());
 			list.Add(item);
 			return item;

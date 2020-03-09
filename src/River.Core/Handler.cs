@@ -655,7 +655,7 @@ namespace River
 						else
 						{
 							// route in old client
-							((ClientStream)_upstreamClient).Route(proxy.Uri.Host, proxy.Uri.Port);
+							((ClientStream)_upstreamClient).Route(proxy.Uri);
 
 							// and now wrap to new one
 							clientStream.Plug(proxy.Uri, _upstreamClient);

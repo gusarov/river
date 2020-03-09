@@ -23,7 +23,15 @@ namespace River
 		/// <summary>
 		/// Negotiate to establish stream
 		/// </summary>
-		public abstract void Route(string targetHost, int targetPort, bool? proxyDns = null);
+		public virtual void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			Route(new Uri($"none://{targetHost}:{targetPort}{(proxyDns.HasValue ? "?proxyDns=" + proxyDns : null)}"));
+		}
+
+		public virtual void Route(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 
 		protected string ProxyHost { get; private set; }
 		protected int ProxyPort { get; private set; }

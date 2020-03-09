@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auth\AuthHashProcessor.cs" />
+    <Compile Include="EnumExtensionMethods.cs" />
     <Compile Include="ExceptionExt.cs" />
     <Compile Include="HttpUtils.cs" />
     <Compile Include="NetworkStream2.cs" />

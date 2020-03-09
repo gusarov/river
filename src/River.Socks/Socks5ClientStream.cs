@@ -28,9 +28,31 @@ namespace River.Socks
 			ClientStreamExtensions.Plug(this, proxyHost, proxyPort);
 		}
 
-		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		public override void Route(Uri uri)
 		{
-			using (var prof = new ProfilingScope("Socks5 Route"))
+			var targetHost = uri.Host;
+			var targetPort = uri.Port;
+		}
+
+		[Obsolete("Not Implemented")]
+		public void Route(Uri uri, bool? proxyDns = null)
+		{
+			throw new NotImplementedException();
+			/*
+			if (proxyDns.HasValue)
+			{
+				if (proxyDns == true)
+				{
+					uri.
+				}
+			}
+			Route(uri)
+			*/
+		}
+
+		public void Route(string targetHost, int targetPort, bool? proxyDns = null)
+		{
+			// using (var prof = new ProfilingScope("Socks5 Route"))
 			{
 				if (targetHost is null)
 				{
@@ -48,6 +70,7 @@ namespace River.Socks
 				buf[b++] = 0x00; // #1 - no auth (0x00)
 				stream.Write(buf, 0, b);
 				stream.Flush();
+
 				var count = stream.Read(buf, 0, 2); // auth response
 				if (count != 2)
 				{
@@ -55,7 +78,7 @@ namespace River.Socks
 				}
 				if (buf[0] != 0x05)
 				{
-					throw new Exception("Server do not support v5 (response 1)");
+					throw new Exception("Server dos not returned v5 (response 1)");
 				}
 				if (buf[1] != 0x00)
 				{
@@ -127,7 +150,7 @@ namespace River.Socks
 				{
 					var msg = $"Server response: {buf[1]:X}: {GetResponseErrorMessage(buf[1])}";
 					Trace.WriteLine(TraceCategory.NetworkingData, msg);
-					throw new Exception(msg);
+					throw new IOException(msg);
 				}
 				// ignore reserved buf[2] byte
 				// read only required number of bytes depending on address type
@@ -154,32 +177,7 @@ namespace River.Socks
 			}
 		}
 
-		string GetResponseErrorMessage(byte responseCode)
-		{
-			switch (responseCode)
-			{
-				case 0:
-					return "OK";
-				case 1:
-					return "General SOCKS server failure";
-				case 2:
-					return "Connection not allowed by ruleset";
-				case 3:
-					return "Network unreachable";
-				case 4:
-					return "Host unreachable";
-				case 5:
-					return "Connection refused";
-				case 6:
-					return "TTL expired";
-				case 7:
-					return "Command not supported";
-				case 8:
-					return "Address type not supported";
-				default:
-					return "Unknown";
-			}
-		}
+		string GetResponseErrorMessage(byte responseCode) => ((SocksError)responseCode).GetDescription();
 
 	}
 }

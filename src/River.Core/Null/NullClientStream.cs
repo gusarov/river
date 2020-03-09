@@ -12,10 +12,6 @@ namespace River
 	/// </summary>
 	sealed class NullClientStream : ClientStream
 	{
-		public override void Route(string targetHost, int targetPort, bool? proxyDns = null)
-		{
-			// just do nothing, we already connected
-			throw new Exception($"Where are you going to route? This is {nameof(NullClientStream)}");
-		}
+		public override void Route(Uri uri) => throw new Exception($"Where are you going to route? This is {nameof(NullClientStream)}");
 	}
 }

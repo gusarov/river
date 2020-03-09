@@ -27,6 +27,8 @@ namespace River.Test
 
 		static Dictionary<string, ObjectTracker> _trackers = new Dictionary<string, ObjectTracker>();
 
+		public static ThreadLocal<object> TrackReference = new ThreadLocal<object>(() => new object());
+
 		Stopwatch _testTime;
 
 		public TestContext TestContext { get; set; }
@@ -124,6 +126,7 @@ namespace River.Test
 		{
 			Tracker.Explode(_test);
 			Tracker.Explode(this);
+			Tracker.Explode(TrackReference.Value);
 
 			/*
 			// DO NOT DO THIS - YOU HAVE TO MAKE SURE THAT DISPOSE IS PROPAGATED FROM TRACKER OBJECTS ONLY
