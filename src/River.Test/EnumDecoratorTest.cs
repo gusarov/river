@@ -50,7 +50,7 @@ namespace River.Test
 			// Assert.AreEqual("This is a", TestEnum.ThisIsA.GetDescription());
 			Console.WriteLine(TestEnum.ThisIsA.GetDescription());
 			Assert.AreEqual("This is SOCKS", TestEnum.ThisIsSOCKS.GetDescription());
-			Assert.AreEqual("A home", TestEnum.ABlueHome.GetDescription());
+			Assert.AreEqual("A blue home", TestEnum.ABlueHome.GetDescription());
 		}
 
 	}
