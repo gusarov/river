@@ -34,17 +34,33 @@ namespace River.Test.Api
 		}
 
 		[TestMethod]
-		public void Should_use_1080_as_a_default_socks_port()
+		public void Should_use_1080_as_a_default_socks_port_for_client()
 		{
 			var server = new DemoTcpServer().Track();
 			var proxyPort = 1080;
 			var proxy = new SocksServer("socks://0.0.0.0:" + proxyPort).Track();
-			// var proxyClient = new Socks5ClientStream("127.0.0.1", proxyPort, "127.0.0.1", server.Port);
 			var proxyClient = new Socks5ClientStream().Track();
-			proxyClient.Plug(new Uri("socks://127.0.0.1/"));
+			proxyClient.Plug(new Uri("socks://127.0.0.1/")); // 1080 implied
 			proxyClient.Route("127.0.0.1", server.Port);
 
 			TestDemoServer(proxyClient);
+
+			proxy.Dispose(); // force dispose of well-known port to avoid wars
+		}
+
+		[TestMethod]
+		public void Should_use_1080_as_a_default_socks_port_for_server()
+		{
+			Assert.Inconclusive("not supported yet");
+			var server = new DemoTcpServer().Track();
+			var proxy = new SocksServer("socks://0.0.0.0").Track(); // 1080 implied
+			var proxyClient = new Socks5ClientStream().Track();
+			proxyClient.Plug(new Uri("socks://127.0.0.1:1080/"));
+			proxyClient.Route("127.0.0.1", server.Port);
+
+			TestDemoServer(proxyClient);
+
+			proxy.Dispose(); // force dispose of well-known port to avoid wars
 		}
 
 		private static void TestDemoServer(Stream proxyClient)

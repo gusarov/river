@@ -11,6 +11,13 @@ namespace River.Socks
 {
 	public abstract class SocksClientStream : ClientStream
 	{
-
+		protected override int GetDefaultPort(string scheme)
+		{
+			if (scheme != "socks")
+			{
+				throw new NotSupportedException($"scheme {scheme} is not supported by SOCKS");
+			}
+			return 1080; // this is part of RFC, so, should be handled from URI
+		}
 	}
 }

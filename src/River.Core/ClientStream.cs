@@ -36,6 +36,11 @@ namespace River
 		protected string ProxyHost { get; private set; }
 		protected int ProxyPort { get; private set; }
 
+		protected virtual int GetDefaultPort(string scheme)
+		{
+			return -1;
+		}
+
 		/// <summary>
 		/// Plug to a new socket
 		/// </summary>
@@ -48,6 +53,10 @@ namespace River
 
 			ProxyHost = uri.Host;
 			ProxyPort = uri.Port;
+			if (ProxyPort == -1)
+			{
+				ProxyPort = GetDefaultPort(uri.Scheme);
+			}
 
 			if (Stream != null)
 			{
